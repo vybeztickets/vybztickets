@@ -25,10 +25,16 @@ export default function AdBanner() {
   }, []);
 
   return (
-    <div className="bg-[#111] border-b border-[#2a2a2a] h-9 flex items-center justify-center overflow-hidden">
+    <div
+      className="h-9 flex items-center justify-center overflow-hidden"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
+      }}
+    >
       <span
-        className="text-[10px] font-medium tracking-[0.18em] text-[#666] uppercase transition-opacity duration-300"
-        style={{ opacity: visible ? 1 : 0 }}
+        className="text-[10px] font-medium tracking-[0.18em] uppercase transition-opacity duration-300"
+        style={{ opacity: visible ? 1 : 0, color: "rgba(255,255,255,0.25)" }}
       >
         {ADS[index]}
       </span>

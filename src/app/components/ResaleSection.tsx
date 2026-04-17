@@ -39,17 +39,17 @@ const RESALE_TICKETS = [
 
 const ESCROW_STEPS = [
   {
-    step: "01",
+    n: "01",
     title: "Comprador paga",
     desc: "El pago queda retenido en custodia segura. El vendedor no recibe nada aún.",
   },
   {
-    step: "02",
+    n: "02",
     title: "Transferencia verificada",
     desc: "Verificamos la autenticidad de los tickets antes de liberarlos al comprador.",
   },
   {
-    step: "03",
+    n: "03",
     title: "Fondos liberados",
     desc: "Solo cuando confirmas la recepción, el vendedor recibe su dinero.",
   },
@@ -58,74 +58,83 @@ const ESCROW_STEPS = [
 export default function ResaleSection() {
   return (
     <section className="py-20 px-6 max-w-7xl mx-auto">
-      {/* Header */}
       <div className="flex items-end justify-between mb-10">
         <div>
-          <p className="text-[#666] text-xs tracking-[0.25em] uppercase font-medium mb-2">
+          <p className="text-white/25 text-[11px] tracking-[0.25em] uppercase font-medium mb-2">
             Marketplace seguro
           </p>
-          <h2 className="font-[family-name:var(--font-bebas)] text-5xl md:text-6xl text-white tracking-wide">
+          <h2 className="font-[family-name:var(--font-bebas)] text-5xl md:text-[64px] text-white tracking-wide leading-none">
             Tickets for Resale
           </h2>
         </div>
         <Link
           href="/reventa"
-          className="hidden md:flex items-center gap-2 text-[#888] hover:text-white text-sm transition-colors group"
+          className="hidden md:flex items-center gap-2 text-white/30 hover:text-white text-sm transition-colors group"
         >
           Ver todo
-          <span className="group-hover:translate-x-1 transition-transform">→</span>
+          <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
         </Link>
       </div>
 
-      {/* Resale cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
+      {/* Resale cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-14">
         {RESALE_TICKETS.map((ticket) => (
           <Link
             key={ticket.id}
             href={`/reventa/${ticket.id}`}
-            className="group bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#3a3a3a] hover:scale-[1.02] transition-all duration-300 block"
+            className="gradient-border group block overflow-hidden hover:scale-[1.02] transition-all duration-300"
           >
-            {/* Image */}
             <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#111]">
               <Image
                 src={ticket.image}
                 alt={ticket.title}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-70"
+                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-60"
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent" />
-              {/* RESALE badge */}
-              <div className="absolute top-3 left-3 flex gap-2">
-                <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1 bg-[#f59e0b] text-[#0a0a0a]">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/40 to-transparent" />
+
+              {/* Badges */}
+              <div className="absolute top-3 left-3 flex gap-1.5">
+                <span
+                  className="text-[8px] font-bold tracking-[0.2em] uppercase px-2.5 py-1.5 text-white"
+                  style={{ background: "linear-gradient(135deg,#f59e0b,#ef4444)" }}
+                >
                   RESALE
                 </span>
-                <span className="text-[9px] font-bold tracking-[0.1em] uppercase px-2.5 py-1 bg-[#1a1a1a] border border-[#2a2a2a] text-[#888]">
+                <span
+                  className="text-[8px] font-semibold tracking-[0.1em] uppercase px-2.5 py-1.5"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "rgba(255,255,255,0.5)",
+                  }}
+                >
                   🔒 ESCROW
                 </span>
               </div>
-              <div className="absolute bottom-3 left-4 text-[10px] text-[#666] tracking-wide">
+
+              <div className="absolute bottom-3 left-4 text-[10px] text-white/30 tracking-wide">
                 {ticket.section} · {ticket.qty} {ticket.qty === 1 ? "entrada" : "entradas"}
               </div>
             </div>
 
-            {/* Content */}
             <div className="p-5">
-              <p className="text-[#666] text-[11px] tracking-[0.15em] uppercase font-medium mb-1.5">
+              <p className="text-white/25 text-[10px] tracking-[0.18em] uppercase font-medium mb-1.5">
                 {ticket.date}
               </p>
-              <h3 className="text-white font-semibold text-base leading-snug mb-1">
-                {ticket.title}
-              </h3>
-              <p className="text-[#555] text-xs mb-4 truncate">{ticket.venue}</p>
+              <h3 className="text-white font-semibold text-[15px] leading-snug mb-1">{ticket.title}</h3>
+              <p className="text-white/25 text-xs mb-4 truncate">{ticket.venue}</p>
               <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[#555] text-xs line-through mr-2">
-                    {ticket.originalPrice}
-                  </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-white/25 text-xs line-through">{ticket.originalPrice}</span>
                   <span className="text-white font-semibold">{ticket.resalePrice}</span>
                 </div>
-                <span className="text-[#888] text-xs border border-[#2a2a2a] px-3 py-1 group-hover:border-[#3a3a3a] transition-colors">
+                <span
+                  className="text-[11px] font-medium px-3 py-1 rounded-full border transition-all"
+                  style={{ borderColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)" }}
+                >
                   Comprar
                 </span>
               </div>
@@ -134,37 +143,60 @@ export default function ResaleSection() {
         ))}
       </div>
 
-      {/* Escrow explanation */}
-      <div className="border border-[#2a2a2a] bg-[#111] p-8 md:p-10">
-        <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
+      {/* Escrow block */}
+      <div
+        className="relative overflow-hidden p-8 md:p-10"
+        style={{
+          background: "rgba(255,255,255,0.02)",
+          backdropFilter: "blur(12px)",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        {/* Glow bg accent */}
+        <div
+          className="absolute -top-20 -right-20 w-80 h-80 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%)" }}
+        />
+
+        <div className="relative flex flex-col md:flex-row md:items-center gap-6 mb-8">
           <div className="flex-1">
-            <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1 bg-[#1a1a1a] border border-[#2a2a2a] text-[#888] inline-block mb-3">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-bold tracking-[0.2em] uppercase mb-3"
+              style={{
+                background: "rgba(124,58,237,0.15)",
+                border: "1px solid rgba(124,58,237,0.3)",
+                color: "#a78bfa",
+              }}
+            >
               🔒 ESCROW PROTECTED
-            </span>
-            <h3 className="font-[family-name:var(--font-bebas)] text-3xl md:text-4xl text-white tracking-wide">
+            </div>
+            <h3 className="font-[family-name:var(--font-bebas)] text-4xl md:text-5xl text-white tracking-wide">
               Compra y vende sin riesgos
             </h3>
-            <p className="text-[#555] text-sm mt-2 max-w-md leading-relaxed">
+            <p className="text-white/30 text-sm mt-2 max-w-md leading-relaxed">
               Nuestro sistema escrow protege tanto al comprador como al vendedor. El dinero solo se libera cuando ambas partes confirman la transacción.
             </p>
           </div>
           <Link
             href="/reventa"
-            className="shrink-0 bg-white text-[#0a0a0a] font-semibold text-sm px-6 py-3 hover:bg-white/90 transition-colors"
+            className="btn-glow shrink-0 text-sm px-6 py-3 text-white inline-block text-center"
           >
             Vender mis entradas
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-[#2a2a2a] pt-8">
+        <div
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+        >
           {ESCROW_STEPS.map((s) => (
-            <div key={s.step} className="flex gap-4">
-              <span className="font-[family-name:var(--font-bebas)] text-4xl text-[#2a2a2a] leading-none shrink-0">
-                {s.step}
+            <div key={s.n} className="flex gap-4">
+              <span className="font-[family-name:var(--font-bebas)] text-5xl leading-none shrink-0 gradient-text">
+                {s.n}
               </span>
               <div>
                 <p className="text-white font-semibold text-sm mb-1">{s.title}</p>
-                <p className="text-[#555] text-xs leading-relaxed">{s.desc}</p>
+                <p className="text-white/30 text-xs leading-relaxed">{s.desc}</p>
               </div>
             </div>
           ))}

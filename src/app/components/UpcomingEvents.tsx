@@ -10,7 +10,8 @@ const EVENTS = [
     venue: "Parque La Sabana, San José",
     price: "₡45,000",
     image: "https://images.unsplash.com/photo-1540039723070-438d9dfdeab2?auto=format&fit=crop&w=800&q=80",
-    color: "#7c3aed",
+    pillBg: "rgba(139,92,246,0.2)",
+    pillColor: "#a78bfa",
   },
   {
     id: 2,
@@ -20,17 +21,19 @@ const EVENTS = [
     venue: "Escazú, San José",
     price: "₡25,000",
     image: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?auto=format&fit=crop&w=800&q=80",
-    color: "#d97706",
+    pillBg: "rgba(251,191,36,0.15)",
+    pillColor: "#fbbf24",
   },
   {
     id: 3,
     title: "Reggaeton Night Liberia",
     category: "Reggaeton",
     date: "SAT 12 ABR",
-    venue: "Centro Comercial Liberia, Guanacaste",
+    venue: "Guanacaste",
     price: "₡30,000",
     image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=800&q=80",
-    color: "#059669",
+    pillBg: "rgba(52,211,153,0.15)",
+    pillColor: "#34d399",
   },
   {
     id: 4,
@@ -40,7 +43,8 @@ const EVENTS = [
     venue: "Parque Central, Heredia",
     price: "₡20,000",
     image: "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=800&q=80",
-    color: "#dc2626",
+    pillBg: "rgba(248,113,113,0.15)",
+    pillColor: "#f87171",
   },
   {
     id: 5,
@@ -50,7 +54,8 @@ const EVENTS = [
     venue: "Centro Cultural, Cartago",
     price: "₡15,000",
     image: "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?auto=format&fit=crop&w=800&q=80",
-    color: "#db2777",
+    pillBg: "rgba(244,114,182,0.15)",
+    pillColor: "#f472b6",
   },
   {
     id: 6,
@@ -60,7 +65,8 @@ const EVENTS = [
     venue: "Playa Flamingo, Guanacaste",
     price: "₡35,000",
     image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=800&q=80",
-    color: "#2563eb",
+    pillBg: "rgba(96,165,250,0.15)",
+    pillColor: "#60a5fa",
   },
 ];
 
@@ -69,28 +75,29 @@ export default function UpcomingEvents() {
     <section className="py-20 px-6 max-w-7xl mx-auto">
       <div className="flex items-end justify-between mb-10">
         <div>
-          <p className="text-[#666] text-xs tracking-[0.25em] uppercase font-medium mb-2">
+          <p className="text-white/25 text-[11px] tracking-[0.25em] uppercase font-medium mb-2">
             No te lo pierdas
           </p>
-          <h2 className="font-[family-name:var(--font-bebas)] text-5xl md:text-6xl text-white tracking-wide">
+          <h2 className="font-[family-name:var(--font-bebas)] text-5xl md:text-[64px] text-white tracking-wide leading-none">
             Upcoming Events
           </h2>
         </div>
         <Link
           href="/eventos"
-          className="hidden md:flex items-center gap-2 text-[#888] hover:text-white text-sm transition-colors group"
+          className="hidden md:flex items-center gap-2 text-white/30 hover:text-white text-sm transition-colors group"
         >
           Ver todos
-          <span className="group-hover:translate-x-1 transition-transform">→</span>
+          <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {EVENTS.map((event) => (
           <Link
             key={event.id}
             href={`/eventos/${event.id}`}
-            className="group bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#3a3a3a] hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
+            className="gradient-border group block overflow-hidden hover:scale-[1.02] transition-all duration-300"
+            style={{ borderRadius: "2px" }}
           >
             {/* Image 4:3 */}
             <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#111]">
@@ -98,32 +105,35 @@ export default function UpcomingEvents() {
                 src={event.image}
                 alt={event.title}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-85"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
-              {/* Category badge */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-transparent opacity-80" />
+
+              {/* Category pill */}
               <span
-                className="absolute top-3 left-3 text-[10px] font-semibold tracking-[0.15em] uppercase px-2.5 py-1"
-                style={{ background: event.color, color: "#fff" }}
+                className="pill absolute top-3 left-3"
+                style={{ background: event.pillBg, color: event.pillColor, backdropFilter: "blur(8px)", border: `1px solid ${event.pillColor}33` }}
               >
                 {event.category}
               </span>
             </div>
 
-            {/* Card content */}
-            <div className="p-5">
-              <p className="text-[#666] text-[11px] tracking-[0.15em] uppercase font-medium mb-1.5">
+            {/* Content */}
+            <div className="p-5 bg-transparent">
+              <p className="text-white/25 text-[10px] tracking-[0.18em] uppercase font-medium mb-1.5">
                 {event.date}
               </p>
-              <h3 className="text-white font-semibold text-base leading-snug mb-1 group-hover:text-white/90">
+              <h3 className="text-white font-semibold text-[15px] leading-snug mb-1 group-hover:text-white/90 transition-colors">
                 {event.title}
               </h3>
-              <p className="text-[#555] text-xs mb-4 truncate">{event.venue}</p>
+              <p className="text-white/25 text-xs mb-5 truncate">{event.venue}</p>
               <div className="flex items-center justify-between">
-                <span className="text-white font-semibold text-sm">
-                  Desde {event.price}
-                </span>
-                <span className="text-[#888] text-xs border border-[#2a2a2a] px-3 py-1 group-hover:border-[#3a3a3a] transition-colors">
+                <span className="text-white font-semibold text-sm">Desde {event.price}</span>
+                <span
+                  className="text-[11px] font-medium px-3 py-1 rounded-full border transition-all"
+                  style={{ borderColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)" }}
+                >
                   Comprar
                 </span>
               </div>
@@ -135,7 +145,7 @@ export default function UpcomingEvents() {
       <div className="mt-8 flex justify-center md:hidden">
         <Link
           href="/eventos"
-          className="text-[#888] hover:text-white text-sm border border-[#2a2a2a] px-6 py-3 hover:border-[#3a3a3a] transition-all"
+          className="text-white/40 hover:text-white text-sm border border-white/10 px-6 py-3 rounded-full hover:border-white/20 transition-all"
         >
           Ver todos los eventos →
         </Link>
