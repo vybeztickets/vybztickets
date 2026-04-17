@@ -112,7 +112,9 @@ export interface Database {
           id: string;
           ticket_type_id: string;
           event_id: string;
-          attendee_id: string;
+          attendee_id: string | null;
+          buyer_email: string;
+          buyer_name: string | null;
           status: TicketStatus;
           purchase_price: number;
           qr_code: string;
@@ -121,7 +123,9 @@ export interface Database {
         Insert: {
           ticket_type_id: string;
           event_id: string;
-          attendee_id: string;
+          attendee_id?: string | null;
+          buyer_email: string;
+          buyer_name?: string | null;
           purchase_price: number;
           status?: TicketStatus;
         };
