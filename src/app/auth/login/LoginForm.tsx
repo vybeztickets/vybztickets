@@ -1,0 +1,156 @@
+"use client";
+
+import { useState, use } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+
+export default function LoginForm({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirectTo?: string; error?: string }>;
+}) {
+  const params = use(searchParams);
+  const redirectTo = params?.redirectTo ?? "/";
+  const urlError = params?.error;
+
+  const [tab, setTab] = useState<"login" | "signup">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(urlError ?? "");
+  const [success, setSuccess] = useState("");
+
+  const supabase = createClient();
+  const router = useRouter();
+
+  async function handleGoogle() {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?redirectTo=${redirectTo}`,
+      },
+    });
+    if (error) setError(error.message);
+    setLoading(false);
+  }
+
+  async function handleEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    if (tab === "login") {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) { setError(error.message); setLoading(false); return; }
+      router.push(redirectTo);
+      router.refresh();
+    } else {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName } },
+      });
+      if (error) { setError(error.message); setLoading(false); return; }
+      setSuccess("Revisa tu email para confirmar tu cuenta.");
+    }
+    setLoading(false);
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-8"
+      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      {/* Tabs */}
+      <div className="flex mb-8 rounded-full p-1" style={{ background: "rgba(255,255,255,0.05)" }}>
+        {(["login", "signup"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => { setTab(t); setError(""); setSuccess(""); }}
+            className="flex-1 py-2 text-sm font-semibold rounded-full transition-all duration-200"
+            style={
+              tab === t
+                ? { background: "linear-gradient(135deg,#7c3aed,#db2777)", color: "#fff" }
+                : { color: "rgba(255,255,255,0.35)" }
+            }
+          >
+            {t === "login" ? "Iniciar sesión" : "Crear cuenta"}
+          </button>
+        ))}
+      </div>
+
+      {/* Google */}
+      <button
+        onClick={handleGoogle}
+        disabled={loading}
+        className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-medium transition-all mb-6"
+        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
+          <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332Z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58Z" fill="#EA4335"/>
+        </svg>
+        Continuar con Google
+      </button>
+
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+        <span className="text-white/20 text-xs">o</span>
+        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+      </div>
+
+      {/* Email form */}
+      <form onSubmit={handleEmail} className="flex flex-col gap-4">
+        {tab === "signup" && (
+          <input
+            type="text"
+            placeholder="Nombre completo"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none transition-colors"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          />
+        )}
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none transition-colors"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+        />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={6}
+          className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none transition-colors"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+        />
+
+        {error && (
+          <p className="text-red-400 text-xs px-1">{error}</p>
+        )}
+        {success && (
+          <p className="text-emerald-400 text-xs px-1">{success}</p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary w-full py-3 rounded-xl text-sm mt-1 disabled:opacity-50"
+        >
+          {loading ? "Cargando..." : tab === "login" ? "Iniciar sesión" : "Crear cuenta"}
+        </button>
+      </form>
+    </div>
+  );
+}
