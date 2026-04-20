@@ -1,0 +1,453 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import QRCode from "react-qr-code";
+
+type TicketType = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  total_available: number;
+  sold_count: number;
+  is_active: boolean;
+  is_hidden?: boolean | null;
+  category?: string;
+  capacity?: number | null;
+  zone_name?: string | null;
+  zone_color?: string | null;
+};
+
+function formatPrice(n: number) {
+  return n === 0 ? "Gratis" : "₡" + n.toLocaleString("es-CR");
+}
+
+const inputStyle = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)" };
+const inputClass = "w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none focus:border-black/30";
+
+export default function CheckoutPanel({
+  ticketTypes,
+  eventId,
+  eventName,
+  venueMapUrl,
+}: {
+  ticketTypes: TicketType[];
+  eventId: string;
+  eventName: string;
+  venueMapUrl: string | null;
+}) {
+  const activeTypes = ticketTypes.filter((t) => t.is_active && !t.is_hidden && t.total_available - t.sold_count > 0);
+  const generalTypes = activeTypes.filter((t) => !t.category || t.category === "general");
+  const tableTypes = activeTypes.filter((t) => t.category === "table" || t.category === "seat");
+
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [qty, setQty] = useState(1);
+  const [paxCount, setPaxCount] = useState(1);
+
+  const [email, setEmail] = useState("");
+  const [emailConfirm, setEmailConfirm] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
+  const [promoCode, setPromoCode] = useState("");
+  const [showPromo, setShowPromo] = useState(false);
+  const [promoApplied, setPromoApplied] = useState<{ discount: number; ticketTypeId: string | null } | null>(null);
+  const [promoError, setPromoError] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [sameEmail, setSameEmail] = useState(true);
+  const [perTicket, setPerTicket] = useState<{ name: string; email: string }[]>([]);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
+
+  const [step, setStep] = useState<"select" | "details" | "processing" | "done">("select");
+  const [error, setError] = useState("");
+  const [purchasedQRs, setPurchasedQRs] = useState<string[]>([]);
+
+  const selected = activeTypes.find((t) => t.id === selectedId);
+  const isTable = selected?.category === "table" || selected?.category === "seat";
+  const maxQty = selected ? Math.min(selected.total_available - selected.sold_count, 10) : 1;
+  const maxPax = selected?.capacity ?? 20;
+
+  const promoValid = promoApplied && (promoApplied.ticketTypeId === null || promoApplied.ticketTypeId === selectedId);
+  const discountPct = promoValid ? promoApplied!.discount : 0;
+  const basePrice = selected ? selected.price * (isTable ? 1 : qty) : 0;
+  const discountAmount = Math.round(basePrice * discountPct / 100);
+  const total = basePrice - discountAmount;
+
+  async function applyPromo() {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true); setPromoError("");
+    try {
+      const res = await fetch("/api/tickets/validate-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoCode, eventId }),
+      });
+      const data = await res.json();
+      if (!data.valid) { setPromoError(data.error ?? "Código no válido"); setPromoApplied(null); return; }
+      setPromoApplied({ discount: data.discount_percent, ticketTypeId: data.ticket_type_id ?? null });
+      setPromoError("");
+    } finally { setPromoLoading(false); }
+  }
+
+  function selectTicket(id: string) {
+    setSelectedId(id);
+    const t = activeTypes.find((x) => x.id === id);
+    if (t?.category === "table" || t?.category === "seat") { setPaxCount(1); } else { setQty(1); }
+    setStep("details");
+  }
+
+  function updatePerTicket(i: number, field: "name" | "email", value: string) {
+    setPerTicket((prev) => { const next = [...prev]; next[i] = { ...next[i], [field]: value }; return next; });
+  }
+
+  function getPerTicketArray() {
+    return Array.from({ length: qty }, (_, i) => ({
+      name: perTicket[i]?.name || name,
+      email: perTicket[i]?.email || email,
+    }));
+  }
+
+  async function handlePurchase(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selected || !email) return;
+    if (email !== emailConfirm) { setError("Los emails no coinciden"); return; }
+    if (!sameEmail && qty >= 2) {
+      for (let i = 0; i < qty; i++) {
+        if (!perTicket[i]?.email) { setError(`Falta el email de la Entrada ${i + 1}`); return; }
+      }
+    }
+    setStep("processing"); setError("");
+    try {
+      const res = await fetch("/api/tickets/purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId, ticketTypeId: selectedId, quantity: isTable ? 1 : qty,
+          buyerEmail: email, buyerName: name || null, buyerPhone: phone || null,
+          buyerNotes: notes || null, paxCount: isTable ? paxCount : qty,
+          promoCode: (promoApplied && promoValid) ? promoCode : null,
+          discountPercent: promoValid ? discountPct : 0,
+          marketingOptIn,
+          perTicketData: (!isTable && qty >= 2 && !sameEmail) ? getPerTicketArray() : null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Error al procesar la compra");
+      setPurchasedQRs(data.qrCodes ?? []);
+      setStep("done");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error inesperado");
+      setStep("details");
+    }
+  }
+
+  if (activeTypes.length === 0) {
+    return (
+      <div className="py-8 text-center">
+        <p className="text-sm text-[#0a0a0a]/30">Tickets agotados</p>
+      </div>
+    );
+  }
+
+  // ── DONE ──
+  if (step === "done") {
+    return (
+      <div>
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(16,185,129,0.12)" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <p className="text-[#0a0a0a] font-bold text-base">{isTable ? "¡Reserva confirmada!" : "¡Compra exitosa!"}</p>
+            <p className="text-[#0a0a0a]/40 text-xs mt-0.5">
+              {isTable ? `${selected?.name} · ${paxCount} persona${paxCount !== 1 ? "s" : ""}` : `${qty} ticket${qty > 1 ? "s" : ""} · ${eventName}`}
+            </p>
+          </div>
+        </div>
+
+        <p className="text-[#0a0a0a]/40 text-sm mb-6">
+          Tu QR llegará a <span className="text-[#0a0a0a] font-medium">{email}</span>
+        </p>
+
+        {purchasedQRs.length > 0 && (
+          <div className="flex flex-col gap-4 mb-6">
+            {purchasedQRs.map((qr, i) => (
+              <div key={i} className="rounded-2xl p-5 flex flex-col items-center" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
+                <p className="text-[#0a0a0a]/40 text-xs mb-4">
+                  {purchasedQRs.length > 1 ? `Ticket ${i + 1} de ${purchasedQRs.length}` : "Tu entrada"}
+                </p>
+                <div className="p-4 rounded-2xl bg-white border border-black/10">
+                  <QRCode value={qr} size={160} />
+                </div>
+                <p className="text-[#0a0a0a]/25 text-[10px] font-mono mt-3">{qr.slice(0, 8).toUpperCase()}</p>
+                <a href={`/ticket/${qr}`} target="_blank" rel="noopener noreferrer"
+                  className="mt-3 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                  style={{ background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.6)" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
+                    <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+                  </svg>
+                  Ver y descargar entrada
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button onClick={() => { setStep("select"); setSelectedId(""); setPurchasedQRs([]); }}
+          className="text-[#0a0a0a]/30 text-xs hover:text-[#0a0a0a]/60 transition-colors">
+          ← Volver al evento
+        </button>
+      </div>
+    );
+  }
+
+  // ── DETAILS FORM ──
+  if (step === "details" || step === "processing") {
+    return (
+      <div>
+        <button type="button" onClick={() => setStep("select")}
+          className="flex items-center gap-1.5 text-[#0a0a0a]/35 text-xs mb-5 hover:text-[#0a0a0a] transition-colors">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Volver
+        </button>
+
+        {/* Summary */}
+        <div className="p-4 rounded-xl mb-5" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              {selected?.zone_color && <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: selected.zone_color }} />}
+              <span className="text-[#0a0a0a] text-sm font-semibold">{selected?.name}</span>
+              <span className="text-[#0a0a0a]/35 text-xs">{isTable ? `${paxCount} pax` : `× ${qty}`}</span>
+            </div>
+            <span className="text-[#0a0a0a] font-bold">{formatPrice(total)}</span>
+          </div>
+        </div>
+
+        <form onSubmit={handlePurchase} className="flex flex-col gap-3">
+          <input type="text" placeholder="Nombre completo *" value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} style={inputStyle} />
+          <input type="email" placeholder="Email *" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} style={inputStyle} />
+          <input type="email" placeholder="Confirma tu email *" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required className={inputClass}
+            style={{ ...inputStyle, border: emailConfirm && email !== emailConfirm ? "1px solid rgba(239,68,68,0.4)" : "1px solid rgba(0,0,0,0.08)" }} />
+          <input type="tel" placeholder="Teléfono *" value={phone} onChange={(e) => setPhone(e.target.value)} required className={inputClass} style={inputStyle} />
+
+          {!isTable && qty >= 2 && (
+            <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
+              <span className="text-[#0a0a0a]/50 text-sm">Enviar todas al mismo correo</span>
+              <button type="button" onClick={() => {
+                const next = !sameEmail;
+                setSameEmail(next);
+                if (!next) setPerTicket(Array.from({ length: qty }, (_, i) => ({ name: i === 0 ? name : "", email: i === 0 ? email : "" })));
+              }}
+                className="relative w-9 h-5 rounded-full shrink-0 transition-colors"
+                style={{ background: sameEmail ? "#0a0a0a" : "rgba(0,0,0,0.1)" }}>
+                <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: sameEmail ? "17px" : "2px" }} />
+              </button>
+            </label>
+          )}
+
+          {!isTable && qty >= 2 && !sameEmail && (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: qty }, (_, i) => (
+                <div key={i} className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.07)" }}>
+                  <p className="text-[#0a0a0a]/40 text-xs font-semibold">Entrada {i + 1}</p>
+                  <input type="text" placeholder={`Nombre${i === 0 ? " (tú)" : ""}`}
+                    value={perTicket[i]?.name ?? (i === 0 ? name : "")}
+                    onChange={(e) => updatePerTicket(i, "name", e.target.value)}
+                    className={inputClass} style={inputStyle} />
+                  <input type="email" placeholder={`Email *${i === 0 ? " (tú)" : ""}`}
+                    value={perTicket[i]?.email ?? (i === 0 ? email : "")}
+                    onChange={(e) => updatePerTicket(i, "email", e.target.value)}
+                    required className={inputClass} style={inputStyle} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {isTable && (
+            <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
+              <span className="text-[#0a0a0a]/50 text-sm">¿Cuántas personas?</span>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setPaxCount(Math.max(1, paxCount - 1))} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>−</button>
+                <span className="text-[#0a0a0a] font-semibold w-4 text-center">{paxCount}</span>
+                <button type="button" onClick={() => setPaxCount(Math.min(maxPax, paxCount + 1))} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>+</button>
+              </div>
+            </div>
+          )}
+
+          {!isTable && (
+            <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
+              <span className="text-[#0a0a0a]/50 text-sm">Cantidad</span>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>−</button>
+                <span className="text-[#0a0a0a] font-semibold w-4 text-center">{qty}</span>
+                <button type="button" onClick={() => setQty(Math.min(maxQty, qty + 1))} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>+</button>
+              </div>
+            </div>
+          )}
+
+          {isTable && (
+            <textarea placeholder="Observaciones (opcional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
+              className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none resize-none" style={inputStyle} />
+          )}
+
+          {!showPromo ? (
+            <button type="button" onClick={() => setShowPromo(true)} className="text-left text-[#0a0a0a]/30 text-xs hover:text-[#0a0a0a]/50 transition-colors py-1">
+              + ¿Tienes un código de descuento?
+            </button>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <div className="flex gap-2">
+                <input type="text" placeholder="Código de descuento" value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoApplied(null); setPromoError(""); }}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyPromo())}
+                  className="flex-1 px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none uppercase" style={inputStyle} />
+                <button type="button" onClick={applyPromo} disabled={promoLoading || !promoCode.trim()}
+                  className="px-4 py-3 rounded-xl text-sm font-semibold disabled:opacity-40 transition-all"
+                  style={{ background: promoApplied && promoValid ? "rgba(16,185,129,0.1)" : "rgba(0,0,0,0.07)", color: promoApplied && promoValid ? "#059669" : "rgba(0,0,0,0.6)" }}>
+                  {promoLoading ? "..." : promoApplied && promoValid ? "✓" : "Aplicar"}
+                </button>
+                <button type="button" onClick={() => { setShowPromo(false); setPromoCode(""); setPromoApplied(null); setPromoError(""); }}
+                  className="px-3 py-3 rounded-xl text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors" style={{ background: "rgba(0,0,0,0.04)" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              {promoError && <p className="text-red-500 text-xs pl-1">{promoError}</p>}
+              {promoApplied && promoValid && <p className="text-green-600 text-xs pl-1">{promoApplied.discount === 100 ? "Guestlist aplicado — entrada gratis" : `${promoApplied.discount}% de descuento aplicado`}</p>}
+              {promoApplied && !promoValid && <p className="text-yellow-600/70 text-xs pl-1">Este código no aplica para la entrada seleccionada</p>}
+            </div>
+          )}
+
+          <label className="flex items-start gap-3 cursor-pointer">
+            <button type="button" onClick={() => setMarketingOptIn(!marketingOptIn)}
+              className="relative mt-0.5 w-9 h-5 rounded-full shrink-0 transition-colors"
+              style={{ background: marketingOptIn ? "#0a0a0a" : "rgba(0,0,0,0.1)" }}>
+              <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: marketingOptIn ? "17px" : "2px" }} />
+            </button>
+            <span className="text-[#0a0a0a]/35 text-xs leading-relaxed">
+              Recibir promociones y novedades sobre los próximos eventos.
+            </span>
+          </label>
+
+          <p className="text-[#0a0a0a]/20 text-[10px]">Al comprar aceptas los términos y condiciones de Vybz Tickets.</p>
+
+          {error && <p className="text-red-500 text-xs">{error}</p>}
+
+          <div className="py-3 flex flex-col gap-1" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
+            {discountAmount > 0 && (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#0a0a0a]/30 text-xs">Subtotal</span>
+                  <span className="text-[#0a0a0a]/30 text-xs line-through">{formatPrice(basePrice)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-green-600 text-xs">Descuento ({discountPct}%)</span>
+                  <span className="text-green-600 text-xs">−{formatPrice(discountAmount)}</span>
+                </div>
+              </>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-[#0a0a0a]/40 text-sm">Total</span>
+              <span className="text-[#0a0a0a] font-bold text-xl">{formatPrice(total)}</span>
+            </div>
+          </div>
+
+          <button type="submit" disabled={step === "processing"}
+            className="w-full py-3.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition-all"
+            style={{ background: "#0a0a0a" }}>
+            {step === "processing" ? "Procesando..." : `Proceder al pago · ${formatPrice(total)}`}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // ── SELECT ──
+  return (
+    <div>
+      {generalTypes.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1 h-5 rounded-full bg-[#0a0a0a]" />
+            <p className="text-[#0a0a0a] font-semibold text-sm">Tickets</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {generalTypes.map((t) => {
+              const avail = t.total_available - t.sold_count;
+              const low = avail > 0 && avail <= 10;
+              return (
+                <div key={t.id} className="flex items-center justify-between p-4 rounded-xl transition-all"
+                  style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-[#0a0a0a] font-semibold text-sm">{t.name}</p>
+                      {low && (
+                        <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-600">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+                          {avail} restantes
+                        </span>
+                      )}
+                    </div>
+                    {t.description && <p className="text-[#0a0a0a]/35 text-xs truncate">{t.description}</p>}
+                    <p className="text-[#0a0a0a] font-bold text-base mt-1">{formatPrice(t.price)}</p>
+                  </div>
+                  <button onClick={() => selectTicket(t.id)}
+                    className="ml-4 w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-[#0a0a0a] hover:bg-black/80">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {tableTypes.length > 0 && (
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1 h-5 rounded-full bg-[#0a0a0a]" />
+            <p className="text-[#0a0a0a] font-semibold text-sm">Mesas VIP</p>
+          </div>
+
+          {venueMapUrl && (
+            <div className="rounded-2xl overflow-hidden mb-4" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+              <Image src={venueMapUrl} alt="Mapa de mesas" width={800} height={500} className="w-full object-cover" />
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2">
+            {tableTypes.map((t) => {
+              const avail = t.total_available - t.sold_count;
+              return (
+                <div key={t.id} className="flex items-center justify-between p-4 rounded-xl transition-all"
+                  style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    {t.zone_color && <div className="w-3 h-3 rounded-full mt-1 shrink-0" style={{ background: t.zone_color }} />}
+                    <div className="min-w-0">
+                      <p className="text-[#0a0a0a] font-semibold text-sm">{t.name}</p>
+                      {t.capacity && <p className="text-[#0a0a0a]/35 text-xs">Hasta {t.capacity} personas</p>}
+                      {t.description && <p className="text-[#0a0a0a]/30 text-xs truncate">{t.description}</p>}
+                      <p className="text-[#0a0a0a] font-bold text-base mt-1">desde {formatPrice(t.price)}</p>
+                      {avail <= 0 ? (
+                        <p className="text-red-500/60 text-xs">Agotada</p>
+                      ) : avail <= 5 ? (
+                        <p className="text-amber-600/70 text-xs">{avail} disponible{avail !== 1 ? "s" : ""}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                  {avail > 0 && (
+                    <button onClick={() => selectTicket(t.id)}
+                      className="ml-4 w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-[#0a0a0a] hover:bg-black/80">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

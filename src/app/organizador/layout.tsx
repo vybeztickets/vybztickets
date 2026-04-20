@@ -1,0 +1,37 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import OrgSidebar from "./OrgSidebar";
+import SuspendedBanner from "./SuspendedBanner";
+
+export default async function OrgLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/auth/login?redirectTo=/organizador");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, email, avatar_url, role")
+    .eq("id", user.id)
+    .single();
+
+  const role = profile?.role as string | undefined;
+  const isSuspended = role === "suspended";
+  const isPending = role === "pending_activation";
+  const showBanner = isSuspended || isPending;
+
+  return (
+    <div className="min-h-screen flex" style={{ background: "#f7f7f7" }}>
+      <OrgSidebar
+        userName={profile?.full_name ?? user.email ?? ""}
+        userEmail={profile?.email ?? user.email ?? ""}
+        avatarUrl={profile?.avatar_url ?? null}
+      />
+      <div className="flex-1 ml-60 min-h-screen flex flex-col">
+        {showBanner && <SuspendedBanner isPending={isPending} />}
+        <main className="flex-1">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

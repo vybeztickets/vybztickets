@@ -1,23 +1,21 @@
 import Navbar from "./components/Navbar";
-import AdBanner from "./components/AdBanner";
 import Hero from "./components/Hero";
+import MarqueeStrip from "./components/MarqueeStrip";
+import PlatformSection from "./components/PlatformSection";
 import UpcomingEvents from "./components/UpcomingEvents";
-import FeaturedEvents from "./components/FeaturedEvents";
 import ResaleSection from "./components/ResaleSection";
 import Footer from "./components/Footer";
 
 export default function Home() {
   return (
-    <>
+    <div className="page-light">
       <Navbar />
-      <div className="pt-16">
-        <AdBanner />
-        <Hero />
-        <UpcomingEvents />
-        <FeaturedEvents />
-        <ResaleSection />
-        <Footer />
-      </div>
-    </>
+      <Hero />
+      <MarqueeStrip />
+      <PlatformSection />
+      <UpcomingEvents />
+      <ResaleSection />
+      <Footer />
+    </div>
   );
 }

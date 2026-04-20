@@ -26,7 +26,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" className={`${bebasNeue.variable} ${spaceGrotesk.variable}`}>
-      <body className="min-h-screen bg-[#0a0a0a] text-white antialiased">
+      <body className="min-h-screen bg-white text-[#0a0a0a] antialiased" suppressHydrationWarning>
         {children}
       </body>
     </html>

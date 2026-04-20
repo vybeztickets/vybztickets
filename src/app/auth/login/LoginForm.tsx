@@ -53,7 +53,7 @@ export default function LoginForm({
         options: { data: { full_name: fullName } },
       });
       if (error) { setError(error.message); setLoading(false); return; }
-      setSuccess("Revisa tu email para confirmar tu cuenta.");
+      setSuccess("Revisá tu email para confirmar tu cuenta.");
     }
     setLoading(false);
   }
@@ -61,10 +61,13 @@ export default function LoginForm({
   return (
     <div
       className="rounded-2xl p-8"
-      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}
     >
       {/* Tabs */}
-      <div className="flex mb-8 rounded-full p-1" style={{ background: "rgba(255,255,255,0.05)" }}>
+      <div
+        className="flex mb-8 rounded-full p-1"
+        style={{ background: "rgba(0,0,0,0.05)" }}
+      >
         {(["login", "signup"] as const).map((t) => (
           <button
             key={t}
@@ -72,8 +75,8 @@ export default function LoginForm({
             className="flex-1 py-2 text-sm font-semibold rounded-full transition-all duration-200"
             style={
               tab === t
-                ? { background: "linear-gradient(135deg,#7c3aed,#db2777)", color: "#fff" }
-                : { color: "rgba(255,255,255,0.35)" }
+                ? { background: "#0a0a0a", color: "#fff" }
+                : { color: "rgba(0,0,0,0.35)" }
             }
           >
             {t === "login" ? "Iniciar sesión" : "Crear cuenta"}
@@ -86,7 +89,11 @@ export default function LoginForm({
         onClick={handleGoogle}
         disabled={loading}
         className="w-full flex items-center justify-center gap-3 py-3 rounded-xl text-sm font-medium transition-all mb-6"
-        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}
+        style={{
+          background: "#fff",
+          border: "1.5px solid rgba(0,0,0,0.1)",
+          color: "rgba(0,0,0,0.7)",
+        }}
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
@@ -98,13 +105,13 @@ export default function LoginForm({
       </button>
 
       <div className="flex items-center gap-3 mb-6">
-        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
-        <span className="text-white/20 text-xs">o</span>
-        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+        <div className="flex-1 h-px" style={{ background: "rgba(0,0,0,0.07)" }} />
+        <span className="text-[#0a0a0a]/25 text-xs">o</span>
+        <div className="flex-1 h-px" style={{ background: "rgba(0,0,0,0.07)" }} />
       </div>
 
       {/* Email form */}
-      <form onSubmit={handleEmail} className="flex flex-col gap-4">
+      <form onSubmit={handleEmail} className="flex flex-col gap-3">
         {tab === "signup" && (
           <input
             type="text"
@@ -112,8 +119,10 @@ export default function LoginForm({
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
-            className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none transition-colors"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+            className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none transition-colors"
+            style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
           />
         )}
         <input
@@ -122,8 +131,10 @@ export default function LoginForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none transition-colors"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none transition-colors"
+          style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
         />
         <input
           type="password"
@@ -132,23 +143,22 @@ export default function LoginForm({
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none transition-colors"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none transition-colors"
+          style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
         />
 
-        {error && (
-          <p className="text-red-400 text-xs px-1">{error}</p>
-        )}
-        {success && (
-          <p className="text-emerald-400 text-xs px-1">{success}</p>
-        )}
+        {error && <p className="text-red-500 text-xs px-1">{error}</p>}
+        {success && <p className="text-emerald-600 text-xs px-1">{success}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary w-full py-3 rounded-xl text-sm mt-1 disabled:opacity-50"
+          className="w-full py-3 rounded-xl text-sm font-semibold mt-1 transition-colors disabled:opacity-40"
+          style={{ background: "#0a0a0a", color: "#fff" }}
         >
-          {loading ? "Cargando..." : tab === "login" ? "Iniciar sesión" : "Crear cuenta"}
+          {loading ? "Cargando…" : tab === "login" ? "Iniciar sesión" : "Crear cuenta"}
         </button>
       </form>
     </div>

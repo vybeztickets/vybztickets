@@ -7,6 +7,8 @@ export type ValidationStatus = "valid" | "invalid" | "already_used";
 export type ValidationMethod = "qr_scan" | "manual";
 export type ResaleStatus = "active" | "sold" | "cancelled";
 export type EscrowStatus = "pending" | "held" | "released" | "refunded";
+export type KycStatus = "pending" | "approved" | "rejected" | "suspended";
+export type PaymentMethod = "sinpe_movil" | "bank_transfer";
 
 export interface Database {
   public: {
@@ -31,7 +33,9 @@ export interface Database {
           full_name?: string | null;
           role?: UserRole;
           avatar_url?: string | null;
+          email?: string | null;
         };
+        Relationships: [];
       };
       events: {
         Row: {
@@ -41,6 +45,7 @@ export interface Database {
           description: string | null;
           date: string;
           time: string;
+          end_time: string | null;
           venue: string;
           city: string;
           country: string;
@@ -48,6 +53,26 @@ export interface Database {
           image_url: string | null;
           status: EventStatus;
           sales_end_date: string | null;
+          venue_map_url: string | null;
+          has_tables: boolean | null;
+          instagram_url: string | null;
+          pre_purchase_message: string | null;
+          post_purchase_message: string | null;
+          terms_conditions: string | null;
+          collect_id: boolean | null;
+          facebook_pixel: string | null;
+          google_analytics: string | null;
+          google_tag_manager: string | null;
+          banner_url: string | null;
+          location_lat: number | null;
+          location_lng: number | null;
+          location_secret: boolean | null;
+          is_visible: boolean | null;
+          ticket_border_color: string | null;
+          ticket_text_color: string | null;
+          ticket_bg_color: string | null;
+          ticket_accent_color: string | null;
+          is_featured: boolean | null;
           created_at: string;
           updated_at: string;
         };
@@ -57,6 +82,7 @@ export interface Database {
           description?: string | null;
           date: string;
           time: string;
+          end_time?: string | null;
           venue: string;
           city: string;
           country?: string;
@@ -64,19 +90,62 @@ export interface Database {
           image_url?: string | null;
           status?: EventStatus;
           sales_end_date?: string | null;
+          venue_map_url?: string | null;
+          has_tables?: boolean | null;
+          instagram_url?: string | null;
+          pre_purchase_message?: string | null;
+          post_purchase_message?: string | null;
+          terms_conditions?: string | null;
+          collect_id?: boolean | null;
+          facebook_pixel?: string | null;
+          google_analytics?: string | null;
+          google_tag_manager?: string | null;
+          banner_url?: string | null;
+          location_lat?: number | null;
+          location_lng?: number | null;
+          location_secret?: boolean | null;
+          is_visible?: boolean | null;
+          ticket_border_color?: string | null;
+          ticket_text_color?: string | null;
+          ticket_bg_color?: string | null;
+          ticket_accent_color?: string | null;
+          is_featured?: boolean | null;
         };
         Update: {
           name?: string;
           description?: string | null;
           date?: string;
           time?: string;
+          end_time?: string | null;
           venue?: string;
           city?: string;
+          country?: string;
           category?: string;
           image_url?: string | null;
           status?: EventStatus;
           sales_end_date?: string | null;
+          venue_map_url?: string | null;
+          has_tables?: boolean | null;
+          instagram_url?: string | null;
+          pre_purchase_message?: string | null;
+          post_purchase_message?: string | null;
+          terms_conditions?: string | null;
+          collect_id?: boolean | null;
+          facebook_pixel?: string | null;
+          google_analytics?: string | null;
+          google_tag_manager?: string | null;
+          banner_url?: string | null;
+          location_lat?: number | null;
+          location_lng?: number | null;
+          location_secret?: boolean | null;
+          is_visible?: boolean | null;
+          ticket_border_color?: string | null;
+          ticket_text_color?: string | null;
+          ticket_bg_color?: string | null;
+          ticket_accent_color?: string | null;
+          is_featured?: boolean | null;
         };
+        Relationships: [];
       };
       ticket_types: {
         Row: {
@@ -88,6 +157,18 @@ export interface Database {
           total_available: number;
           sold_count: number;
           is_active: boolean;
+          category: string | null;
+          capacity: number | null;
+          zone_name: string | null;
+          zone_color: string | null;
+          map_position_x: number | null;
+          map_position_y: number | null;
+          is_hidden: boolean | null;
+          min_per_order: number | null;
+          max_per_order: number | null;
+          sales_start_date: string | null;
+          sales_end_date: string | null;
+          entry_deadline: string | null;
           created_at: string;
         };
         Insert: {
@@ -98,6 +179,18 @@ export interface Database {
           total_available: number;
           sold_count?: number;
           is_active?: boolean;
+          category?: string | null;
+          capacity?: number | null;
+          zone_name?: string | null;
+          zone_color?: string | null;
+          map_position_x?: number | null;
+          map_position_y?: number | null;
+          is_hidden?: boolean | null;
+          min_per_order?: number | null;
+          max_per_order?: number | null;
+          sales_start_date?: string | null;
+          sales_end_date?: string | null;
+          entry_deadline?: string | null;
         };
         Update: {
           name?: string;
@@ -105,7 +198,21 @@ export interface Database {
           price?: number;
           total_available?: number;
           is_active?: boolean;
+          category?: string | null;
+          capacity?: number | null;
+          zone_name?: string | null;
+          zone_color?: string | null;
+          map_position_x?: number | null;
+          map_position_y?: number | null;
+          is_hidden?: boolean | null;
+          min_per_order?: number | null;
+          max_per_order?: number | null;
+          sales_start_date?: string | null;
+          sales_end_date?: string | null;
+          entry_deadline?: string | null;
+          sold_count?: number;
         };
+        Relationships: [];
       };
       tickets: {
         Row: {
@@ -115,6 +222,11 @@ export interface Database {
           attendee_id: string | null;
           buyer_email: string;
           buyer_name: string | null;
+          buyer_phone: string | null;
+          buyer_notes: string | null;
+          pax_count: number | null;
+          promo_code: string | null;
+          marketing_opt_in: boolean | null;
           status: TicketStatus;
           purchase_price: number;
           qr_code: string;
@@ -126,12 +238,23 @@ export interface Database {
           attendee_id?: string | null;
           buyer_email: string;
           buyer_name?: string | null;
+          buyer_phone?: string | null;
+          buyer_notes?: string | null;
+          pax_count?: number | null;
+          promo_code?: string | null;
+          marketing_opt_in?: boolean | null;
           purchase_price: number;
           status?: TicketStatus;
+          qr_code?: string;
         };
         Update: {
           status?: TicketStatus;
+          buyer_phone?: string | null;
+          buyer_notes?: string | null;
+          pax_count?: number | null;
+          sold_count?: number;
         };
+        Relationships: [];
       };
       ticket_validations: {
         Row: {
@@ -150,7 +273,51 @@ export interface Database {
           validation_method?: ValidationMethod;
           status: ValidationStatus;
         };
-        Update: never;
+        Update: {
+          status?: ValidationStatus;
+        };
+        Relationships: [];
+      };
+      promo_links: {
+        Row: {
+          id: string;
+          event_id: string;
+          organizer_id: string;
+          promoter_name: string | null;
+          code: string;
+          discount_percent: number;
+          tickets_sold: number;
+          ticket_type_id: string | null;
+          is_active: boolean;
+          max_uses: number | null;
+          times_used: number;
+          is_guestlist: boolean;
+          created_at: string;
+        };
+        Insert: {
+          event_id: string;
+          organizer_id: string;
+          promoter_name?: string | null;
+          code: string;
+          discount_percent?: number;
+          tickets_sold?: number;
+          ticket_type_id?: string | null;
+          is_active?: boolean;
+          max_uses?: number | null;
+          times_used?: number;
+          is_guestlist?: boolean;
+        };
+        Update: {
+          promoter_name?: string | null;
+          discount_percent?: number;
+          tickets_sold?: number;
+          ticket_type_id?: string | null;
+          is_active?: boolean;
+          max_uses?: number | null;
+          times_used?: number;
+          is_guestlist?: boolean;
+        };
+        Relationships: [];
       };
       resale_listings: {
         Row: {
@@ -176,6 +343,56 @@ export interface Database {
           status?: ResaleStatus;
           escrow_status?: EscrowStatus;
         };
+        Relationships: [];
+      };
+      kyc_verifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          status: KycStatus;
+          full_name_on_id: string;
+          cedula_number: string;
+          cedula_front_url: string | null;
+          cedula_back_url: string | null;
+          selfie_url: string | null;
+          payment_method: PaymentMethod | null;
+          sinpe_phone: string | null;
+          bank_name: string | null;
+          bank_account_iban: string | null;
+          rejection_reason: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          submitted_at: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          status?: KycStatus;
+          full_name_on_id: string;
+          cedula_number: string;
+          cedula_front_url?: string | null;
+          cedula_back_url?: string | null;
+          selfie_url?: string | null;
+          payment_method?: PaymentMethod | null;
+          sinpe_phone?: string | null;
+          bank_name?: string | null;
+          bank_account_iban?: string | null;
+          submitted_at?: string;
+        };
+        Update: {
+          status?: KycStatus;
+          cedula_front_url?: string | null;
+          cedula_back_url?: string | null;
+          selfie_url?: string | null;
+          payment_method?: PaymentMethod | null;
+          sinpe_phone?: string | null;
+          bank_name?: string | null;
+          bank_account_iban?: string | null;
+          rejection_reason?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+        };
+        Relationships: [];
       };
     };
     Views: Record<string, never>;

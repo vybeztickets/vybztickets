@@ -1,161 +1,175 @@
-import Image from "next/image";
+"use client";
 
-const HERO_CARDS = [
-  {
-    title: "Tomorrowland CR",
-    date: "JUN 28",
-    price: "₡120,000",
-    cat: "Electronic",
-    img: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=600&q=80",
-    rotate: "3deg",
-    top: "0px",
-    right: "0px",
-    zIndex: 1,
-  },
-  {
-    title: "Jazz & Chill Rooftop",
-    date: "ABR 5",
-    price: "₡25,000",
-    cat: "Jazz",
-    img: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?auto=format&fit=crop&w=600&q=80",
-    rotate: "-2.5deg",
-    top: "80px",
-    right: "160px",
-    zIndex: 2,
-  },
-  {
-    title: "Ultra Music Festival",
-    date: "MAR 15",
-    price: "₡45,000",
-    cat: "Electronic",
-    img: "https://images.unsplash.com/photo-1540039723070-438d9dfdeab2?auto=format&fit=crop&w=600&q=80",
-    rotate: "1.5deg",
-    top: "160px",
-    right: "80px",
-    zIndex: 3,
-  },
-];
+import Link from "next/link";
+import { useEffect, useRef } from "react";
 
-export default function Hero() {
+function RippleOrb() {
   return (
-    <section className="relative min-h-screen overflow-hidden dot-grid flex items-center">
-      {/* Blobs */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="blob blob-1" />
-        <div className="blob blob-2" />
-        <div className="blob blob-3" />
-        <div className="absolute inset-0 bg-[#070707]/50" />
-      </div>
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+      {/* Rings */}
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            width: `${200 + i * 120}px`,
+            height: `${200 + i * 120}px`,
+            border: "1px solid rgba(0,0,0,0.07)",
+            animation: `ring-fade ${4 + i * 0.4}s ease-in-out ${i * 0.55}s infinite`,
+          }}
+        />
+      ))}
+      {/* 3D Sphere */}
+      <div
+        style={{
+          width: 220,
+          height: 220,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle at 36% 34%, #ffffff 0%, #e8e8e8 28%, #d0d0d0 52%, #b8b8b8 72%, #a8a8a8 100%)",
+          boxShadow:
+            "inset -24px -24px 70px rgba(0,0,0,0.16), inset 12px 12px 36px rgba(255,255,255,0.85), 0 30px 90px rgba(0,0,0,0.14), 0 8px 32px rgba(0,0,0,0.08)",
+          animation: "orb-breathe 7s ease-in-out infinite",
+          flexShrink: 0,
+          position: "relative",
+          zIndex: 1,
+        }}
+      />
+    </div>
+  );
+}
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-32 pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+function HeroInner() {
+  const headRef = useRef<HTMLHeadingElement>(null);
 
-          {/* ── Left column ── */}
-          <div>
-            {/* Eyebrow badge */}
-            <div className="inline-flex items-center gap-2.5 mb-7 px-4 py-2 rounded-full"
-              style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)" }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-400"
-                style={{ animation: "pulse-dot 2s ease-in-out infinite" }} />
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-violet-300/80">
-                Costa Rica · Latinoamérica
-              </span>
+  useEffect(() => {
+    const el = headRef.current;
+    if (!el) return;
+    const t = setTimeout(() => {
+      el.style.opacity = "1";
+      el.style.transform = "translateY(0)";
+    }, 80);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <section
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+      style={{ background: "#ffffff" }}
+    >
+      <RippleOrb />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl">
+        {/* Heading */}
+        <h1
+          ref={headRef}
+          className="font-[family-name:var(--font-bebas)] leading-[0.92] tracking-wide text-[#0a0a0a] mb-6"
+          style={{
+            fontSize: "clamp(72px, 10vw, 130px)",
+            opacity: 0,
+            transform: "translateY(24px)",
+            transition: "opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1)",
+          }}
+        >
+          TU PRÓXIMO
+          <br />
+          <span style={{ color: "rgba(0,0,0,0.18)" }}>EVENTO</span>
+          <br />
+          EMPIEZA AQUÍ
+        </h1>
+
+        <p
+          className="text-[#0a0a0a]/45 text-base md:text-lg leading-relaxed mb-10 max-w-md"
+          style={{
+            opacity: 0,
+            transform: "translateY(16px)",
+            animation: "none",
+            animationDelay: "0.3s",
+          }}
+          ref={(el) => {
+            if (!el) return;
+            setTimeout(() => {
+              el.style.opacity = "1";
+              el.style.transform = "translateY(0)";
+              el.style.transition = "opacity 0.8s cubic-bezier(0.22,1,0.36,1) 0.25s, transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.25s";
+            }, 80);
+          }}
+        >
+          La plataforma premium de tickets en Costa Rica. Compra, vende y descubre los mejores eventos con pagos seguros.
+        </p>
+
+        {/* CTAs */}
+        <div
+          className="flex flex-wrap items-center gap-3 justify-center"
+          ref={(el) => {
+            if (!el) return;
+            setTimeout(() => {
+              el.style.opacity = "1";
+              el.style.transform = "translateY(0)";
+              el.style.transition = "opacity 0.8s cubic-bezier(0.22,1,0.36,1) 0.45s, transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.45s";
+            }, 80);
+          }}
+          style={{ opacity: 0, transform: "translateY(12px)" }}
+        >
+          <Link
+            href="/eventos"
+            className="flex items-center gap-2 bg-[#0a0a0a] text-white text-sm font-semibold px-7 py-3.5 rounded-full hover:bg-[#222] transition-all hover:gap-3"
+          >
+            Explorar eventos
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M2 10L10 2M10 2H4M10 2V8" />
+            </svg>
+          </Link>
+          <Link
+            href="/organizadores"
+            className="flex items-center gap-2 text-[#0a0a0a]/70 text-sm font-semibold px-7 py-3.5 rounded-full hover:text-[#0a0a0a] transition-colors"
+            style={{ border: "1.5px solid rgba(0,0,0,0.14)" }}
+          >
+            Para organizadores
+          </Link>
+          <Link
+            href="/reventa"
+            className="flex items-center gap-2 text-[#0a0a0a]/70 text-sm font-semibold px-7 py-3.5 rounded-full hover:text-[#0a0a0a] transition-colors"
+            style={{ border: "1.5px solid rgba(0,0,0,0.14)" }}
+          >
+            Reventa segura
+          </Link>
+        </div>
+
+        {/* Stats */}
+        <div
+          className="flex items-center gap-8 mt-14"
+          ref={(el) => {
+            if (!el) return;
+            setTimeout(() => {
+              el.style.opacity = "1";
+              el.style.transition = "opacity 0.8s cubic-bezier(0.22,1,0.36,1) 0.65s";
+            }, 80);
+          }}
+          style={{ opacity: 0 }}
+        >
+          {["Venta online", "Punto de venta", "Reventa segura"].map((label, i) => (
+            <div key={label} className="flex items-center gap-8">
+              {i > 0 && <div className="w-px h-7" style={{ background: "rgba(0,0,0,0.1)" }} />}
+              <p className="text-[#0a0a0a]/40 text-[11px] uppercase tracking-[0.18em] font-semibold">{label}</p>
             </div>
-
-            {/* Main heading */}
-            <h1 className="font-[family-name:var(--font-bebas)] leading-[0.9] tracking-wide mb-6"
-              style={{ fontSize: "clamp(68px, 8.5vw, 116px)" }}>
-              <span className="text-white block">YOUR</span>
-              <span className="gradient-text block">NEXT EVENT</span>
-              <span className="text-white block">STARTS HERE</span>
-            </h1>
-
-            <p className="text-white/40 text-base leading-relaxed mb-8 max-w-md">
-              La plataforma premium de tickets en Costa Rica. Compra, vende y descubre los mejores eventos — con pagos seguros vía escrow.
-            </p>
-
-            {/* Search */}
-            <div className="flex mb-8 max-w-lg"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <div className="flex items-center gap-3 flex-1 px-4">
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="shrink-0 opacity-30">
-                  <circle cx="6.5" cy="6.5" r="5.5" stroke="white" strokeWidth="1.5"/>
-                  <path d="M11 11L14 14" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Busca eventos, artistas, venues..."
-                  className="bg-transparent text-white placeholder-white/25 text-sm py-3.5 w-full focus:outline-none"
-                />
-              </div>
-              <button className="btn-primary px-6 py-3.5 text-sm shrink-0">
-                Buscar
-              </button>
-            </div>
-
-            {/* Quick stats */}
-            <div className="flex items-center gap-6">
-              {[
-                { n: "2,400+", label: "eventos" },
-                { n: "50K+",  label: "fans" },
-                { n: "340+",  label: "venues" },
-              ].map(({ n, label }, i) => (
-                <div key={label} className="flex items-center gap-6">
-                  {i > 0 && <div className="w-px h-7 bg-white/10" />}
-                  <div>
-                    <p className="font-[family-name:var(--font-bebas)] text-[22px] tracking-wide gradient-text-subtle leading-none">{n}</p>
-                    <p className="text-white/25 text-[10px] uppercase tracking-[0.15em] mt-0.5">{label}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── Right column — floating cards ── */}
-          <div className="hidden lg:block relative h-[520px]">
-            {HERO_CARDS.map((card) => (
-              <div
-                key={card.title}
-                className="hero-card w-64 rounded-xl"
-                style={{
-                  top: card.top,
-                  right: card.right,
-                  zIndex: card.zIndex,
-                  transform: `rotate(${card.rotate})`,
-                  animation: `float-card ${5 + card.zIndex}s ease-in-out infinite`,
-                  "--r": card.rotate,
-                } as React.CSSProperties}
-              >
-                <div className="relative h-40 overflow-hidden rounded-t-xl">
-                  <Image src={card.img} alt={card.title} fill className="object-cover" sizes="256px" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#070707]/80 to-transparent" />
-                  <span className="category-pill absolute top-2.5 left-2.5 text-white"
-                    style={{ background: "rgba(124,58,237,0.5)", border: "1px solid rgba(167,139,250,0.3)" }}>
-                    {card.cat}
-                  </span>
-                </div>
-                <div className="p-4">
-                  <p className="text-white/30 text-[10px] tracking-[0.15em] uppercase mb-1">{card.date}</p>
-                  <p className="text-white font-semibold text-[13px] leading-snug mb-2">{card.title}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white font-bold text-sm">{card.price}</span>
-                    <span className="text-[10px] text-white/30 border border-white/10 px-2.5 py-1 rounded-full">
-                      Ver →
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Glow under cards */}
-            <div className="absolute bottom-10 right-20 w-80 h-40 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse, rgba(124,58,237,0.2), transparent 70%)", filter: "blur(30px)" }} />
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-[#070707] to-transparent pointer-events-none z-10" />
+      {/* Bottom scroll hint */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2" style={{ opacity: 0.3 }}>
+        <div
+          className="w-px h-8"
+          style={{
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)",
+            animation: "fade-pulse 2s ease-in-out infinite",
+          }}
+        />
+      </div>
     </section>
   );
 }
+
+export default HeroInner;

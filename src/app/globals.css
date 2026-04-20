@@ -171,3 +171,53 @@ body {
   animation: marquee 30s linear infinite;
 }
 .marquee-track:hover { animation-play-state: paused; }
+
+/* ─── Scroll reveal ─────────────────────────────────── */
+[data-reveal][data-visible="true"] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ─── Light page ──────────────────────────────────────── */
+.page-light {
+  background: #ffffff;
+  color: #0a0a0a;
+}
+
+/* ─── Fade pulse ─────────────────────────────────────── */
+@keyframes fade-pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.2; }
+}
+
+/* ─── Ripple orb keyframes ─────────────────────────── */
+@keyframes orb-breathe {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.025); }
+}
+@keyframes ring-fade {
+  0%,100% { opacity: 0.55; }
+  50%      { opacity: 0.18; }
+}
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marquee-left 28s linear infinite;
+}
+
+/* ─── Light card ──────────────────────────────────────── */
+.card-light {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.card-light:hover {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
+}
