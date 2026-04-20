@@ -10,14 +10,22 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: event } = await supabase
+  const { data: rawEvent } = await supabase
     .from("events")
     .select(`*, ticket_types (*)`)
     .eq("id", id)
     .eq("status", "published")
     .single();
 
-  if (!event) notFound();
+  if (!rawEvent) notFound();
+
+  const event = rawEvent as unknown as {
+    id: string; name: string; date: string; time: string | null; end_time: string | null;
+    description: string | null; image_url: string | null; venue: string; city: string;
+    country: string; category: string | null; venue_map_url: string | null;
+    location_lat: number | null; location_lng: number | null;
+    ticket_types: { id: string; name: string; description: string | null; price: number; total_available: number; sold_count: number; is_active: boolean; is_hidden?: boolean | null; category?: string; capacity?: number | null; zone_name?: string | null; zone_color?: string | null }[];
+  };
 
   const d = new Date(event.date + "T00:00:00");
   const formattedDate = d.toLocaleDateString("es-CR", {

@@ -20,14 +20,16 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
 
   // Find ticket by qr_code
-  const { data: ticket } = await admin
+  const { data: rawTicket } = await admin
     .from("tickets")
-    .select(`
-      id, status, event_id, buyer_email, buyer_name,
-      ticket_types (name)
-    `)
+    .select(`id, status, event_id, buyer_email, buyer_name, ticket_types (name)`)
     .eq("qr_code", qrCode)
     .single();
+  const ticket = rawTicket as {
+    id: string; status: string; event_id: string;
+    buyer_email: string; buyer_name: string | null;
+    ticket_types: { name: string } | null;
+  } | null;
 
   if (!ticket) {
     return NextResponse.json({ status: "invalid", message: "Ticket no encontrado" });
@@ -56,7 +58,8 @@ export async function POST(request: Request) {
   // Mark as used
   await admin
     .from("tickets")
-    .update({ status: "used" })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ status: "used" } as any)
     .eq("id", ticket.id);
 
   // Log validation

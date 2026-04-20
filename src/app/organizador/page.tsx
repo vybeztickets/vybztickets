@@ -17,13 +17,16 @@ export default async function OrganizerDashboard() {
 
   const admin = createAdminClient();
 
-  const { data: events } = await admin
+  const { data: rawEvents } = await admin
     .from("events")
     .select(`*, ticket_types(id, price, total_available, sold_count, is_active)`)
     .eq("organizer_id", user.id)
     .order("date", { ascending: true });
 
-  const eventsData = events ?? [];
+  const eventsData = (rawEvents ?? []) as unknown as {
+    id: string; date: string; status: string; name: string;
+    ticket_types: { id: string; price: number; total_available: number; sold_count: number; is_active: boolean }[];
+  }[];
 
   const now = new Date();
   const upcoming = eventsData.filter((e) => new Date(e.date) >= now && e.status === "published");

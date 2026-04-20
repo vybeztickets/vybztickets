@@ -166,7 +166,7 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
             </div>
 
             {/* Flyer */}
-            {event?.image_url && (
+            {!!event?.image_url && (
               <div className="shrink-0 w-[68px]">
                 <div className="rounded-xl overflow-hidden" style={{ aspectRatio: "3/4", border: `1px solid ${border}44` }}>
                   <Image src={event.image_url as string} alt="Flyer" width={68} height={90} className="w-full h-full object-cover" />

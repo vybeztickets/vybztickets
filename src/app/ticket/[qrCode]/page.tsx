@@ -6,11 +6,12 @@ export default async function TicketPage({ params }: { params: Promise<{ qrCode:
   const { qrCode } = await params;
   const admin = createAdminClient();
 
-  const { data: ticket } = await admin
+  const { data: rawTicket } = await admin
     .from("tickets")
     .select("*, ticket_types(id, name, category, zone_color, price), events(id, name, date, time, end_time, venue, city, country, image_url, ticket_bg_color, ticket_text_color, ticket_accent_color, ticket_border_color, organizer_id)")
     .eq("qr_code", qrCode)
     .single();
+  const ticket = rawTicket as unknown as Record<string, unknown> | null;
 
   if (!ticket) notFound();
 

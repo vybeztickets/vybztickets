@@ -15,7 +15,8 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
-  const { error } = await admin.from("profiles").update(updates).eq("id", user.id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await admin.from("profiles").update(updates as any).eq("id", user.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

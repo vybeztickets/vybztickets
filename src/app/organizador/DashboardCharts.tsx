@@ -59,8 +59,10 @@ export default function DashboardCharts({ chartData }: { chartData: DayData[] })
             <YAxis tickFormatter={formatPrice} tick={tickStyle} axisLine={false} tickLine={false} width={48} />
             <Tooltip
               contentStyle={tooltipStyle}
-              formatter={(v: number) => [formatPrice(v), "Ingresos"]}
-              labelFormatter={shortDate}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              formatter={((v: number) => [formatPrice(v), "Ingresos"]) as any}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              labelFormatter={shortDate as any}
             />
             <Area type="monotone" dataKey="revenue" stroke="#0a0a0a" strokeWidth={2} fill="url(#revenueGrad)" />
           </AreaChart>
@@ -90,8 +92,10 @@ export default function DashboardCharts({ chartData }: { chartData: DayData[] })
             <YAxis tick={tickStyle} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
             <Tooltip
               contentStyle={tooltipStyle}
-              formatter={(v: number) => [v, "Entradas"]}
-              labelFormatter={shortDate}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              formatter={((v: number) => [v, "Entradas"]) as any}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              labelFormatter={shortDate as any}
             />
             <Area type="monotone" dataKey="tickets" stroke="#555" strokeWidth={2} strokeDasharray="0" fill="url(#ticketsGrad)" />
           </AreaChart>

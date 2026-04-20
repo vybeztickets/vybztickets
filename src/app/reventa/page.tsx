@@ -29,21 +29,17 @@ export default async function ReventaPage() {
   const supabase = await createClient();
 
   // Get active resale listings joined to their tickets and events
-  const { data: listings } = await supabase
+  const { data: rawListings } = await supabase
     .from("resale_listings")
-    .select(`
-      id, resale_price,
-      tickets (
-        event_id,
-        events ( id, name, date, venue, city, image_url, category, status )
-      )
-    `)
+    .select(`id, resale_price, tickets ( event_id, events ( id, name, date, venue, city, image_url, category, status ) )`)
     .eq("status", "active");
+  type RawListing = { id: string; resale_price: number; tickets: { event_id: string; events: Record<string, unknown> | null } | null };
+  const listings = (rawListings ?? []) as unknown as RawListing[];
 
   // Group by event
   const eventMap = new Map<string, EventWithListings>();
-  for (const l of listings ?? []) {
-    const ticket = l.tickets as Record<string, unknown> | null;
+  for (const l of listings) {
+    const ticket = l.tickets;
     const event = ticket?.events as Record<string, unknown> | null;
     if (!event || event.status !== "published") continue;
     const eid = event.id as string;

@@ -34,32 +34,28 @@ export default async function ReventaEventPage({
   const supabase = await createClient();
 
   // Fetch the event
-  const { data: event } = await supabase
+  const { data: rawEvent } = await supabase
     .from("events")
     .select("id, name, date, time, venue, city, image_url, category, status")
     .eq("id", eventId)
     .eq("status", "published")
     .single();
 
-  if (!event) notFound();
+  if (!rawEvent) notFound();
+  const event = rawEvent as unknown as { id: string; name: string; date: string; time: string | null; venue: string; city: string; image_url: string | null; category: string | null; status: string };
 
   // Fetch active resale listings for this event
-  const { data: listings } = await supabase
+  const { data: rawListings } = await supabase
     .from("resale_listings")
-    .select(`
-      id, resale_price, original_price, created_at,
-      tickets (
-        id, event_id
-      )
-    `)
+    .select(`id, resale_price, original_price, created_at, tickets (id, event_id)`)
     .eq("status", "active")
     .order("resale_price", { ascending: true });
 
+  type Listing = { id: string; resale_price: number; original_price: number; created_at: string; tickets: { id: string; event_id: string } | null };
+  const listings = (rawListings ?? []) as unknown as Listing[];
+
   // Filter by event_id (join doesn't support .eq on nested easily)
-  const eventListings = (listings ?? []).filter((l) => {
-    const ticket = l.tickets as Record<string, unknown> | null;
-    return ticket?.event_id === eventId;
-  });
+  const eventListings = listings.filter((l) => l.tickets?.event_id === eventId);
 
   return (
     <div className="page-light min-h-screen flex flex-col">
