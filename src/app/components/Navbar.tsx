@@ -73,7 +73,7 @@ export default function Navbar() {
           ) : (
             <>
               <Link
-                href="/organizadores"
+                href="/auth/login?redirectTo=/organizador/eventos/nuevo"
                 className="hidden md:flex items-center gap-1.5 text-sm font-medium text-[#0a0a0a]/60 hover:text-[#0a0a0a] px-4 py-2.5 rounded-full transition-colors"
                 style={{ border: "1px solid rgba(0,0,0,0.15)" }}
               >
@@ -120,7 +120,7 @@ export default function Navbar() {
           {[
             { label: "Eventos", href: "/eventos" },
             { label: "Reventa", href: "/reventa" },
-            { label: "Crear evento", href: "/organizadores" },
+            { label: "Crear evento", href: "/auth/login?redirectTo=/organizador/eventos/nuevo" },
           ].map(({ label, href }) => (
             <Link
               key={label}
