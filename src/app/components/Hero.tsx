@@ -122,11 +122,11 @@ function HeroInner() {
             </svg>
           </Link>
           <Link
-            href="/organizadores"
+            href="/auth/login?redirectTo=/organizador/eventos/nuevo"
             className="flex items-center gap-2 text-[#0a0a0a]/70 text-sm font-semibold px-7 py-3.5 rounded-full hover:text-[#0a0a0a] transition-colors"
             style={{ border: "1.5px solid rgba(0,0,0,0.14)" }}
           >
-            Para organizadores
+            Crear evento
           </Link>
           <Link
             href="/reventa"
