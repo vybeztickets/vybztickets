@@ -1,175 +1,190 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import OrbCanvas from "./OrbCanvas";
 
-function RippleOrb() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-      {/* Rings */}
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            width: `${200 + i * 120}px`,
-            height: `${200 + i * 120}px`,
-            border: "1px solid rgba(0,0,0,0.07)",
-            animation: `ring-fade ${4 + i * 0.4}s ease-in-out ${i * 0.55}s infinite`,
-          }}
-        />
-      ))}
-      {/* 3D Sphere */}
-      <div
-        style={{
-          width: 220,
-          height: 220,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle at 36% 34%, #ffffff 0%, #e8e8e8 28%, #d0d0d0 52%, #b8b8b8 72%, #a8a8a8 100%)",
-          boxShadow:
-            "inset -24px -24px 70px rgba(0,0,0,0.16), inset 12px 12px 36px rgba(255,255,255,0.85), 0 30px 90px rgba(0,0,0,0.14), 0 8px 32px rgba(0,0,0,0.08)",
-          animation: "orb-breathe 7s ease-in-out infinite",
-          flexShrink: 0,
-          position: "relative",
-          zIndex: 1,
-        }}
-      />
-    </div>
-  );
-}
+const METRICS = [
+  { value: "₡2.4M", label: "Vendidos este mes", delay: 900 },
+  { value: "1,240", label: "Asistentes confirmados", delay: 1050 },
+  { value: "98%", label: "Satisfacción", delay: 1200 },
+];
 
-function HeroInner() {
-  const headRef = useRef<HTMLHeadingElement>(null);
-
-  useEffect(() => {
-    const el = headRef.current;
-    if (!el) return;
-    const t = setTimeout(() => {
-      el.style.opacity = "1";
-      el.style.transform = "translateY(0)";
-    }, 80);
-    return () => clearTimeout(t);
-  }, []);
+export default function Hero() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setReady(true), 80); return () => clearTimeout(t); }, []);
 
   return (
     <section
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: "#ffffff" }}
+      className="relative min-h-screen flex items-center overflow-hidden"
+      style={{ background: "#0a0a0a" }}
     >
-      <RippleOrb />
+      {/* Grid overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.028) 1px,transparent 1px)",
+          backgroundSize: "72px 72px",
+          maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)",
+        }}
+      />
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl">
-        {/* Heading */}
-        <h1
-          ref={headRef}
-          className="font-[family-name:var(--font-bebas)] leading-[0.92] tracking-wide text-[#0a0a0a] mb-6"
-          style={{
-            fontSize: "clamp(72px, 10vw, 130px)",
-            opacity: 0,
-            transform: "translateY(24px)",
-            transition: "opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1)",
-          }}
-        >
-          TU PRÓXIMO
-          <br />
-          <span style={{ color: "rgba(0,0,0,0.18)" }}>EVENTO</span>
-          <br />
-          EMPIEZA AQUÍ
-        </h1>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-4 items-center min-h-screen py-28">
+        {/* ── LEFT: Copy ── */}
+        <div className="flex flex-col">
+          {/* Badge */}
+          <div
+            style={{
+              opacity: ready ? 1 : 0,
+              transform: ready ? "none" : "translateY(10px)",
+              transition: "opacity .7s ease .1s,transform .7s ease .1s",
+            }}
+            className="inline-flex items-center gap-2 self-start mb-8 px-3.5 py-1.5 rounded-full"
+            /* inline so it doesn't stretch */
+          >
+            <span
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/45">
+                Activo en Costa Rica · Latam
+              </span>
+            </span>
+          </div>
 
-        <p
-          className="text-[#0a0a0a]/45 text-base md:text-lg leading-relaxed mb-10 max-w-md"
-          style={{
-            opacity: 0,
-            transform: "translateY(16px)",
-            animation: "none",
-            animationDelay: "0.3s",
-          }}
-          ref={(el) => {
-            if (!el) return;
-            setTimeout(() => {
-              el.style.opacity = "1";
-              el.style.transform = "translateY(0)";
-              el.style.transition = "opacity 0.8s cubic-bezier(0.22,1,0.36,1) 0.25s, transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.25s";
-            }, 80);
-          }}
-        >
-          La plataforma premium de tickets en Costa Rica. Compra, vende y descubre los mejores eventos con pagos seguros.
-        </p>
+          {/* Headline */}
+          <h1
+            className="font-[family-name:var(--font-bebas)] text-white leading-[0.88] tracking-wide mb-6"
+            style={{
+              fontSize: "clamp(62px,8vw,116px)",
+              opacity: ready ? 1 : 0,
+              transform: ready ? "none" : "translateY(28px)",
+              transition: "opacity .95s cubic-bezier(0.22,1,0.36,1) .2s,transform .95s cubic-bezier(0.22,1,0.36,1) .2s",
+            }}
+          >
+            Vende más.<br />
+            <span style={{ color: "rgba(255,255,255,0.18)" }}>Controla</span><br />
+            <span style={{ color: "rgba(255,255,255,0.18)" }}>todo.</span>
+          </h1>
 
-        {/* CTAs */}
-        <div
-          className="flex flex-wrap items-center gap-3 justify-center"
-          ref={(el) => {
-            if (!el) return;
-            setTimeout(() => {
-              el.style.opacity = "1";
-              el.style.transform = "translateY(0)";
-              el.style.transition = "opacity 0.8s cubic-bezier(0.22,1,0.36,1) 0.45s, transform 0.8s cubic-bezier(0.22,1,0.36,1) 0.45s";
-            }, 80);
-          }}
-          style={{ opacity: 0, transform: "translateY(12px)" }}
-        >
-          <Link
-            href="/eventos"
-            className="flex items-center gap-2 bg-[#0a0a0a] text-white text-sm font-semibold px-7 py-3.5 rounded-full hover:bg-[#222] transition-all hover:gap-3"
+          {/* Sub */}
+          <p
+            className="text-white/38 text-base md:text-lg leading-relaxed mb-10 max-w-[420px]"
+            style={{
+              opacity: ready ? 1 : 0,
+              transform: ready ? "none" : "translateY(16px)",
+              transition: "opacity .8s ease .38s,transform .8s ease .38s",
+            }}
           >
-            Explorar eventos
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M2 10L10 2M10 2H4M10 2V8" />
-            </svg>
-          </Link>
-          <Link
-            href="/auth/login?redirectTo=/organizador/eventos/nuevo"
-            className="flex items-center gap-2 text-[#0a0a0a]/70 text-sm font-semibold px-7 py-3.5 rounded-full hover:text-[#0a0a0a] transition-colors"
-            style={{ border: "1.5px solid rgba(0,0,0,0.14)" }}
+            La plataforma completa para organizadores en Costa Rica y Latam. Venta online, POS, emails masivos, datos en tiempo real y reventa segura — todo en uno.
+          </p>
+
+          {/* CTAs */}
+          <div
+            className="flex flex-wrap gap-3 mb-12"
+            style={{
+              opacity: ready ? 1 : 0,
+              transform: ready ? "none" : "translateY(12px)",
+              transition: "opacity .8s ease .52s,transform .8s ease .52s",
+            }}
           >
-            Crear evento
-          </Link>
-          <Link
-            href="/reventa"
-            className="flex items-center gap-2 text-[#0a0a0a]/70 text-sm font-semibold px-7 py-3.5 rounded-full hover:text-[#0a0a0a] transition-colors"
-            style={{ border: "1.5px solid rgba(0,0,0,0.14)" }}
+            <Link
+              href="/auth/login?redirectTo=/organizador/eventos/nuevo"
+              className="group flex items-center gap-2.5 bg-white text-[#0a0a0a] text-sm font-bold px-7 py-3.5 rounded-full transition-all duration-200 hover:bg-white/90"
+            >
+              Crear evento gratis
+              <svg
+                className="transition-transform duration-200 group-hover:translate-x-0.5"
+                width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2"
+              >
+                <path d="M2 10L10 2M10 2H4M10 2V8"/>
+              </svg>
+            </Link>
+            <Link
+              href="/organizadores"
+              className="flex items-center gap-2 text-white/50 hover:text-white text-sm font-semibold px-7 py-3.5 rounded-full transition-colors"
+              style={{ border: "1px solid rgba(255,255,255,0.12)" }}
+            >
+              Ver demo
+            </Link>
+          </div>
+
+          {/* Trust strip */}
+          <div
+            className="flex items-center gap-5 flex-wrap"
+            style={{
+              opacity: ready ? 0.55 : 0,
+              transition: "opacity .8s ease .68s",
+            }}
           >
-            Reventa segura
-          </Link>
+            {["Sin cuota mensual", "15% solo al vender", "ONVO Pay · CRC & USD"].map((text, i) => (
+              <div key={text} className="flex items-center gap-5">
+                {i > 0 && <div style={{ width: 1, height: 11, background: "rgba(255,255,255,0.15)" }} />}
+                <div className="flex items-center gap-1.5">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span className="text-white/35 text-[11px] font-medium">{text}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Stats */}
+        {/* ── RIGHT: Orb + floating cards ── */}
         <div
-          className="flex items-center gap-8 mt-14"
-          ref={(el) => {
-            if (!el) return;
-            setTimeout(() => {
-              el.style.opacity = "1";
-              el.style.transition = "opacity 0.8s cubic-bezier(0.22,1,0.36,1) 0.65s";
-            }, 80);
+          className="relative hidden lg:block"
+          style={{
+            height: "72vh",
+            opacity: ready ? 1 : 0,
+            transition: "opacity 1.4s ease .3s",
           }}
-          style={{ opacity: 0 }}
         >
-          {["Venta online", "Punto de venta", "Reventa segura"].map((label, i) => (
-            <div key={label} className="flex items-center gap-8">
-              {i > 0 && <div className="w-px h-7" style={{ background: "rgba(0,0,0,0.1)" }} />}
-              <p className="text-[#0a0a0a]/40 text-[11px] uppercase tracking-[0.18em] font-semibold">{label}</p>
-            </div>
-          ))}
+          <OrbCanvas className="absolute inset-0" />
+
+          {/* Floating metric cards */}
+          {METRICS.map((m, i) => {
+            const positions = [
+              { top: "14%", right: "6%" },
+              { bottom: "22%", right: "0%" },
+              { top: "46%", right: "26%" },
+            ];
+            return (
+              <div
+                key={i}
+                className="absolute px-4 py-3 rounded-2xl"
+                style={{
+                  ...positions[i],
+                  background: "rgba(255,255,255,0.055)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(12px)",
+                  opacity: ready ? 1 : 0,
+                  transform: ready ? "translateY(0)" : "translateY(14px)",
+                  transition: `opacity .8s ease ${m.delay}ms,transform .8s ease ${m.delay}ms`,
+                  animation: `float-card ${5 + i * 1.2}s ease-in-out ${i * 1.3}s infinite`,
+                  "--r": `${i % 2 === 0 ? 1.5 : -1.5}deg`,
+                } as unknown as React.CSSProperties}
+              >
+                <p className="font-[family-name:var(--font-bebas)] text-white text-2xl leading-none">{m.value}</p>
+                <p className="text-white/30 text-[10px] mt-0.5 whitespace-nowrap">{m.label}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Bottom scroll hint */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2" style={{ opacity: 0.3 }}>
+      {/* Scroll hint */}
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center"
+        style={{ opacity: 0.2 }}
+      >
         <div
-          className="w-px h-8"
-          style={{
-            background: "linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)",
-            animation: "fade-pulse 2s ease-in-out infinite",
-          }}
+          className="w-px h-14"
+          style={{ background: "linear-gradient(to bottom,rgba(255,255,255,0.6),transparent)" }}
         />
       </div>
     </section>
   );
 }
-
-export default HeroInner;

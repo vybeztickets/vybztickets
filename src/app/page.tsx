@@ -1,22 +1,24 @@
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import MarqueeStrip from "./components/MarqueeStrip";
+import StatsSection from "./components/StatsSection";
 import FeaturedEvents from "./components/FeaturedEvents";
 import PlatformSection from "./components/PlatformSection";
+import PricingSection from "./components/PricingSection";
 import UpcomingEvents from "./components/UpcomingEvents";
-import ResaleSection from "./components/ResaleSection";
 import Footer from "./components/Footer";
 
 export default function Home() {
   return (
-    <div className="page-light">
+    <div style={{ background: "#0a0a0a" }}>
       <Navbar />
       <Hero />
       <MarqueeStrip />
+      <StatsSection />
       <FeaturedEvents />
       <PlatformSection />
+      <PricingSection />
       <UpcomingEvents />
-      <ResaleSection />
       <Footer />
     </div>
   );
