@@ -41,6 +41,8 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
   const [date, setDate] = useState(str(event.date));
   const [time, setTime] = useState(str(event.time));
   const [endTime, setEndTime] = useState(str(event.end_time));
+  const [tillLate, setTillLate] = useState(bool(event.till_late));
+  const [currency, setCurrency] = useState(str(event.currency) || "CRC");
   const [instagramUrl, setInstagramUrl] = useState(str(event.instagram_url));
   const [facebookPixel, setFacebookPixel] = useState(str(event.facebook_pixel));
   const [googleAnalytics, setGoogleAnalytics] = useState(str(event.google_analytics));
@@ -78,7 +80,7 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
     setError("");
     try {
       const body: Record<string, unknown> = {};
-      if (tab === "info") Object.assign(body, { name, category, description, date, time, end_time: endTime, instagram_url: instagramUrl, facebook_pixel: facebookPixel, google_analytics: googleAnalytics, google_tag_manager: googleTagManager, status });
+      if (tab === "info") Object.assign(body, { name, category, description, date, time, end_time: endTime || null, till_late: tillLate, currency, instagram_url: instagramUrl, facebook_pixel: facebookPixel, google_analytics: googleAnalytics, google_tag_manager: googleTagManager, status });
       if (tab === "location") Object.assign(body, { venue, city, country, location_lat: locationLat ? parseFloat(locationLat) : null, location_lng: locationLng ? parseFloat(locationLng) : null, location_secret: locationSecret });
       if (tab === "design") Object.assign(body, { image_url: imageUrl, banner_url: bannerUrl, venue_map_url: venueMapUrl });
       if (tab === "form") Object.assign(body, { pre_purchase_message: prePurchaseMessage, post_purchase_message: postPurchaseMessage, terms_conditions: termsConditions, collect_id: collectId });
@@ -148,21 +150,44 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
             </div>
             <div>
               <label className="block text-[#0a0a0a]/50 text-xs mb-1.5">Hora fin</label>
-              <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "dark" }} />
+              <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "dark", opacity: tillLate ? 0.35 : 1 }} disabled={tillLate} />
             </div>
           </div>
+          <label className="flex items-center gap-2.5 cursor-pointer select-none -mt-1">
+            <button
+              type="button"
+              onClick={() => setTillLate(!tillLate)}
+              className="relative rounded-full transition-colors shrink-0"
+              style={{ background: tillLate ? "#0a0a0a" : "rgba(0,0,0,0.12)", width: "36px", height: "20px" }}
+            >
+              <span
+                className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+                style={{ left: tillLate ? "16px" : "2px" }}
+              />
+            </button>
+            <span className="text-[#0a0a0a]/50 text-xs">Mostrar &ldquo;Till late&rdquo; en lugar de la hora de fin</span>
+          </label>
           <div>
             <label className="block text-[#0a0a0a]/50 text-xs mb-1.5">Instagram (URL del perfil o post)</label>
             <input type="url" placeholder="https://instagram.com/..." value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} className={inputClass} style={inputStyle} />
           </div>
-          <div>
-            <label className="block text-[#0a0a0a]/50 text-xs mb-1.5">Estado</label>
-            <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClass} style={{ ...inputStyle, color: "#0a0a0a" }}>
-              <option value="draft" style={{ background: "#fff" }}>Borrador</option>
-              <option value="published" style={{ background: "#fff" }}>Publicado</option>
-              <option value="cancelled" style={{ background: "#fff" }}>Cancelado</option>
-              <option value="completed" style={{ background: "#fff" }}>Concluido</option>
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[#0a0a0a]/50 text-xs mb-1.5">Estado</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputClass} style={{ ...inputStyle, color: "#0a0a0a" }}>
+                <option value="draft" style={{ background: "#fff" }}>Borrador</option>
+                <option value="published" style={{ background: "#fff" }}>Publicado</option>
+                <option value="cancelled" style={{ background: "#fff" }}>Cancelado</option>
+                <option value="completed" style={{ background: "#fff" }}>Concluido</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[#0a0a0a]/50 text-xs mb-1.5">Moneda</label>
+              <select value={currency} onChange={(e) => setCurrency(e.target.value)} className={inputClass} style={{ ...inputStyle, color: "#0a0a0a" }}>
+                <option value="CRC" style={{ background: "#fff" }}>₡ Colón (CRC)</option>
+                <option value="USD" style={{ background: "#fff" }}>$ Dólar (USD)</option>
+              </select>
+            </div>
           </div>
           <details className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
             <summary className="px-4 py-3 text-[#0a0a0a]/35 text-xs cursor-pointer">Integraciones de tracking (opcional)</summary>
@@ -201,17 +226,6 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
               <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} className={inputClass} style={inputStyle} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[#0a0a0a]/50 text-xs mb-1.5">Latitud</label>
-              <input type="number" step="any" placeholder="9.9281" value={locationLat} onChange={(e) => setLocationLat(e.target.value)} className={inputClass} style={inputStyle} />
-            </div>
-            <div>
-              <label className="block text-[#0a0a0a]/50 text-xs mb-1.5">Longitud</label>
-              <input type="number" step="any" placeholder="-84.0907" value={locationLng} onChange={(e) => setLocationLng(e.target.value)} className={inputClass} style={inputStyle} />
-            </div>
-          </div>
-
           {mapSrc && (
             <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
               <iframe src={mapSrc} width="100%" height="280" style={{ border: 0 }} allowFullScreen loading="lazy" />

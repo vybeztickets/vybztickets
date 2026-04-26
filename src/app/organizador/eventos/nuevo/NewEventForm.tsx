@@ -29,11 +29,14 @@ export default function NewEventForm({ organizerId }: { organizerId: string }) {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [tillLate, setTillLate] = useState(false);
   const [venue, setVenue] = useState("");
   const [city, setCity] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [imageUrl, setImageUrl] = useState("");
   const [salesEndDate, setSalesEndDate] = useState("");
+  const [currency, setCurrency] = useState("CRC");
   const [ticketTypes, setTicketTypes] = useState<TicketTypeInput[]>([emptyTicket()]);
 
   function updateTicket(i: number, field: keyof TicketTypeInput, value: string) {
@@ -62,11 +65,14 @@ export default function NewEventForm({ organizerId }: { organizerId: string }) {
         description,
         date,
         time,
+        end_time: endTime || null,
+        till_late: tillLate,
         venue,
         city,
         category,
         image_url: imageUrl || null,
         sales_end_date: salesEndDate || null,
+        currency,
         ticketTypes: ticketTypes.map((t) => ({
           name: t.name,
           description: t.description || null,
@@ -123,9 +129,39 @@ export default function NewEventForm({ organizerId }: { organizerId: string }) {
             <input type="date" className={inputClass} style={inputStyle} value={date} onChange={(e) => setDate(e.target.value)} required />
           </div>
           <div>
-            <label className={labelClass}>Hora *</label>
+            <label className={labelClass}>Hora inicio *</label>
             <input type="time" className={inputClass} style={inputStyle} value={time} onChange={(e) => setTime(e.target.value)} required />
           </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Hora fin (opcional)</label>
+              <input
+                type="time"
+                className={inputClass}
+                style={{ ...inputStyle, opacity: tillLate ? 0.35 : 1 }}
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                disabled={tillLate}
+              />
+            </div>
+          </div>
+          <label className="flex items-center gap-2.5 cursor-pointer select-none" style={{ marginTop: "2px" }}>
+            <button
+              type="button"
+              onClick={() => setTillLate(!tillLate)}
+              className="relative w-8 h-4.5 rounded-full transition-colors shrink-0"
+              style={{ background: tillLate ? "#0a0a0a" : "rgba(0,0,0,0.12)", width: "36px", height: "20px" }}
+            >
+              <span
+                className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+                style={{ left: tillLate ? "16px" : "2px" }}
+              />
+            </button>
+            <span className="text-[#0a0a0a]/50 text-xs">Mostrar &ldquo;Till late&rdquo; en lugar de la hora de fin</span>
+          </label>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -171,14 +207,25 @@ export default function NewEventForm({ organizerId }: { organizerId: string }) {
       >
         <div className="flex items-center justify-between">
           <h2 className="text-[#0a0a0a] font-semibold">Tipos de ticket</h2>
-          <button
-            type="button"
-            onClick={addTicketType}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-            style={{ background: "rgba(0,0,0,0.08)", color: "#0a0a0a" }}
-          >
-            + Agregar
-          </button>
+          <div className="flex items-center gap-2">
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg focus:outline-none"
+              style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a", border: "none" }}
+            >
+              <option value="CRC">₡ Colón (CRC)</option>
+              <option value="USD">$ Dólar (USD)</option>
+            </select>
+            <button
+              type="button"
+              onClick={addTicketType}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+              style={{ background: "rgba(0,0,0,0.08)", color: "#0a0a0a" }}
+            >
+              + Agregar
+            </button>
+          </div>
         </div>
 
         {ticketTypes.map((t, i) => (

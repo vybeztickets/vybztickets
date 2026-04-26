@@ -21,7 +21,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   if (!rawEvent) notFound();
 
   const event = rawEvent as unknown as {
-    id: string; name: string; date: string; time: string | null; end_time: string | null;
+    id: string; name: string; date: string; time: string | null; end_time: string | null; till_late: boolean | null; currency: string | null;
     description: string | null; image_url: string | null; venue: string; city: string;
     country: string; category: string | null; venue_map_url: string | null;
     location_lat: number | null; location_lng: number | null;
@@ -87,7 +87,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             <div className="flex-1 min-w-0">
               <p className="text-[#0a0a0a]/40 text-sm mb-3 capitalize">
                 {formattedDate}
-                {event.time && <span> · {event.time}{event.end_time ? ` – ${event.end_time}` : ""}</span>}
+                {event.time && <span> · {event.time}{event.till_late ? " – Till late" :event.end_time ? ` – ${event.end_time}` : ""}</span>}
               </p>
 
               <Countdown date={event.date} time={event.time} />
@@ -109,6 +109,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                 eventName={event.name}
                 venueMapUrl={(event as any).venue_map_url ?? null}
                 platformFeePercent={(event as any).platform_fee_percent ?? 15}
+                currency={event.currency ?? "CRC"}
               />
 
               <ResendTicket eventId={event.id} />

@@ -27,7 +27,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   // Whitelist updatable fields
   const allowed = [
-    "name", "description", "date", "time", "end_time", "venue", "city", "country",
+    "name", "description", "date", "time", "end_time", "till_late", "currency", "venue", "city", "country",
     "category", "status", "image_url", "instagram_url", "facebook_pixel",
     "google_analytics", "google_tag_manager", "banner_url",
     "location_lat", "location_lng", "location_secret",

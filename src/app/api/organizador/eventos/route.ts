@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const body = await request.json();
-  const { name, description, date, time, venue, city, category, image_url, sales_end_date, ticketTypes } = body;
+  const { name, description, date, time, end_time, till_late, venue, city, category, image_url, sales_end_date, currency, ticketTypes } = body;
 
   if (!name || !date || !time || !venue || !city || !category) {
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
@@ -20,7 +20,8 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
 
-  const { data: event, error: eventError } = await admin
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: event, error: eventError } = await (admin as any)
     .from("events")
     .insert({
       organizer_id: user.id,
@@ -28,6 +29,9 @@ export async function POST(request: Request) {
       description: description || null,
       date,
       time,
+      end_time: end_time || null,
+      till_late: till_late ?? false,
+      currency: currency || "CRC",
       venue,
       city,
       country: "Costa Rica",

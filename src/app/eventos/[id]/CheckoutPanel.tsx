@@ -19,8 +19,16 @@ type TicketType = {
   zone_color?: string | null;
 };
 
-function formatPrice(n: number) {
-  return n === 0 ? "Gratis" : "₡" + n.toLocaleString("es-CR");
+const CURRENCY_SYMBOL: Record<string, string> = {
+  CRC: "₡", USD: "$",
+};
+
+function formatPrice(n: number, currency = "CRC") {
+  if (n === 0) return "Gratis";
+  const sym = CURRENCY_SYMBOL[currency] ?? currency;
+  const locale = currency === "CRC" ? "es-CR" : "en-US";
+  const decimals = currency === "CRC" ? 0 : 2;
+  return sym + n.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
 const inputStyle = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)" };
@@ -32,12 +40,14 @@ export default function CheckoutPanel({
   eventName,
   venueMapUrl,
   platformFeePercent = 15,
+  currency = "CRC",
 }: {
   ticketTypes: TicketType[];
   eventId: string;
   eventName: string;
   venueMapUrl: string | null;
   platformFeePercent?: number;
+  currency?: string;
 }) {
   const activeTypes = ticketTypes.filter((t) => t.is_active && !t.is_hidden && t.total_available - t.sold_count > 0);
   const generalTypes = activeTypes.filter((t) => !t.category || t.category === "general");
@@ -180,7 +190,7 @@ export default function CheckoutPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: total,
-          currency: "CRC",
+          currency,
           description: `${isTable ? 1 : qty} × ${selected.name} — ${eventName}`,
         }),
       });
@@ -294,7 +304,7 @@ export default function CheckoutPanel({
         <div className="p-4 rounded-xl mb-5" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
           <div className="flex justify-between items-center">
             <span className="text-[#0a0a0a] text-sm font-semibold">{selected?.name} × {isTable ? 1 : qty}</span>
-            <span className="text-[#0a0a0a] font-bold">{formatPrice(total)}</span>
+            <span className="text-[#0a0a0a] font-bold">{formatPrice(total, currency)}</span>
           </div>
           <p className="text-[#0a0a0a]/30 text-xs mt-1">{email}</p>
         </div>
@@ -324,7 +334,7 @@ export default function CheckoutPanel({
               <span className="text-[#0a0a0a] text-sm font-semibold">{selected?.name}</span>
               <span className="text-[#0a0a0a]/35 text-xs">{isTable ? `${paxCount} pax` : `× ${qty}`}</span>
             </div>
-            <span className="text-[#0a0a0a] font-bold">{formatPrice(total)}</span>
+            <span className="text-[#0a0a0a] font-bold">{formatPrice(total, currency)}</span>
           </div>
         </div>
 
@@ -506,30 +516,30 @@ export default function CheckoutPanel({
           <div className="py-3 flex flex-col gap-1.5" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
             <div className="flex items-center justify-between">
               <span className="text-[#0a0a0a]/30 text-xs">Subtotal</span>
-              <span className="text-[#0a0a0a]/40 text-xs">{formatPrice(basePrice)}</span>
+              <span className="text-[#0a0a0a]/40 text-xs">{formatPrice(basePrice, currency)}</span>
             </div>
             {discountAmount > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-green-600 text-xs">Descuento ({discountPct}%)</span>
-                <span className="text-green-600 text-xs">−{formatPrice(discountAmount)}</span>
+                <span className="text-green-600 text-xs">−{formatPrice(discountAmount, currency)}</span>
               </div>
             )}
             {subtotal > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-[#0a0a0a]/30 text-xs">Fee de servicio ({platformFeePercent}%)</span>
-                <span className="text-[#0a0a0a]/40 text-xs">{formatPrice(serviceFee)}</span>
+                <span className="text-[#0a0a0a]/40 text-xs">{formatPrice(serviceFee, currency)}</span>
               </div>
             )}
             <div className="flex items-center justify-between pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
               <span className="text-[#0a0a0a]/40 text-sm">Total</span>
-              <span className="text-[#0a0a0a] font-bold text-xl">{formatPrice(total)}</span>
+              <span className="text-[#0a0a0a] font-bold text-xl">{formatPrice(total, currency)}</span>
             </div>
           </div>
 
           <button type="submit" disabled={step === "processing" || paymentLoading}
             className="w-full py-3.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition-all"
             style={{ background: "#0a0a0a" }}>
-            {(step === "processing" || paymentLoading) ? "Procesando..." : total === 0 ? `Confirmar gratis` : `Proceder al pago · ${formatPrice(total)}`}
+            {(step === "processing" || paymentLoading) ? "Procesando..." : total === 0 ? `Confirmar gratis` : `Proceder al pago · ${formatPrice(total, currency)}`}
           </button>
         </form>
       </div>
@@ -563,7 +573,7 @@ export default function CheckoutPanel({
                       )}
                     </div>
                     {t.description && <p className="text-[#0a0a0a]/35 text-xs truncate">{t.description}</p>}
-                    <p className="text-[#0a0a0a] font-bold text-base mt-1">{formatPrice(t.price)}</p>
+                    <p className="text-[#0a0a0a] font-bold text-base mt-1">{formatPrice(t.price, currency)}</p>
                   </div>
                   <button onClick={() => selectTicket(t.id)}
                     className="ml-4 w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-[#0a0a0a] hover:bg-black/80">
@@ -601,7 +611,7 @@ export default function CheckoutPanel({
                       <p className="text-[#0a0a0a] font-semibold text-sm">{t.name}</p>
                       {t.capacity && <p className="text-[#0a0a0a]/35 text-xs">Hasta {t.capacity} personas</p>}
                       {t.description && <p className="text-[#0a0a0a]/30 text-xs truncate">{t.description}</p>}
-                      <p className="text-[#0a0a0a] font-bold text-base mt-1">desde {formatPrice(t.price)}</p>
+                      <p className="text-[#0a0a0a] font-bold text-base mt-1">desde {formatPrice(t.price, currency)}</p>
                       {avail <= 0 ? (
                         <p className="text-red-500/60 text-xs">Agotada</p>
                       ) : avail <= 5 ? (

@@ -10,7 +10,11 @@ type Event = {
   venue: string; city: string; ticket_types: TicketType[]; is_visible?: boolean;
 };
 
-function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function formatPrice(n: number) {
+  if (n >= 1000000) return "₡" + (n / 1000000).toFixed(1) + "M";
+  if (n >= 1000) return "₡" + (n / 1000).toFixed(0) + "K";
+  return "₡" + n.toLocaleString("es-CR");
+}
 function formatDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
 }
@@ -18,29 +22,28 @@ function formatDate(d: string) {
 const FILTERS = [
   { key: "all", label: "Todos" },
   { key: "upcoming", label: "Próximos" },
-  { key: "hidden", label: "Oculto" },
   { key: "past", label: "Pasados" },
+  { key: "hidden", label: "Ocultos" },
 ];
 
-const STATUS_LABELS: Record<string, string> = { published: "Publicado", draft: "Borrador", cancelled: "Cancelado", completed: "Concluido" };
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  published: { bg: "rgba(16,185,129,0.1)", text: "#059669" },
-  draft: { bg: "rgba(245,158,11,0.1)", text: "#d97706" },
-  cancelled: { bg: "rgba(239,68,68,0.1)", text: "#dc2626" },
-  completed: { bg: "rgba(107,114,128,0.1)", text: "#6b7280" },
+const STATUS_LABEL: Record<string, string> = {
+  published: "Publicado", draft: "Borrador", cancelled: "Cancelado", completed: "Concluido",
+};
+const STATUS_DOT: Record<string, string> = {
+  published: "#10b981", draft: "#f59e0b", cancelled: "#ef4444", completed: "#9ca3af",
 };
 
 export default function EventsTable({ events }: { events: Event[] }) {
   const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
-  const [deleting, setDeleting] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [visibility, setVisibility] = useState<Record<string, boolean>>(
     Object.fromEntries(events.map((e) => [e.id, e.is_visible !== false]))
   );
 
-  async function toggleVisibility(id: string) {
+  async function toggleVisibility(id: string, e: React.MouseEvent) {
+    e.preventDefault();
     const next = !visibility[id];
     setVisibility((v) => ({ ...v, [id]: next }));
     await fetch(`/api/organizador/eventos/${id}`, {
@@ -50,184 +53,212 @@ export default function EventsTable({ events }: { events: Event[] }) {
     });
   }
 
+  async function deleteEvent(id: string, name: string, e: React.MouseEvent) {
+    e.preventDefault();
+    if (!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+    setDeleting(id);
+    const res = await fetch(`/api/organizador/eventos/${id}`, { method: "DELETE" });
+    setDeleting(null);
+    if (!res.ok) {
+      const body = await res.json();
+      alert(`No se pudo eliminar: ${body.error}`);
+    }
+    router.refresh();
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const filtered = events.filter((e) => {
     const eventDate = new Date(e.date + "T00:00:00");
-    const isVisible = visibility[e.id] !== false;
+    const isVis = visibility[e.id] !== false;
     if (filter === "upcoming" && eventDate < today) return false;
     if (filter === "past" && eventDate >= today) return false;
-    if (filter === "hidden" && isVisible) return false;
+    if (filter === "hidden" && isVis) return false;
     if (search && !e.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
-  function toggleSelect(id: string) {
-    setSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
-  }
-
-  async function deleteSelected() {
-    if (!confirm(`¿Eliminar ${selected.length} evento(s) seleccionado(s)? Esta acción no se puede deshacer.`)) return;
-    setDeleting(true);
-    const errors: string[] = [];
-    for (const id of selected) {
-      const res = await fetch(`/api/organizador/eventos/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const body = await res.json();
-        const name = events.find((e) => e.id === id)?.name ?? id;
-        errors.push(`${name}: ${body.error}`);
-      }
-    }
-    setDeleting(false);
-    setSelected([]);
-    if (errors.length > 0) {
-      alert("Algunos eventos no se pudieron eliminar:\n\n" + errors.join("\n"));
-    }
-    router.refresh();
-  }
-
   return (
     <div>
-      {/* Filter bar */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+      {/* Filter + search bar */}
+      <div className="flex items-center gap-3 mb-8 flex-wrap">
+        <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
           {FILTERS.map((f) => (
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className="px-4 py-2 text-xs font-medium transition-colors"
-              style={{
-                background: filter === f.key ? "#0a0a0a" : "transparent",
-                color: filter === f.key ? "#fff" : "rgba(0,0,0,0.4)",
-                borderRight: "1px solid rgba(0,0,0,0.07)",
-              }}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              style={
+                filter === f.key
+                  ? { background: "#0a0a0a", color: "#fff" }
+                  : { color: "rgba(0,0,0,0.38)" }
+              }
             >
               {f.label}
             </button>
           ))}
         </div>
+
         <div className="flex-1" />
+
         <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#0a0a0a]/25" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2"
+            style={{ color: "rgba(0,0,0,0.25)" }}
+            width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
           </svg>
           <input
             type="text"
-            placeholder="Buscar..."
+            placeholder="Buscar eventos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-8 pr-4 py-2 rounded-xl text-xs text-[#0a0a0a] placeholder-[#0a0a0a]/25 focus:outline-none"
-            style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)", width: "200px" }}
+            className="pl-8 pr-4 py-2 rounded-xl text-xs focus:outline-none"
+            style={{
+              background: "rgba(0,0,0,0.04)",
+              border: "1px solid rgba(0,0,0,0.08)",
+              color: "#0a0a0a",
+              width: "200px",
+            }}
           />
         </div>
-        {selected.length > 0 && (
-          <button
-            onClick={deleteSelected}
-            disabled={deleting}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-red-500 transition-colors hover:bg-red-50 disabled:opacity-40"
-            style={{ border: "1px solid rgba(239,68,68,0.2)" }}
-          >
-            {deleting ? (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-              </svg>
-            ) : (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-              </svg>
-            )}
-            Eliminar ({selected.length})
-          </button>
-        )}
       </div>
 
-      {/* Table */}
-      <div className="card-light rounded-2xl overflow-hidden">
-        {/* Header */}
-        <div
-          className="grid text-[10px] font-bold uppercase tracking-wider px-5 py-3"
-          style={{
-            gridTemplateColumns: "32px 1fr 160px 200px 120px 44px",
-            background: "rgba(0,0,0,0.03)",
-            color: "rgba(0,0,0,0.3)",
-            borderBottom: "1px solid rgba(0,0,0,0.06)",
-          }}
-        >
-          <div /><div>Nombre</div><div>Ventas</div><div>Entradas</div><div>Estado</div><div />
+      {/* Card grid */}
+      {filtered.length === 0 ? (
+        <div className="py-24 text-center">
+          <p className="font-[family-name:var(--font-bebas)] text-4xl text-[#0a0a0a]/10 mb-3">
+            {search ? "SIN RESULTADOS" : "SIN EVENTOS"}
+          </p>
+          {!search && (
+            <Link
+              href="/organizador/eventos/nuevo"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-[#0a0a0a] text-white hover:bg-[#222] transition-colors"
+            >
+              + Crear evento
+            </Link>
+          )}
         </div>
-
-        {filtered.length === 0 ? (
-          <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">
-            Sin eventos{filter !== "all" ? " en este filtro" : ""}
-          </div>
-        ) : (
-          filtered.map((event, i) => {
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((event) => {
             const sold = event.ticket_types.reduce((s, t) => s + t.sold_count, 0);
+            const total = event.ticket_types.reduce((s, t) => s + t.total_available, 0);
             const revenue = event.ticket_types.reduce((s, t) => s + t.sold_count * t.price, 0);
-            const sc = STATUS_COLORS[event.status] ?? STATUS_COLORS.draft;
-            const isSelected = selected.includes(event.id);
-            const isVisible = visibility[event.id] !== false;
+            const pct = total > 0 ? Math.min(100, Math.round((sold / total) * 100)) : 0;
+            const dot = STATUS_DOT[event.status] ?? "#9ca3af";
+            const isVis = visibility[event.id] !== false;
+            const isDeleting = deleting === event.id;
 
             return (
-              <div
-                key={event.id}
-                className="grid items-center px-5 py-4 transition-colors hover:bg-black/[0.02]"
-                style={{
-                  gridTemplateColumns: "32px 1fr 160px 200px 120px 44px",
-                  borderBottom: i < filtered.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none",
-                  background: isSelected ? "rgba(0,0,0,0.025)" : "transparent",
-                }}
-              >
-                <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(event.id)} className="accent-black" />
+              <Link key={event.id} href={`/organizador/eventos/${event.id}`} className="block group">
+                <div
+                  className="rounded-2xl p-5 h-full flex flex-col transition-all"
+                  style={{
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    background: "#fff",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: dot }} />
+                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: dot }}>
+                        {STATUS_LABEL[event.status] ?? event.status}
+                      </span>
+                    </div>
+                    <p className="text-[#0a0a0a]/30 text-[10px]">{formatDate(event.date)}</p>
+                  </div>
 
-                <div style={{ borderLeft: "2.5px solid rgba(0,0,0,0.15)", paddingLeft: "10px" }}>
-                  <Link href={`/organizador/eventos/${event.id}`} className="text-[#0a0a0a] text-sm font-medium hover:text-[#0a0a0a]/50 transition-colors">
+                  {/* Event name */}
+                  <h3 className="font-[family-name:var(--font-bebas)] text-2xl text-[#0a0a0a] leading-tight mb-1 group-hover:opacity-60 transition-opacity">
                     {event.name}
-                  </Link>
-                  <p className="text-[#0a0a0a]/30 text-xs">{formatDate(event.date)}</p>
-                </div>
+                  </h3>
+                  <p className="text-[#0a0a0a]/30 text-xs mb-5">
+                    {event.venue} · {event.city}
+                  </p>
 
-                <div className="text-[#0a0a0a] text-sm font-medium">{formatPrice(revenue)}</div>
+                  {/* Revenue */}
+                  <div className="flex items-end justify-between mb-1 mt-auto">
+                    <div>
+                      <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-0.5">Ingresos</p>
+                      <p className="text-[#0a0a0a] font-bold text-xl leading-none">{formatPrice(revenue)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-0.5">Entradas</p>
+                      <p className="text-[#0a0a0a] font-bold text-xl leading-none">{sold}<span className="text-[#0a0a0a]/20 text-sm font-normal">/{total}</span></p>
+                    </div>
+                  </div>
 
-                <div>
-                  <span className="text-[#0a0a0a]/40 text-xs">Vendidas: <span className="text-[#0a0a0a] font-medium">{sold}</span></span>
-                  <br />
-                  <span className="text-[#0a0a0a]/40 text-xs">Gratis: <span className="text-[#0a0a0a]">0</span></span>
-                </div>
-
-                <div>
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold" style={{ background: sc.bg, color: sc.text }}>
-                    {STATUS_LABELS[event.status] ?? event.status}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-center">
-                  <button
-                    onClick={() => toggleVisibility(event.id)}
-                    title={isVisible ? "Visible — click para ocultar" : "Oculto — click para publicar"}
-                    className="transition-colors"
-                    style={{ color: isVisible ? "#059669" : "#dc2626" }}
+                  {/* Progress bar */}
+                  <div
+                    className="h-1 rounded-full overflow-hidden mt-3 mb-4"
+                    style={{ background: "rgba(0,0,0,0.06)" }}
                   >
-                    {isVisible ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                      </svg>
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                        <line x1="1" y1="1" x2="23" y2="23"/>
-                      </svg>
-                    )}
-                  </button>
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${pct}%`, background: "#0a0a0a" }}
+                    />
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 pt-3" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                    <button
+                      onClick={(e) => toggleVisibility(event.id, e)}
+                      title={isVis ? "Visible — click para ocultar" : "Oculto — click para publicar"}
+                      className="flex items-center gap-1.5 text-[10px] font-semibold transition-colors px-2.5 py-1.5 rounded-lg"
+                      style={{
+                        color: isVis ? "#059669" : "#dc2626",
+                        background: isVis ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.08)",
+                      }}
+                    >
+                      {isVis ? (
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      )}
+                      {isVis ? "Visible" : "Oculto"}
+                    </button>
+
+                    <div className="flex-1" />
+
+                    <button
+                      onClick={(e) => deleteEvent(event.id, event.name, e)}
+                      disabled={isDeleting}
+                      className="flex items-center gap-1 text-[10px] font-semibold transition-colors px-2.5 py-1.5 rounded-lg disabled:opacity-40"
+                      style={{ color: "rgba(0,0,0,0.25)" }}
+                    >
+                      {isDeleting ? (
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                      ) : (
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                          <path d="M10 11v6" /><path d="M14 11v6" />
+                        </svg>
+                      )}
+                      Eliminar
+                    </button>
+
+                    <span className="text-[#0a0a0a]/25 text-sm">→</span>
+                  </div>
                 </div>
-              </div>
+              </Link>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 }
