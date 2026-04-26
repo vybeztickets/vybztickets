@@ -51,6 +51,16 @@ export default async function FinanzasPage() {
     .order("is_primary", { ascending: false })
     .order("created_at", { ascending: true });
 
+  // Featured event costs (unpaid, deducted at withdrawal)
+  const { data: featuredData } = await (admin as any)
+    .from("featured_events")
+    .select("total_cost, currency, event_id, start_date, end_date, days, status")
+    .eq("organizer_id", user.id)
+    .neq("status", "cancelled");
+
+  const featuredCostsUSD = (featuredData ?? [])
+    .reduce((s: number, f: { total_cost: number }) => s + f.total_cost, 0);
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
@@ -68,6 +78,8 @@ export default async function FinanzasPage() {
         platformFee={platformFee}
         transactions={transactions}
         initialAccounts={bankAccountsData ?? []}
+        featuredCostsUSD={featuredCostsUSD}
+        featuredItems={featuredData ?? []}
       />
     </div>
   );

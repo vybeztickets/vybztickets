@@ -7,6 +7,15 @@ function fmtDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "long", year: "numeric" });
 }
 
+type FeaturedItem = {
+  total_cost: number;
+  currency: string;
+  start_date: string;
+  end_date: string;
+  days: number;
+  status: string;
+};
+
 type BankAccount = {
   id: string;
   account_holder: string;
@@ -35,12 +44,15 @@ const inputStyle = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0
 
 export default function FinanzasTabs({
   available, totalRevenue, platformFee, transactions, initialAccounts,
+  featuredCostsUSD, featuredItems,
 }: {
   available: number;
   totalRevenue: number;
   platformFee: number;
   transactions: { date: string; amount: number }[];
   initialAccounts: BankAccount[];
+  featuredCostsUSD: number;
+  featuredItems: FeaturedItem[];
 }) {
   const [tab, setTab] = useState("balances");
   const [accounts, setAccounts] = useState<BankAccount[]>(initialAccounts);
@@ -109,20 +121,45 @@ export default function FinanzasTabs({
                 <h3 className="text-[#0a0a0a] font-semibold mb-1">Balances (CRC)</h3>
               </div>
               {[
-                { label: "Disponible para retirar", value: available, color: "#10b981" },
-                { label: "En camino a su banco", value: 0, color: "rgba(0,0,0,0.4)" },
-                { label: "Disponible para pagar pronto", value: 0, color: "rgba(0,0,0,0.4)" },
-                { label: "Total", value: available, bold: true },
+                { label: "Ingresos brutos", value: totalRevenue, color: "rgba(0,0,0,0.7)" },
+                { label: "Fee de plataforma (15%)", value: -platformFee, color: "rgba(0,0,0,0.4)" },
+                { label: "Disponible para retirar", value: available, color: "#10b981", bold: true },
               ].map((row) => (
                 <div key={row.label} className="flex justify-between items-center px-6 py-4"
                   style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
                   <span className="text-[#0a0a0a]/50 text-sm">{row.label}</span>
                   <span className="text-sm" style={{ color: row.color ?? "#0a0a0a", fontWeight: row.bold ? 700 : 500 }}>
-                    {fmt(row.value)}
+                    {row.value < 0 ? `−${fmt(Math.abs(row.value))}` : fmt(row.value)}
                   </span>
                 </div>
               ))}
             </div>
+
+            {featuredCostsUSD > 0 && (
+              <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(245,158,11,0.2)" }}>
+                <div className="px-6 py-4 flex items-center gap-2" style={{ borderBottom: "1px solid rgba(245,158,11,0.15)", background: "rgba(245,158,11,0.04)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                  <h3 className="text-[#0a0a0a] font-semibold text-sm">Gastos de destacado (USD)</h3>
+                </div>
+                {featuredItems.map((f, i) => (
+                  <div key={i} className="flex justify-between items-center px-6 py-3.5"
+                    style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
+                    <div>
+                      <p className="text-[#0a0a0a]/60 text-sm">{fmtDate(f.start_date)} → {fmtDate(f.end_date)}</p>
+                      <p className="text-[#0a0a0a]/30 text-xs">{f.days} días · ${f.total_cost.toFixed(2)} USD</p>
+                    </div>
+                    <span className="text-xs px-2 py-0.5 rounded-md"
+                      style={{ background: f.status === "active" ? "rgba(245,158,11,0.1)" : "rgba(0,0,0,0.05)", color: f.status === "active" ? "#f59e0b" : "rgba(0,0,0,0.35)" }}>
+                      {f.status === "active" ? "Activo" : "Completado"}
+                    </span>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center px-6 py-4" style={{ background: "rgba(0,0,0,0.02)" }}>
+                  <span className="text-[#0a0a0a]/50 text-sm">Total a descontar del retiro</span>
+                  <span className="text-[#0a0a0a] font-bold text-sm">${featuredCostsUSD.toFixed(2)} USD</span>
+                </div>
+              </div>
+            )}
 
             {transactions.length > 0 && (
               <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>

@@ -30,8 +30,10 @@ function formatDate(d: string) {
 }
 function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
 
-export default function EventsGrid({ events }: { events: Event[] }) {
-  const [activeCategory, setActiveCategory] = useState("Todos");
+export default function EventsGrid({ events, initialCategory }: { events: Event[]; initialCategory?: string }) {
+  const [activeCategory, setActiveCategory] = useState(() =>
+    CATEGORIES.includes(initialCategory ?? "") ? (initialCategory ?? "Todos") : "Todos"
+  );
   const [search, setSearch] = useState("");
 
   const filtered = events.filter((e) => {

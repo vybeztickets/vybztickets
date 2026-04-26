@@ -1,11 +1,39 @@
 import Link from "next/link";
 
-const LINKS = {
-  Eventos: ["Conciertos", "Festivales", "Teatro", "Deportes", "Conferencias"],
-  Reventa: ["Comprar tickets", "Vender tickets", "Cómo funciona", "Escrow"],
-  Organizadores: ["Crear evento", "Panel de control", "Precios", "Soporte"],
-  Empresa: ["Sobre nosotros", "Blog", "Prensa", "Contacto"],
+const LINKS: Record<string, { label: string; href: string }[]> = {
+  Eventos: [
+    { label: "Festival", href: "/eventos?category=Festival" },
+    { label: "Música", href: "/eventos?category=Música" },
+    { label: "Tecnología", href: "/eventos?category=Tecnología" },
+    { label: "Deportes", href: "/eventos?category=Deportes" },
+    { label: "Entretenimiento", href: "/eventos?category=Entretenimiento" },
+  ],
+  Reventa: [
+    { label: "Comprar tickets", href: "/reventa" },
+    { label: "Vender tickets", href: "/auth/login?redirectTo=/revendedor/nueva-venta" },
+    { label: "Cómo funciona", href: "/reventa" },
+    { label: "Verificación KYC", href: "/auth/login?redirectTo=/revendedor/verificacion" },
+  ],
+  Organizadores: [
+    { label: "Crear evento", href: "/organizador/eventos/nuevo" },
+    { label: "Panel de control", href: "/organizador" },
+    { label: "Ver plataforma", href: "/organizadores" },
+    { label: "Todos los eventos", href: "/eventos" },
+  ],
+  "Mi cuenta": [
+    { label: "Mis tickets", href: "/mis-tickets" },
+    { label: "Iniciar sesión", href: "/auth/login" },
+    { label: "Términos de uso", href: "/terminos" },
+    { label: "Privacidad", href: "/privacidad" },
+  ],
 };
+
+const SOCIALS = [
+  { label: "IG", href: "https://instagram.com/vybztickets" },
+  { label: "TW", href: "https://twitter.com/vybztickets" },
+  { label: "FB", href: "https://facebook.com/vybztickets" },
+  { label: "YT", href: "https://youtube.com/@vybztickets" },
+];
 
 export default function Footer({ variant = "default" }: { variant?: "default" | "reventa" }) {
   const cta = variant === "reventa"
@@ -19,7 +47,7 @@ export default function Footer({ variant = "default" }: { variant?: "default" | 
         title: "¿Organizas un evento?",
         desc: "Vende entradas con la plataforma más completa en eventos.",
         primary: { href: "/organizadores", label: "Comenzar gratis →" },
-        secondary: { href: "/contacto", label: "Hablar con ventas" },
+        secondary: { href: "/organizadores", label: "Hablar con ventas" },
       };
 
   return (
@@ -66,14 +94,16 @@ export default function Footer({ variant = "default" }: { variant?: "default" | 
               Costa Rica&apos;s premier ticket platform. Buy, sell and discover events across Latin America.
             </p>
             <div className="flex gap-2.5">
-              {["IG", "TW", "FB", "YT"].map((s) => (
+              {SOCIALS.map((s) => (
                 <a
-                  key={s}
-                  href="#"
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-8 h-8 flex items-center justify-center text-white/25 hover:text-white/60 transition-all text-[9px] font-bold rounded-lg"
                   style={{ border: "1px solid rgba(255,255,255,0.08)" }}
                 >
-                  {s}
+                  {s.label}
                 </a>
               ))}
             </div>
@@ -85,9 +115,9 @@ export default function Footer({ variant = "default" }: { variant?: "default" | 
               <p className="text-white/40 text-[10px] font-semibold tracking-[0.18em] uppercase mb-4">{col}</p>
               <ul className="space-y-2.5">
                 {items.map((item) => (
-                  <li key={item}>
-                    <Link href="#" className="text-white/20 hover:text-white/50 text-sm transition-colors">
-                      {item}
+                  <li key={item.label}>
+                    <Link href={item.href} className="text-white/20 hover:text-white/50 text-sm transition-colors">
+                      {item.label}
                     </Link>
                   </li>
                 ))}
@@ -104,11 +134,9 @@ export default function Footer({ variant = "default" }: { variant?: "default" | 
             © {new Date().getFullYear()} Vybz Tickets. Todos los derechos reservados.
           </p>
           <div className="flex gap-6">
-            {["Términos", "Privacidad", "Cookies"].map((item) => (
-              <Link key={item} href="#" className="text-white/15 hover:text-white/35 text-xs transition-colors">
-                {item}
-              </Link>
-            ))}
+            <Link href="/terminos" className="text-white/15 hover:text-white/35 text-xs transition-colors">Términos</Link>
+            <Link href="/privacidad" className="text-white/15 hover:text-white/35 text-xs transition-colors">Privacidad</Link>
+            <Link href="/privacidad" className="text-white/15 hover:text-white/35 text-xs transition-colors">Cookies</Link>
           </div>
         </div>
       </div>

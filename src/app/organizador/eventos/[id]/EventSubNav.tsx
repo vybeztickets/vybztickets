@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const NAV_ITEMS = [
+type NavItem = { label: string; path: string; highlight?: boolean };
+
+const NAV_ITEMS: NavItem[] = [
   { label: "Estadísticas", path: "estadisticas" },
   { label: "Editar", path: "editar" },
   { label: "Entradas", path: "entradas" },
@@ -13,6 +15,7 @@ const NAV_ITEMS = [
   { label: "Asistentes", path: "asistentes" },
   { label: "Embajadores", path: "embajadores" },
   { label: "Ingreso", path: "ingreso" },
+  { label: "★ Destacar", path: "destacar", highlight: true },
 ];
 
 export default function EventSubNav({ eventId }: { eventId: string }) {
@@ -59,8 +62,8 @@ export default function EventSubNav({ eventId }: { eventId: string }) {
               className="px-4 py-3 text-sm font-medium whitespace-nowrap transition-all shrink-0"
               style={
                 active
-                  ? { color: "#0a0a0a", borderBottom: "2px solid #0a0a0a" }
-                  : { color: "rgba(0,0,0,0.35)", borderBottom: "2px solid transparent" }
+                  ? { color: item.highlight ? "#f59e0b" : "#0a0a0a", borderBottom: `2px solid ${item.highlight ? "#f59e0b" : "#0a0a0a"}` }
+                  : { color: item.highlight ? "#f59e0b" : "rgba(0,0,0,0.35)", borderBottom: "2px solid transparent" }
               }
             >
               {item.label}

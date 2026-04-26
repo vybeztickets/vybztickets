@@ -17,18 +17,22 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   queued: { label: "En cola", color: "#6366f1" },
 };
 
+const DELETED_KEY = "mkt_deleted_ids";
+
+function getDeleted(): number[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(localStorage.getItem(DELETED_KEY) ?? "[]"); } catch { return []; }
+}
+
 export default function MarketingClient() {
   const [filter, setFilter] = useState("Todos");
   const [selected, setSelected] = useState<number[]>([]);
-  const [campaigns, setCampaigns] = useState(MOCK_CAMPAIGNS);
+  const [campaigns, setCampaigns] = useState(() =>
+    MOCK_CAMPAIGNS.filter((c) => !getDeleted().includes(c.id))
+  );
 
   function toggleSelect(id: number) {
     setSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
-  }
-
-  function deleteSelected() {
-    setCampaigns((c) => c.filter((x) => !selected.includes(x.id)));
-    setSelected([]);
   }
 
   const filtered = campaigns.filter((c) => {
@@ -38,6 +42,20 @@ export default function MarketingClient() {
     if (filter === "En cola") return c.status === "queued";
     return true;
   });
+
+  function toggleAll() {
+    const visibleIds = filtered.map((c) => c.id);
+    const allOn = visibleIds.length > 0 && visibleIds.every((id) => selected.includes(id));
+    setSelected(allOn ? [] : visibleIds);
+  }
+
+  function deleteSelected() {
+    const toDelete = selected;
+    setCampaigns((c) => c.filter((x) => !toDelete.includes(x.id)));
+    setSelected([]);
+    const existing = getDeleted();
+    localStorage.setItem(DELETED_KEY, JSON.stringify([...new Set([...existing, ...toDelete])]));
+  }
 
   return (
     <div className="p-8">
@@ -109,7 +127,13 @@ export default function MarketingClient() {
             borderBottom: "1px solid rgba(0,0,0,0.07)",
           }}
         >
-          <div /><div>Mensaje</div><div>Estado</div><div>Enviar a</div><div>Destinatarios</div><div />
+          <input
+            type="checkbox"
+            className="accent-black"
+            checked={filtered.length > 0 && filtered.every((c) => selected.includes(c.id))}
+            onChange={toggleAll}
+          />
+          <div>Mensaje</div><div>Estado</div><div>Enviar a</div><div>Destinatarios</div><div />
         </div>
 
         {filtered.map((c, i) => {

@@ -5,8 +5,13 @@ import EventsGrid from "./EventsGrid";
 
 export const metadata = { title: "Eventos — Vybz Tickets" };
 
-export default async function EventosPage() {
+export default async function EventosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
   const supabase = await createClient();
+  const { category } = await searchParams;
 
   const { data: events } = await supabase
     .from("events")
@@ -26,7 +31,7 @@ export default async function EventosPage() {
             Próximos Eventos
           </h1>
         </div>
-        <EventsGrid events={events ?? []} />
+        <EventsGrid events={events ?? []} initialCategory={category} />
       </main>
       <Footer />
     </div>

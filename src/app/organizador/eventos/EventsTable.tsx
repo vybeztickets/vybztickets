@@ -35,12 +35,24 @@ const STATUS_DOT: Record<string, string> = {
 
 export default function EventsTable({ events }: { events: Event[] }) {
   const router = useRouter();
-  const [filter, setFilter] = useState("all");
+  const [activeFilters, setActiveFilters] = useState<string[]>(["all"]);
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [visibility, setVisibility] = useState<Record<string, boolean>>(
     Object.fromEntries(events.map((e) => [e.id, e.is_visible !== false]))
   );
+
+  function toggleFilter(key: string) {
+    if (key === "all") { setActiveFilters(["all"]); return; }
+    setActiveFilters((prev) => {
+      const without = prev.filter((f) => f !== "all");
+      if (without.includes(key)) {
+        const next = without.filter((f) => f !== key);
+        return next.length === 0 ? ["all"] : next;
+      }
+      return [...without, key];
+    });
+  }
 
   async function toggleVisibility(id: string, e: React.MouseEvent) {
     e.preventDefault();
@@ -72,9 +84,15 @@ export default function EventsTable({ events }: { events: Event[] }) {
   const filtered = events.filter((e) => {
     const eventDate = new Date(e.date + "T00:00:00");
     const isVis = visibility[e.id] !== false;
-    if (filter === "upcoming" && eventDate < today) return false;
-    if (filter === "past" && eventDate >= today) return false;
-    if (filter === "hidden" && isVis) return false;
+    if (!activeFilters.includes("all")) {
+      const match = activeFilters.some((f) => {
+        if (f === "upcoming") return eventDate >= today;
+        if (f === "past") return eventDate < today;
+        if (f === "hidden") return !isVis;
+        return true;
+      });
+      if (!match) return false;
+    }
     if (search && !e.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -83,21 +101,24 @@ export default function EventsTable({ events }: { events: Event[] }) {
     <div>
       {/* Filter + search bar */}
       <div className="flex items-center gap-3 mb-8 flex-wrap">
-        <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: "rgba(0,0,0,0.04)" }}>
-          {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={
-                filter === f.key
-                  ? { background: "#0a0a0a", color: "#fff" }
-                  : { color: "rgba(0,0,0,0.38)" }
-              }
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {FILTERS.map((f) => {
+            const on = activeFilters.includes(f.key);
+            return (
+              <button
+                key={f.key}
+                onClick={() => toggleFilter(f.key)}
+                className="px-5 py-2 rounded-full text-sm font-semibold transition-all"
+                style={
+                  on
+                    ? { background: "#0a0a0a", color: "#fff" }
+                    : { background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.45)", border: "1px solid rgba(0,0,0,0.08)" }
+                }
+              >
+                {f.label}
+              </button>
+            );
+          })}
         </div>
 
         <div className="flex-1" />

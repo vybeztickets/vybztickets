@@ -41,7 +41,7 @@ export default async function NewEventPage() {
   return (
     <div className="p-8">
       <p className="text-[#0a0a0a]/30 text-sm font-medium tracking-widest uppercase mb-2">Eventos</p>
-      <h1 className="font-[family-name:var(--font-bebas)] text-5xl tracking-wide gradient-text mb-10">
+      <h1 className="font-[family-name:var(--font-bebas)] text-5xl tracking-wide text-[#0a0a0a] mb-10">
         Nuevo Evento
       </h1>
       <div className="max-w-2xl">

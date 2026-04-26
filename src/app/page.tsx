@@ -1,6 +1,7 @@
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import MarqueeStrip from "./components/MarqueeStrip";
+import FeaturedEvents from "./components/FeaturedEvents";
 import PlatformSection from "./components/PlatformSection";
 import UpcomingEvents from "./components/UpcomingEvents";
 import ResaleSection from "./components/ResaleSection";
@@ -12,6 +13,7 @@ export default function Home() {
       <Navbar />
       <Hero />
       <MarqueeStrip />
+      <FeaturedEvents />
       <PlatformSection />
       <UpcomingEvents />
       <ResaleSection />
