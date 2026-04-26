@@ -100,7 +100,13 @@ export default function CheckoutPanel({
   function selectTicket(id: string) {
     setSelectedId(id);
     const t = activeTypes.find((x) => x.id === id);
-    if (t?.category === "table" || t?.category === "seat") { setPaxCount(1); } else { setQty(1); }
+    if (t?.category === "table" || t?.category === "seat") {
+      setPaxCount(t?.capacity ?? 1);
+      setPerTicket([]);
+      setSameEmail(true);
+    } else {
+      setQty(1);
+    }
     setStep("details");
   }
 
@@ -128,7 +134,11 @@ export default function CheckoutPanel({
           promoCode: (promoApplied && promoValid) ? promoCode : null,
           discountPercent: promoValid ? discountPct : 0,
           marketingOptIn,
-          perTicketData: (!isTable && qty >= 2 && !sameEmail) ? getPerTicketArray() : null,
+          perTicketData: (!isTable && qty >= 2 && !sameEmail)
+            ? getPerTicketArray()
+            : (isTable && paxCount >= 2 && !sameEmail)
+              ? Array.from({ length: paxCount }, (_, i) => ({ name: perTicket[i]?.name || name, email: perTicket[i]?.email || email }))
+              : null,
           paymentIntentId: intentId ?? null,
         }),
       });
@@ -150,6 +160,11 @@ export default function CheckoutPanel({
     if (!sameEmail && qty >= 2) {
       for (let i = 0; i < qty; i++) {
         if (!perTicket[i]?.email) { setError(`Falta el email de la Entrada ${i + 1}`); return; }
+      }
+    }
+    if (isTable && !sameEmail && paxCount >= 2) {
+      for (let i = 0; i < paxCount; i++) {
+        if (!perTicket[i]?.email) { setError(`Falta el email de la Persona ${i + 1}`); return; }
       }
     }
     setError("");
@@ -349,6 +364,7 @@ export default function CheckoutPanel({
             />
           </div>
 
+          {/* Multi-email toggle — general tickets */}
           {!isTable && qty >= 2 && (
             <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
               <span className="text-[#0a0a0a]/50 text-sm">Enviar todas al mismo correo</span>
@@ -363,7 +379,6 @@ export default function CheckoutPanel({
               </button>
             </label>
           )}
-
           {!isTable && qty >= 2 && !sameEmail && (
             <div className="flex flex-col gap-3">
               {Array.from({ length: qty }, (_, i) => (
@@ -382,15 +397,52 @@ export default function CheckoutPanel({
             </div>
           )}
 
+          {/* Mesa: pax counter + optional per-person emails */}
           {isTable && (
-            <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-              <span className="text-[#0a0a0a]/50 text-sm">¿Cuántas personas?</span>
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setPaxCount(Math.max(1, paxCount - 1))} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>−</button>
-                <span className="text-[#0a0a0a] font-semibold w-4 text-center">{paxCount}</span>
-                <button type="button" onClick={() => setPaxCount(Math.min(maxPax, paxCount + 1))} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>+</button>
+            <>
+              <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
+                <span className="text-[#0a0a0a]/50 text-sm">¿Cuántas personas?</span>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => { setPaxCount(Math.max(1, paxCount - 1)); setPerTicket([]); }} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>−</button>
+                  <span className="text-[#0a0a0a] font-semibold w-4 text-center">{paxCount}</span>
+                  <button type="button" onClick={() => { setPaxCount(Math.min(maxPax, paxCount + 1)); setPerTicket([]); }} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>+</button>
+                </div>
               </div>
-            </div>
+
+              {paxCount >= 2 && (
+                <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
+                  <span className="text-[#0a0a0a]/50 text-sm">Enviar a correos distintos</span>
+                  <button type="button" onClick={() => {
+                    const next = !sameEmail;
+                    setSameEmail(next);
+                    if (!next) setPerTicket(Array.from({ length: paxCount }, (_, i) => ({ name: i === 0 ? name : "", email: i === 0 ? email : "" })));
+                    else setPerTicket([]);
+                  }}
+                    className="relative w-9 h-5 rounded-full shrink-0 transition-colors"
+                    style={{ background: !sameEmail ? "#0a0a0a" : "rgba(0,0,0,0.1)" }}>
+                    <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: !sameEmail ? "17px" : "2px" }} />
+                  </button>
+                </label>
+              )}
+
+              {paxCount >= 2 && !sameEmail && (
+                <div className="flex flex-col gap-3">
+                  {Array.from({ length: paxCount }, (_, i) => (
+                    <div key={i} className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.07)" }}>
+                      <p className="text-[#0a0a0a]/40 text-xs font-semibold">Persona {i + 1}{i === 0 ? " (tú)" : ""}</p>
+                      <input type="text" placeholder="Nombre"
+                        value={perTicket[i]?.name ?? (i === 0 ? name : "")}
+                        onChange={(e) => updatePerTicket(i, "name", e.target.value)}
+                        className={inputClass} style={inputStyle} />
+                      <input type="email" placeholder="Email *"
+                        value={perTicket[i]?.email ?? (i === 0 ? email : "")}
+                        onChange={(e) => updatePerTicket(i, "email", e.target.value)}
+                        required className={inputClass} style={inputStyle} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
           {!isTable && (

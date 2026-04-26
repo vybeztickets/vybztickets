@@ -5,6 +5,7 @@ import Footer from "@/app/components/Footer";
 import Image from "next/image";
 import CheckoutPanel from "./CheckoutPanel";
 import ResendTicket from "./ResendTicket";
+import Countdown from "./Countdown";
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -45,11 +46,11 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
             {/* ── LEFT: flyer + info + location ── */}
             <div className="lg:w-[300px] shrink-0">
-              <div className="rounded-2xl overflow-hidden mb-6" style={{ aspectRatio: "3/4", background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" }}>
+              <div className="rounded-2xl overflow-hidden mb-6" style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" }}>
                 {event.image_url ? (
-                  <Image src={event.image_url} alt={event.name} width={300} height={400} className="w-full h-full object-cover" />
+                  <Image src={event.image_url} alt={event.name} width={600} height={800} className="w-full h-auto" style={{ display: "block" }} />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-full flex items-center justify-center" style={{ aspectRatio: "3/4" }}>
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth="1.5">
                       <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
                       <polyline points="21 15 16 10 5 21"/>
@@ -84,10 +85,12 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
             {/* ── RIGHT: date, name, tickets ── */}
             <div className="flex-1 min-w-0">
-              <p className="text-[#0a0a0a]/40 text-sm mb-2 capitalize">
+              <p className="text-[#0a0a0a]/40 text-sm mb-3 capitalize">
                 {formattedDate}
                 {event.time && <span> · {event.time}{event.end_time ? ` – ${event.end_time}` : ""}</span>}
               </p>
+
+              <Countdown date={event.date} time={event.time} />
 
               <h1 className="font-[family-name:var(--font-bebas)] text-4xl md:text-5xl tracking-wide text-[#0a0a0a] mb-3 leading-none">
                 {event.name}
