@@ -2,8 +2,8 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import AutoPrint from "./AutoPrint";
 import ReportActions from "./ReportActions";
 
-const PLATFORM_FEE_B2B = 0.05;   // 5% — update when Stripe connected
-const PLATFORM_FEE_C2C = 0.03;   // 3% on resale
+const PLATFORM_FEE_B2B = 0.15;   // 15% service fee, always paid by buyer
+const PLATFORM_FEE_C2C = 0;      // C2C fee model TBD
 
 function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
 
@@ -155,9 +155,9 @@ export default async function ReportePage({
             </div>
           </div>
           <div className="kpi">
-            <div className="kpi-label">Fee Estimado B2B</div>
+            <div className="kpi-label">Ingresos Vybz B2B</div>
             <div className="kpi-value">{fmt(feeB2B)}</div>
-            <div className="kpi-sub">{(PLATFORM_FEE_B2B * 100).toFixed(0)}% sobre ventas netas · pendiente Stripe</div>
+            <div className="kpi-sub">Service fee {(PLATFORM_FEE_B2B * 100).toFixed(0)}% · pagado por comprador (ONVO Pay)</div>
           </div>
           <div className="kpi">
             <div className="kpi-label">Ingreso Estimado Total</div>
@@ -283,7 +283,7 @@ export default async function ReportePage({
 
         {/* Notes */}
         <div className="stripe-note">
-          * Las comisiones son estimadas al {(PLATFORM_FEE_B2B * 100).toFixed(0)}% (B2B) y {(PLATFORM_FEE_C2C * 100).toFixed(0)}% (C2C). Los datos reales de ingresos estarán disponibles cuando se conecte Stripe. CAPEX y costos operativos no incluidos en este reporte.
+          * Service fee B2B: {(PLATFORM_FEE_B2B * 100).toFixed(0)}% sobre el precio base del ticket, siempre pagado por el comprador vía ONVO Pay. Modelo de cobro C2C en revisión — no incluido en este reporte. CAPEX y costos operativos no incluidos.
         </div>
 
         <ReportActions />

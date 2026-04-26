@@ -68,17 +68,14 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     .single();
   if (!event) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
-  // Block if there are sold tickets
-  const { count } = await admin
-    .from("tickets")
-    .select("id", { count: "exact", head: true })
-    .eq("event_id", id)
-    .eq("status", "active");
-  if ((count ?? 0) > 0) {
-    return NextResponse.json({ error: "No se puede eliminar un evento con entradas vendidas activas" }, { status: 409 });
+  // Cascade delete: validations → resale_listings → tickets → ticket_types → event
+  await admin.from("ticket_validations").delete().eq("event_id", id);
+  const { data: tickets } = await admin.from("tickets").select("id").eq("event_id", id);
+  if (tickets && tickets.length > 0) {
+    const ticketIds = tickets.map((t) => t.id);
+    await admin.from("resale_listings").delete().in("ticket_id", ticketIds);
+    await admin.from("tickets").delete().eq("event_id", id);
   }
-
-  // Delete ticket_types first (FK), then event
   await admin.from("ticket_types").delete().eq("event_id", id);
   const { error } = await admin.from("events").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

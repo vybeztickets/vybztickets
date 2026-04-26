@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+type TeamMember = { id: string; member_email: string; role: string; created_at: string };
+
 const TABS = ["Estado", "Perfil", "Imagen de marca", "Seguridad", "Detalles de la empresa", "Impuestos", "Notificaciones", "Integraciones"];
 
 type Profile = {
@@ -32,7 +34,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   );
 }
 
-export default function ConfigTabs({ profile, userId, userEmail }: { profile: Profile | null; userId: string; userEmail: string }) {
+export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: { profile: Profile | null; userId: string; userEmail: string; initialTeam: TeamMember[] }) {
   const [tab, setTab] = useState("Estado");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -50,6 +52,10 @@ export default function ConfigTabs({ profile, userId, userEmail }: { profile: Pr
   const [firstName, setFirstName] = useState(profile?.full_name?.split(" ")[0] ?? "");
   const [lastName, setLastName] = useState(profile?.full_name?.split(" ")[1] ?? "");
   const [idNumber, setIdNumber] = useState("");
+  const [phoneCode, setPhoneCode] = useState("+506");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [companyId, setCompanyId] = useState("");
 
   // Impuestos
   const [chargesTax, setChargesTax] = useState(false);
@@ -67,11 +73,53 @@ export default function ConfigTabs({ profile, userId, userEmail }: { profile: Pr
   const [taxSaved, setTaxSaved] = useState(false);
   const [taxError, setTaxError] = useState("");
 
+  // Equipo
+  const [team, setTeam] = useState<TeamMember[]>(initialTeam);
+  const [addingMember, setAddingMember] = useState(false);
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState("checkin");
+  const [teamSaving, setTeamSaving] = useState(false);
+  const [teamError, setTeamError] = useState("");
+
   // Notificaciones
   const [notifyEmail, setNotifyEmail] = useState(userEmail);
   const [notifyCourtesy, setNotifyCourtesy] = useState(true);
   const [notifyPayments, setNotifyPayments] = useState(true);
   const [notifyRefunds, setNotifyRefunds] = useState(true);
+
+  async function handleAddMember(e: React.FormEvent) {
+    e.preventDefault();
+    setTeamSaving(true);
+    setTeamError("");
+    const res = await fetch("/api/organizador/equipo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: newMemberEmail, role: newMemberRole }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setTeamError(data.error ?? "Error al agregar");
+    } else {
+      setTeam((t) => [...t, data as TeamMember]);
+      setNewMemberEmail("");
+      setAddingMember(false);
+    }
+    setTeamSaving(false);
+  }
+
+  async function handleRemoveMember(id: string) {
+    await fetch(`/api/organizador/equipo?id=${id}`, { method: "DELETE" });
+    setTeam((t) => t.filter((m) => m.id !== id));
+  }
+
+  async function handleChangeRole(id: string, role: string) {
+    setTeam((t) => t.map((m) => m.id === id ? { ...m, role } : m));
+    await fetch("/api/organizador/equipo", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, role }),
+    });
+  }
 
   async function handleSavePerfil(e: React.FormEvent) {
     e.preventDefault();
@@ -294,65 +342,129 @@ export default function ConfigTabs({ profile, userId, userEmail }: { profile: Pr
       {/* Seguridad */}
       {tab === "Seguridad" && (
         <div className="max-w-2xl flex flex-col gap-6">
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-[#0a0a0a] font-semibold text-lg">Equipo</h2>
+            <div>
+              <h2 className="text-[#0a0a0a] font-semibold text-lg">Equipo</h2>
+              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Agrega miembros con rol Check-in para el scanner QR de tus eventos.</p>
+            </div>
             <button
-              className="w-9 h-9 rounded-full flex items-center justify-center text-[#0a0a0a] font-bold"
-              style={{ background: "rgba(0,0,0,0.08)", border: "1px solid rgba(0,0,0,0.15)" }}
+              onClick={() => { setAddingMember((v) => !v); setTeamError(""); }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+              style={{ background: addingMember ? "rgba(0,0,0,0.06)" : "#0a0a0a", color: addingMember ? "#0a0a0a" : "#fff" }}
             >
-              +
+              {addingMember ? "Cancelar" : "+ Agregar"}
             </button>
           </div>
 
+          {/* Tabla */}
           <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
+            {/* Header row */}
             <div
-              className="grid text-xs font-semibold uppercase tracking-wider px-5 py-3"
+              className="grid text-[10px] font-semibold uppercase tracking-wider px-5 py-3"
               style={{
-                gridTemplateColumns: "1fr 120px 160px 160px 80px",
+                gridTemplateColumns: "minmax(0,1fr) 110px 44px",
                 background: "rgba(0,0,0,0.03)",
                 color: "rgba(0,0,0,0.3)",
                 borderBottom: "1px solid rgba(0,0,0,0.07)",
               }}
             >
-              <div>Miembro</div><div>Rol</div><div>Autenticación</div><div>Último acceso</div><div />
+              <div>Miembro</div><div>Rol</div><div />
             </div>
 
-            {/* Owner row */}
+            {/* Owner */}
             <div
               className="grid items-center px-5 py-4"
-              style={{ gridTemplateColumns: "minmax(0,1fr) 110px 130px 100px 80px", borderBottom: "1px solid rgba(0,0,0,0.04)" }}
+              style={{ gridTemplateColumns: "minmax(0,1fr) 110px 44px", borderBottom: team.length > 0 || addingMember ? "1px solid rgba(0,0,0,0.05)" : "none" }}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#0a0a0a", color: "#fff" }}>
-                  {(userEmail ?? "?").charAt(0).toUpperCase()}
+                  {userEmail.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
                   <p className="text-[#0a0a0a] text-sm font-medium truncate">{userEmail}</p>
-                  <span className="text-xs px-1.5 py-0.5 rounded-md" style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>Tú</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>Tú</span>
                 </div>
               </div>
               <span className="text-[#0a0a0a]/50 text-xs">Propietario</span>
-              <span className="text-[#0a0a0a]/30 text-xs">—</span>
-              <span className="text-[#0a0a0a]/30 text-xs">Hoy</span>
-              <div className="flex gap-2 justify-end">
-                <button className="text-[#0a0a0a]/20 hover:text-[#0a0a0a]/50 transition-colors">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                </button>
-              </div>
+              <div />
             </div>
+
+            {/* Team members */}
+            {team.map((m, i) => (
+              <div
+                key={m.id}
+                className="grid items-center px-5 py-4"
+                style={{ gridTemplateColumns: "minmax(0,1fr) 110px 44px", borderBottom: i < team.length - 1 || addingMember ? "1px solid rgba(0,0,0,0.05)" : "none" }}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "rgba(0,0,0,0.07)", color: "rgba(0,0,0,0.4)" }}>
+                    {m.member_email.charAt(0).toUpperCase()}
+                  </div>
+                  <p className="text-[#0a0a0a]/70 text-sm truncate">{m.member_email}</p>
+                </div>
+                <select
+                  value={m.role}
+                  onChange={(e) => handleChangeRole(m.id, e.target.value)}
+                  className="text-xs text-[#0a0a0a]/60 focus:outline-none rounded-lg px-2 py-1 transition-colors hover:bg-black/5"
+                  style={{ background: "transparent", border: "1px solid transparent" }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)"}
+                  onBlur={(e) => e.currentTarget.style.borderColor = "transparent"}
+                >
+                  <option value="checkin">Check-in</option>
+                  <option value="stats">Estadísticas</option>
+                  <option value="pos">POS</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => handleRemoveMember(m.id)}
+                    className="text-[#0a0a0a]/20 hover:text-red-400 transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {/* Inline add form */}
+            {addingMember && (
+              <form onSubmit={handleAddMember} className="flex items-center gap-3 px-5 py-4" style={{ background: "rgba(0,0,0,0.015)" }}>
+                <input
+                  type="email"
+                  required
+                  placeholder="correo@ejemplo.com"
+                  value={newMemberEmail}
+                  onChange={(e) => setNewMemberEmail(e.target.value)}
+                  className="flex-1 px-3 py-2 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none"
+                  style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.1)" }}
+                />
+                <select
+                  value={newMemberRole}
+                  onChange={(e) => setNewMemberRole(e.target.value)}
+                  className="px-3 py-2 rounded-xl text-sm text-[#0a0a0a]/70 focus:outline-none"
+                  style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.1)" }}
+                >
+                  <option value="checkin">Check-in</option>
+                  <option value="stats">Estadísticas</option>
+                  <option value="pos">POS</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <button
+                  type="submit"
+                  disabled={teamSaving}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold disabled:opacity-40"
+                  style={{ background: "#0a0a0a", color: "#fff" }}
+                >
+                  {teamSaving ? "..." : "Agregar"}
+                </button>
+              </form>
+            )}
           </div>
 
-          <p className="text-[#0a0a0a]/20 text-xs">
-            Agrega miembros con rol "Check-in" para que puedan usar el scanner QR en la entrada de tus eventos.
-          </p>
-
-          <div className="rounded-2xl p-5" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
-            <h3 className="text-[#0a0a0a] font-semibold text-sm mb-1">Historial de seguridad</h3>
-            <p className="text-[#0a0a0a]/25 text-xs">Próximamente — podrás ver todos los inicios de sesión y acciones del equipo.</p>
-          </div>
+          {teamError && <p className="text-red-400 text-xs">{teamError}</p>}
         </div>
       )}
 
@@ -360,20 +472,23 @@ export default function ConfigTabs({ profile, userId, userEmail }: { profile: Pr
       {tab === "Detalles de la empresa" && (
         <div className="max-w-2xl flex flex-col gap-6">
           <div>
+            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Detalles de negocio</h2>
+            <p className="text-[#0a0a0a]/35 text-sm">Aquí puedes configurar tus detalles de negocio.</p>
+          </div>
+
+          <div>
             <label className={labelClass}>Tipo de cuenta</label>
-            <select
-              className={inputClass}
-              style={inputStyle}
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value)}
-            >
-              <option>Personal</option>
-              <option>Empresa</option>
+            <select className={inputClass} style={inputStyle} value={accountType} onChange={(e) => setAccountType(e.target.value)}>
+              <option value="Personal">Personal</option>
+              <option value="Empresa">Empresa</option>
             </select>
           </div>
 
-          <div className="py-3" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-            <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider">Detalles personales</p>
+          {/* Sección representante / datos personales */}
+          <div className="pt-1 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+            <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider">
+              {accountType === "Empresa" ? "Datos del representante legal" : "Datos personales"}
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -389,7 +504,7 @@ export default function ConfigTabs({ profile, userId, userEmail }: { profile: Pr
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Número de cédula</label>
+              <label className={labelClass}>Número de ID</label>
               <input type="text" className={inputClass} style={inputStyle} value={idNumber} onChange={(e) => setIdNumber(e.target.value)} placeholder="1-2345-6789" />
             </div>
             <div>
@@ -399,15 +514,86 @@ export default function ConfigTabs({ profile, userId, userEmail }: { profile: Pr
           </div>
 
           <div>
-            <label className={labelClass}>WhatsApp</label>
-            <input type="text" className={inputClass} style={inputStyle} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+506 8888-8888" />
+            <label className={labelClass}>Número de teléfono</label>
+            <div className="flex gap-0 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+              <select
+                value={phoneCode}
+                onChange={(e) => setPhoneCode(e.target.value)}
+                className="px-3 py-3 text-sm text-[#0a0a0a]/70 focus:outline-none shrink-0"
+                style={{ background: "rgba(0,0,0,0.04)", borderRight: "1px solid rgba(0,0,0,0.08)" }}
+              >
+                {[
+                  { flag: "🇨🇷", code: "+506", name: "CR" },
+                  { flag: "🇺🇸", code: "+1",   name: "US" },
+                  { flag: "🇲🇽", code: "+52",  name: "MX" },
+                  { flag: "🇨🇴", code: "+57",  name: "CO" },
+                  { flag: "🇦🇷", code: "+54",  name: "AR" },
+                  { flag: "🇧🇷", code: "+55",  name: "BR" },
+                  { flag: "🇵🇦", code: "+507", name: "PA" },
+                  { flag: "🇬🇹", code: "+502", name: "GT" },
+                  { flag: "🇸🇻", code: "+503", name: "SV" },
+                  { flag: "🇭🇳", code: "+504", name: "HN" },
+                  { flag: "🇳🇮", code: "+505", name: "NI" },
+                  { flag: "🇩🇴", code: "+1809",name: "DO" },
+                  { flag: "🇵🇷", code: "+1787",name: "PR" },
+                  { flag: "🇵🇪", code: "+51",  name: "PE" },
+                  { flag: "🇨🇱", code: "+56",  name: "CL" },
+                  { flag: "🇧🇴", code: "+591", name: "BO" },
+                  { flag: "🇪🇨", code: "+593", name: "EC" },
+                  { flag: "🇵🇾", code: "+595", name: "PY" },
+                  { flag: "🇺🇾", code: "+598", name: "UY" },
+                  { flag: "🇻🇪", code: "+58",  name: "VE" },
+                  { flag: "🇨🇺", code: "+53",  name: "CU" },
+                  { flag: "🇪🇸", code: "+34",  name: "ES" },
+                  { flag: "🇬🇧", code: "+44",  name: "GB" },
+                  { flag: "🇫🇷", code: "+33",  name: "FR" },
+                  { flag: "🇩🇪", code: "+49",  name: "DE" },
+                  { flag: "🇮🇹", code: "+39",  name: "IT" },
+                  { flag: "🇵🇹", code: "+351", name: "PT" },
+                  { flag: "🇨🇦", code: "+1",   name: "CA" },
+                  { flag: "🇦🇺", code: "+61",  name: "AU" },
+                  { flag: "🇨🇳", code: "+86",  name: "CN" },
+                  { flag: "🇯🇵", code: "+81",  name: "JP" },
+                  { flag: "🇮🇳", code: "+91",  name: "IN" },
+                ].map((c) => (
+                  <option key={c.name + c.code} value={c.code}>{c.flag} {c.code}</option>
+                ))}
+              </select>
+              <input
+                type="tel"
+                placeholder="8888 8888"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="flex-1 px-4 py-3 text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none"
+                style={{ background: "rgba(0,0,0,0.04)" }}
+              />
+            </div>
           </div>
 
-          <div className="flex gap-3">
-            <button className="flex-1 py-3 rounded-xl font-semibold" style={{ background: "#0a0a0a", color: "#fff" }}>
+          {/* Detalles de negocio (solo si Empresa) */}
+          {accountType === "Empresa" && (
+            <>
+              <div className="pt-1 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+                <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider">Detalles de negocio</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Nombre de la empresa</label>
+                  <input type="text" className={inputClass} style={inputStyle} value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+                </div>
+                <div>
+                  <label className={labelClass}>Identificación de la empresa</label>
+                  <input type="text" className={inputClass} style={inputStyle} value={companyId} onChange={(e) => setCompanyId(e.target.value)} />
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="flex flex-col gap-2 pt-2">
+            <button className="w-full py-3 rounded-xl font-semibold" style={{ background: "#0a0a0a", color: "#fff" }}>
               Guardar
             </button>
-            <button className="flex-1 py-3 rounded-xl font-semibold" style={{ background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)" }}>
+            <button className="w-full py-3 rounded-xl font-semibold" style={{ background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)" }}>
               Cancelar
             </button>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import QRCode from "react-qr-code";
 
@@ -31,11 +31,13 @@ export default function CheckoutPanel({
   eventId,
   eventName,
   venueMapUrl,
+  platformFeePercent = 15,
 }: {
   ticketTypes: TicketType[];
   eventId: string;
   eventName: string;
   venueMapUrl: string | null;
+  platformFeePercent?: number;
 }) {
   const activeTypes = ticketTypes.filter((t) => t.is_active && !t.is_hidden && t.total_available - t.sold_count > 0);
   const generalTypes = activeTypes.filter((t) => !t.category || t.category === "general");
@@ -49,6 +51,7 @@ export default function CheckoutPanel({
   const [emailConfirm, setEmailConfirm] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneCode, setPhoneCode] = useState("+506");
   const [notes, setNotes] = useState("");
   const [promoCode, setPromoCode] = useState("");
   const [showPromo, setShowPromo] = useState(false);
@@ -59,7 +62,9 @@ export default function CheckoutPanel({
   const [perTicket, setPerTicket] = useState<{ name: string; email: string }[]>([]);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
 
-  const [step, setStep] = useState<"select" | "details" | "processing" | "done">("select");
+  const [step, setStep] = useState<"select" | "details" | "payment" | "processing" | "done">("select");
+  const [paymentIntentId, setPaymentIntentId] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const [error, setError] = useState("");
   const [purchasedQRs, setPurchasedQRs] = useState<string[]>([]);
 
@@ -72,7 +77,9 @@ export default function CheckoutPanel({
   const discountPct = promoValid ? promoApplied!.discount : 0;
   const basePrice = selected ? selected.price * (isTable ? 1 : qty) : 0;
   const discountAmount = Math.round(basePrice * discountPct / 100);
-  const total = basePrice - discountAmount;
+  const subtotal = basePrice - discountAmount;
+  const serviceFee = Math.round(subtotal * platformFeePercent / 100);
+  const total = subtotal + serviceFee;
 
   async function applyPromo() {
     if (!promoCode.trim()) return;
@@ -108,28 +115,21 @@ export default function CheckoutPanel({
     }));
   }
 
-  async function handlePurchase(e: React.FormEvent) {
-    e.preventDefault();
-    if (!selected || !email) return;
-    if (email !== emailConfirm) { setError("Los emails no coinciden"); return; }
-    if (!sameEmail && qty >= 2) {
-      for (let i = 0; i < qty; i++) {
-        if (!perTicket[i]?.email) { setError(`Falta el email de la Entrada ${i + 1}`); return; }
-      }
-    }
-    setStep("processing"); setError("");
+  const completePurchase = useCallback(async (intentId?: string) => {
+    setStep("processing");
     try {
       const res = await fetch("/api/tickets/purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           eventId, ticketTypeId: selectedId, quantity: isTable ? 1 : qty,
-          buyerEmail: email, buyerName: name || null, buyerPhone: phone || null,
+          buyerEmail: email, buyerName: name || null, buyerPhone: phone ? `${phoneCode} ${phone}` : null,
           buyerNotes: notes || null, paxCount: isTable ? paxCount : qty,
           promoCode: (promoApplied && promoValid) ? promoCode : null,
           discountPercent: promoValid ? discountPct : 0,
           marketingOptIn,
           perTicketData: (!isTable && qty >= 2 && !sameEmail) ? getPerTicketArray() : null,
+          paymentIntentId: intentId ?? null,
         }),
       });
       const data = await res.json();
@@ -140,7 +140,70 @@ export default function CheckoutPanel({
       setError(err instanceof Error ? err.message : "Error inesperado");
       setStep("details");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId, selectedId, isTable, qty, email, name, phone, notes, paxCount, promoApplied, promoValid, promoCode, discountPct, marketingOptIn, sameEmail]);
+
+  async function handlePurchase(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selected || !email) return;
+    if (email !== emailConfirm) { setError("Los emails no coinciden"); return; }
+    if (!sameEmail && qty >= 2) {
+      for (let i = 0; i < qty; i++) {
+        if (!perTicket[i]?.email) { setError(`Falta el email de la Entrada ${i + 1}`); return; }
+      }
+    }
+    setError("");
+
+    // Tickets gratis — saltar pago
+    if (total === 0) { await completePurchase(); return; }
+
+    // Tickets de pago — crear payment intent
+    setPaymentLoading(true);
+    try {
+      const res = await fetch("/api/tickets/create-payment-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: total,
+          currency: "CRC",
+          description: `${isTable ? 1 : qty} × ${selected.name} — ${eventName}`,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Error al iniciar el pago");
+      setPaymentIntentId(data.paymentIntentId);
+      setStep("payment");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error inesperado");
+    } finally {
+      setPaymentLoading(false);
+    }
   }
+
+  // Cargar ONVO widget cuando llega al paso de pago
+  useEffect(() => {
+    if (step !== "payment" || !paymentIntentId) return;
+    const existing = document.getElementById("onvo-sdk");
+    if (existing) { initOnvo(); return; }
+    const script = document.createElement("script");
+    script.id = "onvo-sdk";
+    script.src = "https://onvo-pay-widget.vercel.app/sdk.js";
+    script.async = true;
+    script.onload = initOnvo;
+    document.head.appendChild(script);
+
+    function initOnvo() {
+      const w = window as unknown as { onvo?: { pay: (o: unknown) => { render: (s: string) => void } } };
+      if (!w.onvo) return;
+      w.onvo.pay({
+        publicKey: process.env.NEXT_PUBLIC_ONVO_PUBLIC_KEY,
+        paymentIntentId,
+        paymentType: "one_time",
+        onSuccess: () => completePurchase(paymentIntentId),
+        onError: () => { setError("El pago no se pudo completar. Intentá de nuevo."); setStep("details"); },
+      }).render("#onvo-widget");
+    }
+  }, [step, paymentIntentId, completePurchase]);
 
   if (activeTypes.length === 0) {
     return (
@@ -203,6 +266,31 @@ export default function CheckoutPanel({
     );
   }
 
+  // ── PAYMENT ──
+  if (step === "payment") {
+    return (
+      <div>
+        <button type="button" onClick={() => setStep("details")}
+          className="flex items-center gap-1.5 text-[#0a0a0a]/35 text-xs mb-5 hover:text-[#0a0a0a] transition-colors">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Volver
+        </button>
+
+        <div className="p-4 rounded-xl mb-5" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
+          <div className="flex justify-between items-center">
+            <span className="text-[#0a0a0a] text-sm font-semibold">{selected?.name} × {isTable ? 1 : qty}</span>
+            <span className="text-[#0a0a0a] font-bold">{formatPrice(total)}</span>
+          </div>
+          <p className="text-[#0a0a0a]/30 text-xs mt-1">{email}</p>
+        </div>
+
+        <div id="onvo-widget" className="min-h-[300px]" />
+
+        {error && <p className="text-red-500 text-xs mt-3">{error}</p>}
+      </div>
+    );
+  }
+
   // ── DETAILS FORM ──
   if (step === "details" || step === "processing") {
     return (
@@ -230,7 +318,36 @@ export default function CheckoutPanel({
           <input type="email" placeholder="Email *" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} style={inputStyle} />
           <input type="email" placeholder="Confirma tu email *" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required className={inputClass}
             style={{ ...inputStyle, border: emailConfirm && email !== emailConfirm ? "1px solid rgba(239,68,68,0.4)" : "1px solid rgba(0,0,0,0.08)" }} />
-          <input type="tel" placeholder="Teléfono *" value={phone} onChange={(e) => setPhone(e.target.value)} required className={inputClass} style={inputStyle} />
+          <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+            <select
+              value={phoneCode}
+              onChange={(e) => setPhoneCode(e.target.value)}
+              className="px-3 py-3 text-sm text-[#0a0a0a]/70 focus:outline-none shrink-0"
+              style={{ background: "rgba(0,0,0,0.04)", borderRight: "1px solid rgba(0,0,0,0.08)" }}
+            >
+              {[
+                ["🇨🇷","+506","CR"],["🇺🇸","+1","US"],["🇲🇽","+52","MX"],["🇨🇴","+57","CO"],
+                ["🇦🇷","+54","AR"],["🇧🇷","+55","BR"],["🇵🇦","+507","PA"],["🇬🇹","+502","GT"],
+                ["🇸🇻","+503","SV"],["🇭🇳","+504","HN"],["🇳🇮","+505","NI"],["🇩🇴","+1809","DO"],
+                ["🇵🇷","+1787","PR"],["🇵🇪","+51","PE"],["🇨🇱","+56","CL"],["🇧🇴","+591","BO"],
+                ["🇪🇨","+593","EC"],["🇵🇾","+595","PY"],["🇺🇾","+598","UY"],["🇻🇪","+58","VE"],
+                ["🇨🇺","+53","CU"],["🇪🇸","+34","ES"],["🇬🇧","+44","GB"],["🇫🇷","+33","FR"],
+                ["🇩🇪","+49","DE"],["🇮🇹","+39","IT"],["🇵🇹","+351","PT"],["🇨🇦","+1","CA"],
+                ["🇦🇺","+61","AU"],["🇨🇳","+86","CN"],["🇯🇵","+81","JP"],["🇮🇳","+91","IN"],
+              ].map(([flag, code, name]) => (
+                <option key={name} value={code}>{flag} {code}</option>
+              ))}
+            </select>
+            <input
+              type="tel"
+              placeholder="Teléfono *"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              className="flex-1 px-4 py-3 text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none"
+              style={{ background: "rgba(0,0,0,0.04)" }}
+            />
+          </div>
 
           {!isTable && qty >= 2 && (
             <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
@@ -334,29 +451,33 @@ export default function CheckoutPanel({
 
           {error && <p className="text-red-500 text-xs">{error}</p>}
 
-          <div className="py-3 flex flex-col gap-1" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
-            {discountAmount > 0 && (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#0a0a0a]/30 text-xs">Subtotal</span>
-                  <span className="text-[#0a0a0a]/30 text-xs line-through">{formatPrice(basePrice)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-green-600 text-xs">Descuento ({discountPct}%)</span>
-                  <span className="text-green-600 text-xs">−{formatPrice(discountAmount)}</span>
-                </div>
-              </>
-            )}
+          <div className="py-3 flex flex-col gap-1.5" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
             <div className="flex items-center justify-between">
+              <span className="text-[#0a0a0a]/30 text-xs">Subtotal</span>
+              <span className="text-[#0a0a0a]/40 text-xs">{formatPrice(basePrice)}</span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-green-600 text-xs">Descuento ({discountPct}%)</span>
+                <span className="text-green-600 text-xs">−{formatPrice(discountAmount)}</span>
+              </div>
+            )}
+            {subtotal > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-[#0a0a0a]/30 text-xs">Fee de servicio ({platformFeePercent}%)</span>
+                <span className="text-[#0a0a0a]/40 text-xs">{formatPrice(serviceFee)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
               <span className="text-[#0a0a0a]/40 text-sm">Total</span>
               <span className="text-[#0a0a0a] font-bold text-xl">{formatPrice(total)}</span>
             </div>
           </div>
 
-          <button type="submit" disabled={step === "processing"}
+          <button type="submit" disabled={step === "processing" || paymentLoading}
             className="w-full py-3.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition-all"
             style={{ background: "#0a0a0a" }}>
-            {step === "processing" ? "Procesando..." : `Proceder al pago · ${formatPrice(total)}`}
+            {(step === "processing" || paymentLoading) ? "Procesando..." : total === 0 ? `Confirmar gratis` : `Proceder al pago · ${formatPrice(total)}`}
           </button>
         </form>
       </div>

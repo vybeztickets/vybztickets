@@ -125,18 +125,20 @@ export default function EventsTable({ events }: { events: Event[] }) {
           <button
             onClick={deleteSelected}
             disabled={deleting}
-            className="p-2 rounded-lg text-red-500/60 hover:text-red-500 transition-colors disabled:opacity-40"
-            title={`Eliminar ${selected.length} evento(s)`}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-red-500 transition-colors hover:bg-red-50 disabled:opacity-40"
+            style={{ border: "1px solid rgba(239,68,68,0.2)" }}
           >
             {deleting ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
                 <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
               </svg>
             ) : (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
               </svg>
             )}
+            Eliminar ({selected.length})
           </button>
         )}
       </div>

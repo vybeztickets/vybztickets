@@ -21,10 +21,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { count: pendingCount } = await db
-    .from("profiles")
-    .select("id", { count: "exact", head: true })
-    .eq("role", "pending_activation");
+  const [
+    { count: pendingCount },
+    { count: pendingKyc },
+  ] = await Promise.all([
+    db.from("profiles").select("id", { count: "exact", head: true }).eq("role", "pending_activation"),
+    db.from("kyc_verifications").select("id", { count: "exact", head: true }).eq("status", "pending"),
+  ]);
 
   return (
     <div className="min-h-screen flex" style={{ background: "#f4f4f5" }}>
@@ -32,6 +35,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         userName={profile?.full_name ?? user.email ?? ""}
         userEmail={profile?.email ?? user.email ?? ""}
         pendingCount={pendingCount ?? 0}
+        pendingKyc={pendingKyc ?? 0}
       />
       <main className="flex-1 ml-60 min-h-screen">
         {children}

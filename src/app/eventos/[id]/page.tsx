@@ -104,7 +104,8 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                 ticketTypes={event.ticket_types}
                 eventId={event.id}
                 eventName={event.name}
-                venueMapUrl={event.venue_map_url ?? null}
+                venueMapUrl={(event as any).venue_map_url ?? null}
+                platformFeePercent={(event as any).platform_fee_percent ?? 15}
               />
 
               <ResendTicket eventId={event.id} />

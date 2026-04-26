@@ -151,6 +151,22 @@ export default function OrgSidebar({
         </nav>
       )}
 
+      {/* Admin shortcut — only for superadmin */}
+      {userEmail === "nicozecchinato1@gmail.com" && !collapsed && (
+        <div className="px-3 pb-2">
+          <Link
+            href="/admin"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+            style={{ background: "rgba(99,102,241,0.08)", color: "#4f46e5" }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Panel Admin
+          </Link>
+        </div>
+      )}
+
       {/* User */}
       <div className="px-3 py-4 flex items-center gap-3" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold bg-[#0a0a0a] text-white">

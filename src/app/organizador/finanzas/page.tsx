@@ -28,8 +28,7 @@ export default async function FinanzasPage() {
   const totalRevenue = allTickets.filter((t) => t.status === "active" || t.status === "used")
     .reduce((s, t) => s + t.purchase_price, 0);
 
-  // Platform fee: 5%
-  const platformFee = Math.round(totalRevenue * 0.05);
+  const platformFee = Math.round(totalRevenue * 0.15);
   const available = totalRevenue - platformFee;
 
   // Group by date for transactions
@@ -45,6 +44,13 @@ export default async function FinanzasPage() {
     .slice(0, 20)
     .map(([date, amount]) => ({ date, amount }));
 
+  const { data: bankAccountsData } = await (admin as any)
+    .from("bank_accounts")
+    .select("*")
+    .eq("organizer_id", user.id)
+    .order("is_primary", { ascending: false })
+    .order("created_at", { ascending: true });
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
@@ -56,7 +62,13 @@ export default async function FinanzasPage() {
           Retirar fondos
         </button>
       </div>
-      <FinanzasTabs available={available} totalRevenue={totalRevenue} platformFee={platformFee} transactions={transactions} />
+      <FinanzasTabs
+        available={available}
+        totalRevenue={totalRevenue}
+        platformFee={platformFee}
+        transactions={transactions}
+        initialAccounts={bankAccountsData ?? []}
+      />
     </div>
   );
 }

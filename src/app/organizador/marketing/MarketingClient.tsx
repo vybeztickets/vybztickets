@@ -20,12 +20,18 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 export default function MarketingClient() {
   const [filter, setFilter] = useState("Todos");
   const [selected, setSelected] = useState<number[]>([]);
+  const [campaigns, setCampaigns] = useState(MOCK_CAMPAIGNS);
 
   function toggleSelect(id: number) {
     setSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
   }
 
-  const filtered = MOCK_CAMPAIGNS.filter((c) => {
+  function deleteSelected() {
+    setCampaigns((c) => c.filter((x) => !selected.includes(x.id)));
+    setSelected([]);
+  }
+
+  const filtered = campaigns.filter((c) => {
     if (filter === "Todos") return true;
     if (filter === "Borradores") return c.status === "draft";
     if (filter === "Enviados") return c.status === "sent";
@@ -79,7 +85,7 @@ export default function MarketingClient() {
         <div className="flex-1" />
         {selected.length > 0 && (
           <button
-            onClick={() => setSelected([])}
+            onClick={deleteSelected}
             className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-red-500 transition-colors hover:bg-red-50"
             style={{ border: "1px solid rgba(239,68,68,0.2)" }}
           >
