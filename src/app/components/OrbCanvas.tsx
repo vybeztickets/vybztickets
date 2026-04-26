@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-export default function OrbCanvas({ className = "" }: { className?: string }) {
+export default function OrbCanvas({ className = "", light = false }: { className?: string; light?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouse = useRef({ x: 0.5, y: 0.5 });
   const raf = useRef<number>(0);
@@ -78,7 +78,7 @@ export default function OrbCanvas({ className = "" }: { className?: string }) {
           j === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
         }
         ctx.closePath();
-        ctx.strokeStyle = `rgba(190,190,190,${opacity})`;
+        ctx.strokeStyle = light ? `rgba(20,20,20,${opacity * 0.6})` : `rgba(190,190,190,${opacity})`;
         ctx.lineWidth = 0.8 / dpr;
         ctx.stroke();
       }

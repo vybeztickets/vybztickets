@@ -194,21 +194,21 @@ function ScannerMockup() {
           {/* result card */}
           <div
             className="rounded-xl p-3 flex items-center gap-3 mb-3"
-            style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.25)" }}
+            style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
           >
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: "rgba(16,185,129,0.2)" }}
+              className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(255,255,255,0.1)" }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             </div>
             <div>
-              <p className="text-white text-[11px] font-semibold">Asistente verificado</p>
-              <p style={{ color: "#10b981" }} className="text-[9px]">VIP · Válido</p>
+              <p className="text-white text-[11px] font-semibold">Entrada válida</p>
+              <p className="text-[9px]" style={{ color: "rgba(255,255,255,0.35)" }}>VIP · Acceso confirmado</p>
             </div>
-            <p className="text-white/25 text-[8px] ml-auto">8:22pm</p>
+            <p className="text-[8px] ml-auto" style={{ color: "rgba(255,255,255,0.2)" }}>8:22pm</p>
           </div>
 
           {/* stats row */}

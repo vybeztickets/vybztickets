@@ -17,14 +17,14 @@ export default function Hero() {
   return (
     <section
       className="relative min-h-screen flex items-center overflow-hidden"
-      style={{ background: "#0a0a0a" }}
+      style={{ background: "#fff" }}
     >
       {/* Grid overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.028) 1px,transparent 1px)",
+            "linear-gradient(rgba(0,0,0,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.04) 1px,transparent 1px)",
           backgroundSize: "72px 72px",
           maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)",
         }}
@@ -40,15 +40,14 @@ export default function Hero() {
               transform: ready ? "none" : "translateY(10px)",
               transition: "opacity .7s ease .1s,transform .7s ease .1s",
             }}
-            className="inline-flex items-center gap-2 self-start mb-8 px-3.5 py-1.5 rounded-full"
-            /* inline so it doesn't stretch */
+            className="inline-flex items-center gap-2 self-start mb-8"
           >
             <span
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+              style={{ background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.08)" }}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/45">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: "rgba(0,0,0,0.4)" }}>
                 Activo en Costa Rica · Latam
               </span>
             </span>
@@ -56,8 +55,9 @@ export default function Hero() {
 
           {/* Headline */}
           <h1
-            className="font-[family-name:var(--font-bebas)] text-white leading-[0.88] tracking-wide mb-6"
+            className="font-[family-name:var(--font-bebas)] leading-[0.88] tracking-wide mb-6"
             style={{
+              color: "#0a0a0a",
               fontSize: "clamp(62px,8vw,116px)",
               opacity: ready ? 1 : 0,
               transform: ready ? "none" : "translateY(28px)",
@@ -65,14 +65,15 @@ export default function Hero() {
             }}
           >
             Vende más.<br />
-            <span style={{ color: "rgba(255,255,255,0.18)" }}>Controla</span><br />
-            <span style={{ color: "rgba(255,255,255,0.18)" }}>todo.</span>
+            <span style={{ color: "rgba(0,0,0,0.13)" }}>Controla</span><br />
+            <span style={{ color: "rgba(0,0,0,0.13)" }}>todo.</span>
           </h1>
 
           {/* Sub */}
           <p
-            className="text-white/38 text-base md:text-lg leading-relaxed mb-10 max-w-[420px]"
+            className="text-base md:text-lg leading-relaxed mb-10 max-w-[420px]"
             style={{
+              color: "rgba(0,0,0,0.42)",
               opacity: ready ? 1 : 0,
               transform: ready ? "none" : "translateY(16px)",
               transition: "opacity .8s ease .38s,transform .8s ease .38s",
@@ -92,7 +93,8 @@ export default function Hero() {
           >
             <Link
               href="/auth/login?redirectTo=/organizador/eventos/nuevo"
-              className="group flex items-center gap-2.5 bg-white text-[#0a0a0a] text-sm font-bold px-7 py-3.5 rounded-full transition-all duration-200 hover:bg-white/90"
+              className="group flex items-center gap-2.5 text-sm font-bold px-7 py-3.5 rounded-full transition-all duration-200"
+              style={{ background: "#0a0a0a", color: "#fff" }}
             >
               Crear evento gratis
               <svg
@@ -104,8 +106,8 @@ export default function Hero() {
             </Link>
             <Link
               href="/organizadores"
-              className="flex items-center gap-2 text-white/50 hover:text-white text-sm font-semibold px-7 py-3.5 rounded-full transition-colors"
-              style={{ border: "1px solid rgba(255,255,255,0.12)" }}
+              className="flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-full transition-colors"
+              style={{ border: "1px solid rgba(0,0,0,0.12)", color: "rgba(0,0,0,0.5)" }}
             >
               Ver demo
             </Link>
@@ -115,18 +117,18 @@ export default function Hero() {
           <div
             className="flex items-center gap-5 flex-wrap"
             style={{
-              opacity: ready ? 0.55 : 0,
+              opacity: ready ? 0.6 : 0,
               transition: "opacity .8s ease .68s",
             }}
           >
-            {["Sin cuota mensual", "15% solo al vender", "ONVO Pay · CRC & USD"].map((text, i) => (
+            {["Sin cuota mensual", "ONVO Pay · CRC & USD"].map((text, i) => (
               <div key={text} className="flex items-center gap-5">
-                {i > 0 && <div style={{ width: 1, height: 11, background: "rgba(255,255,255,0.15)" }} />}
+                {i > 0 && <div style={{ width: 1, height: 11, background: "rgba(0,0,0,0.12)" }} />}
                 <div className="flex items-center gap-1.5">
-                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="3">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.35)" strokeWidth="3">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
-                  <span className="text-white/35 text-[11px] font-medium">{text}</span>
+                  <span className="text-[11px] font-medium" style={{ color: "rgba(0,0,0,0.35)" }}>{text}</span>
                 </div>
               </div>
             ))}
@@ -142,7 +144,7 @@ export default function Hero() {
             transition: "opacity 1.4s ease .3s",
           }}
         >
-          <OrbCanvas className="absolute inset-0" />
+          <OrbCanvas className="absolute inset-0" light />
 
           {/* Floating metric cards */}
           {METRICS.map((m, i) => {
@@ -157,9 +159,9 @@ export default function Hero() {
                 className="absolute px-4 py-3 rounded-2xl"
                 style={{
                   ...positions[i],
-                  background: "rgba(255,255,255,0.055)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  backdropFilter: "blur(12px)",
+                  background: "#fff",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
                   opacity: ready ? 1 : 0,
                   transform: ready ? "translateY(0)" : "translateY(14px)",
                   transition: `opacity .8s ease ${m.delay}ms,transform .8s ease ${m.delay}ms`,
@@ -167,8 +169,8 @@ export default function Hero() {
                   "--r": `${i % 2 === 0 ? 1.5 : -1.5}deg`,
                 } as unknown as React.CSSProperties}
               >
-                <p className="font-[family-name:var(--font-bebas)] text-white text-2xl leading-none">{m.value}</p>
-                <p className="text-white/30 text-[10px] mt-0.5 whitespace-nowrap">{m.label}</p>
+                <p className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] text-2xl leading-none">{m.value}</p>
+                <p className="text-[10px] mt-0.5 whitespace-nowrap" style={{ color: "rgba(0,0,0,0.35)" }}>{m.label}</p>
               </div>
             );
           })}
@@ -178,11 +180,11 @@ export default function Hero() {
       {/* Scroll hint */}
       <div
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center"
-        style={{ opacity: 0.2 }}
+        style={{ opacity: 0.15 }}
       >
         <div
           className="w-px h-14"
-          style={{ background: "linear-gradient(to bottom,rgba(255,255,255,0.6),transparent)" }}
+          style={{ background: "linear-gradient(to bottom,rgba(0,0,0,0.6),transparent)" }}
         />
       </div>
     </section>
