@@ -30,12 +30,9 @@ function TicketMockup() {
             }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <p
-              className="font-[family-name:var(--font-bebas)] text-white leading-none text-center"
-              style={{ fontSize: 36, opacity: 0.6 }}
-            >
-              AURORA<br />FESTIVAL
-            </p>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2">
+              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/>
+            </svg>
           </div>
           <div
             className="absolute bottom-0 left-0 right-0"
@@ -152,7 +149,7 @@ function ScannerMockup() {
         {/* scanner UI */}
         <div className="px-4 pb-6">
           <p className="text-white/30 text-[8px] uppercase tracking-widest text-center mb-3">
-            AURORA FESTIVAL · PUERTA PRINCIPAL
+            MI EVENTO · PUERTA PRINCIPAL
           </p>
 
           {/* viewfinder */}
@@ -208,7 +205,7 @@ function ScannerMockup() {
               </svg>
             </div>
             <div>
-              <p className="text-white text-[11px] font-semibold">María González</p>
+              <p className="text-white text-[11px] font-semibold">Asistente verificado</p>
               <p style={{ color: "#10b981" }} className="text-[9px]">VIP · Válido</p>
             </div>
             <p className="text-white/25 text-[8px] ml-auto">8:22pm</p>
