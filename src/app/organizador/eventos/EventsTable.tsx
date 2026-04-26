@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type TicketType = { id: string; price: number; total_available: number; sold_count: number; is_active: boolean };
@@ -30,9 +31,11 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 export default function EventsTable({ events }: { events: Event[] }) {
+  const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
+  const [deleting, setDeleting] = useState(false);
   const [visibility, setVisibility] = useState<Record<string, boolean>>(
     Object.fromEntries(events.map((e) => [e.id, e.is_visible !== false]))
   );
@@ -62,6 +65,26 @@ export default function EventsTable({ events }: { events: Event[] }) {
 
   function toggleSelect(id: string) {
     setSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
+  }
+
+  async function deleteSelected() {
+    if (!confirm(`¿Eliminar ${selected.length} evento(s) seleccionado(s)? Esta acción no se puede deshacer.`)) return;
+    setDeleting(true);
+    const errors: string[] = [];
+    for (const id of selected) {
+      const res = await fetch(`/api/organizador/eventos/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json();
+        const name = events.find((e) => e.id === id)?.name ?? id;
+        errors.push(`${name}: ${body.error}`);
+      }
+    }
+    setDeleting(false);
+    setSelected([]);
+    if (errors.length > 0) {
+      alert("Algunos eventos no se pudieron eliminar:\n\n" + errors.join("\n"));
+    }
+    router.refresh();
   }
 
   return (
@@ -99,10 +122,21 @@ export default function EventsTable({ events }: { events: Event[] }) {
           />
         </div>
         {selected.length > 0 && (
-          <button className="p-2 rounded-lg text-red-500/60 hover:text-red-500 transition-colors">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            </svg>
+          <button
+            onClick={deleteSelected}
+            disabled={deleting}
+            className="p-2 rounded-lg text-red-500/60 hover:text-red-500 transition-colors disabled:opacity-40"
+            title={`Eliminar ${selected.length} evento(s)`}
+          >
+            {deleting ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+            )}
           </button>
         )}
       </div>

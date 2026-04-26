@@ -50,3 +50,38 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  const admin = createAdminClient();
+
+  // Verify ownership
+  const { data: event } = await admin
+    .from("events")
+    .select("id, organizer_id")
+    .eq("id", id)
+    .eq("organizer_id", user.id)
+    .single();
+  if (!event) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+
+  // Block if there are sold tickets
+  const { count } = await admin
+    .from("tickets")
+    .select("id", { count: "exact", head: true })
+    .eq("event_id", id)
+    .eq("status", "active");
+  if ((count ?? 0) > 0) {
+    return NextResponse.json({ error: "No se puede eliminar un evento con entradas vendidas activas" }, { status: 409 });
+  }
+
+  // Delete ticket_types first (FK), then event
+  await admin.from("ticket_types").delete().eq("event_id", id);
+  const { error } = await admin.from("events").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ success: true });
+}
