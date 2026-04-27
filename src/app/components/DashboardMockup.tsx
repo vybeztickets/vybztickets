@@ -13,7 +13,7 @@ const BARS = [
 ];
 
 const EVENTS_DATA = [
-  { name: "AURORA Festival", rev: "₡1.34M", tickets: 1240, trend: "+18%" },
+  { name: "Red Fest", rev: "₡1.34M", tickets: 1240, trend: "+18%" },
   { name: "Neon Nights CR", rev: "₡890K", tickets: 820, trend: "+12%" },
   { name: "Jazz & Chill", rev: "₡560K", tickets: 480, trend: "+7%" },
 ];
