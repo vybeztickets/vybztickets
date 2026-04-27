@@ -44,23 +44,22 @@ export async function POST(request: Request) {
   const organizerEmail = (profile as any)?.email || user.email!;
   const organizerLogoUrl = (profile as any)?.avatar_url || null;
 
-  // Get recipients
-  let recipients: { email: string; full_name: string | null; id: string }[] = [];
+  // Build recipients — deduplicated by email
+  const recipientMap = new Map<string, { email: string; full_name: string | null; id: string }>();
 
-  if (audience && audience.startsWith("event:")) {
-    const eventId = audience.replace("event:", "");
-    const { data: tickets } = await admin
-      .from("tickets")
-      .select("buyer_email, buyer_name")
-      .eq("event_id", eventId)
-      .eq("status", "active");
+  if (audience && audience.startsWith("events:")) {
+    // Multi-event: get attendees from tickets table
+    const eventIds = audience.replace("events:", "").split(",").filter(Boolean);
+    for (const eventId of eventIds) {
+      const { data: tickets } = await admin
+        .from("tickets")
+        .select("buyer_email, buyer_name")
+        .eq("event_id", eventId)
+        .eq("status", "active");
 
-    if (tickets) {
-      const seen = new Set<string>();
-      for (const t of tickets as any[]) {
-        if (!seen.has(t.buyer_email)) {
-          seen.add(t.buyer_email);
-          recipients.push({ email: t.buyer_email, full_name: t.buyer_name, id: "" });
+      for (const t of (tickets ?? []) as any[]) {
+        if (t.buyer_email && !recipientMap.has(t.buyer_email)) {
+          recipientMap.set(t.buyer_email, { email: t.buyer_email, full_name: t.buyer_name ?? null, id: "" });
         }
       }
     }
@@ -72,10 +71,14 @@ export async function POST(request: Request) {
       .eq("organizer_id", user.id)
       .eq("subscribed", true);
 
-    recipients = contacts ?? [];
+    for (const c of (contacts ?? []) as any[]) {
+      recipientMap.set(c.email, { email: c.email, full_name: c.full_name, id: c.id });
+    }
   }
 
-  // Save campaign first
+  const recipients = Array.from(recipientMap.values());
+
+  // Save campaign
   const { data: campaign, error: campError } = await (admin as any)
     .from("marketing_campaigns")
     .insert({
@@ -108,13 +111,15 @@ export async function POST(request: Request) {
       imageUrl: image_url || null,
       ctaText: cta_text || null,
       ctaUrl: cta_url || null,
-      unsubscribeUrl: `${SITE_URL}/api/marketing/unsubscribe?id=${r.id}`,
+      unsubscribeUrl: r.id
+        ? `${SITE_URL}/api/marketing/unsubscribe?id=${r.id}`
+        : `${SITE_URL}/api/marketing/unsubscribe?email=${encodeURIComponent(r.email)}`,
     }));
 
     try {
       await sendMarketingBatch(emails);
     } catch (err: any) {
-      console.error("Marketing email batch error:", err.message);
+      console.error("Marketing batch error:", err.message);
     }
   }
 
