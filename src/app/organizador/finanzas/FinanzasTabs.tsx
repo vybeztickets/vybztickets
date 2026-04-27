@@ -68,11 +68,11 @@ export default function FinanzasTabs({
   const [bank, setBank] = useState(CR_BANKS[0]);
   const [accountType, setAccountType] = useState("sinpe");
   const [accountNumber, setAccountNumber] = useState("");
-  const [currency, setCurrency] = useState("CRC");
+  const [newAccountCurrency, setNewAccountCurrency] = useState("CRC");
 
   function resetForm() {
     setHolder(""); setBank(CR_BANKS[0]); setAccountType("sinpe");
-    setAccountNumber(""); setCurrency("CRC"); setAccountError("");
+    setAccountNumber(""); setNewAccountCurrency("CRC"); setAccountError("");
   }
 
   async function handleAddAccount(e: React.FormEvent) {
@@ -81,7 +81,7 @@ export default function FinanzasTabs({
     const res = await fetch("/api/organizador/cuentas-bancarias", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ account_holder: holder, bank_name: bank, account_type: accountType, account_number: accountNumber, currency }),
+      body: JSON.stringify({ account_holder: holder, bank_name: bank, account_type: accountType, account_number: accountNumber, currency: newAccountCurrency }),
     });
     const data = await res.json();
     if (!res.ok) { setAccountError(data.error ?? "Error"); }
@@ -365,9 +365,9 @@ export default function FinanzasTabs({
                 <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Moneda</label>
                 <div className="flex gap-2">
                   {["CRC", "USD"].map((c) => (
-                    <button key={c} type="button" onClick={() => setCurrency(c)}
+                    <button key={c} type="button" onClick={() => setNewAccountCurrency(c)}
                       className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors"
-                      style={{ background: currency === c ? "#0a0a0a" : "rgba(0,0,0,0.04)", color: currency === c ? "#fff" : "rgba(0,0,0,0.4)", border: "1px solid rgba(0,0,0,0.08)" }}>
+                      style={{ background: newAccountCurrency === c ? "#0a0a0a" : "rgba(0,0,0,0.04)", color: newAccountCurrency === c ? "#fff" : "rgba(0,0,0,0.4)", border: "1px solid rgba(0,0,0,0.08)" }}>
                       {c === "CRC" ? "₡ Colones" : "$ Dólares"}
                     </button>
                   ))}
