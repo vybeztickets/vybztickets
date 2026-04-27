@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       currency: "USD",
       status: "active",
       banner_url: banner_url || null,
-      banner_status: banner_url ? "pending_review" : null,
+      banner_status: banner_url ? "pending_review" : "none",
     })
     .select()
     .single();

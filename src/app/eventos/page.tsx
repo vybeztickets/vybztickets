@@ -23,7 +23,7 @@ export default async function EventosPage({
   return (
     <div className="page-light min-h-screen flex flex-col">
       <Navbar />
-      <div className="mt-16">
+      <div>
         <FeaturedEvents />
       </div>
       <main className="flex-1 pt-24 pb-20">
