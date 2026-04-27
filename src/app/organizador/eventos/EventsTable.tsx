@@ -43,15 +43,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
   );
 
   function toggleFilter(key: string) {
-    if (key === "all") { setActiveFilters(["all"]); return; }
-    setActiveFilters((prev) => {
-      const without = prev.filter((f) => f !== "all");
-      if (without.includes(key)) {
-        const next = without.filter((f) => f !== key);
-        return next.length === 0 ? ["all"] : next;
-      }
-      return [...without, key];
-    });
+    setActiveFilters([key]);
   }
 
   async function toggleVisibility(id: string, e: React.MouseEvent) {
