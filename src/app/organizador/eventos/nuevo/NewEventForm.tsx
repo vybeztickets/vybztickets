@@ -248,8 +248,8 @@ export default function NewEventForm({ organizerId }: { organizerId: string }) {
                 <input type="text" className={inputClass} style={inputStyle} value={t.name} onChange={(e) => updateTicket(i, "name", e.target.value)} required placeholder="Ej: General" />
               </div>
               <div>
-                <label className={labelClass}>Precio (₡) *</label>
-                <input type="number" className={inputClass} style={inputStyle} value={t.price} onChange={(e) => updateTicket(i, "price", e.target.value)} required min="0" placeholder="15000" />
+                <label className={labelClass}>Precio ({currency === "USD" ? "$" : "₡"}) *</label>
+                <input type="number" className={inputClass} style={inputStyle} value={t.price} onChange={(e) => updateTicket(i, "price", e.target.value)} required min="0" placeholder={currency === "USD" ? "25" : "15000"} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

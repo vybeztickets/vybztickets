@@ -351,7 +351,7 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
                 >
                   {ticketTypes.map((tt) => (
                     <option key={tt.id} value={tt.id} style={{ background: "#fff" }}>
-                      {tt.name} {tt.price > 0 ? `· ₡${tt.price.toLocaleString()}` : "· Gratis"}
+                      {tt.name} {tt.price > 0 ? `· ${currency === "USD" ? "$" : "₡"}${tt.price.toLocaleString()}` : "· Gratis"}
                     </option>
                   ))}
                 </select>
@@ -451,7 +451,7 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
                           { l: "Nombre", v: "Juan Pérez" },
                           { l: "Tipo de entrada", v: selTT?.name || "Entrada General" },
                           { l: "Ref. pedido", v: "#00000000" },
-                          { l: "Precio", v: selTT ? "₡" + selTT.price.toLocaleString("es-CR") : "₡0" },
+                          { l: "Precio", v: selTT ? (currency === "USD" ? "$" : "₡") + selTT.price.toLocaleString("es-CR") : (currency === "USD" ? "$0" : "₡0") },
                         ].map(({ l, v }) => (
                           <div key={l}>
                             <p className="text-[8px] font-black tracking-[0.18em] uppercase mb-0.5" style={{ color: accentColor }}>{l}</p>
