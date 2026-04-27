@@ -35,6 +35,7 @@ export default function OrbCanvas({ className = "", light = false }: { className
       t += 0.011;
       const W = canvas.width;
       const H = canvas.height;
+      if (!W || !H) { raf.current = requestAnimationFrame(frame); return; }
       ctx.clearRect(0, 0, W, H);
 
       const cx = W / 2;
