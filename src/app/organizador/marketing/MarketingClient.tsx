@@ -53,6 +53,8 @@ export default function MarketingClient({ events, organizerName }: Props) {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const [sendSuccess, setSendSuccess] = useState("");
+  const [recipientCount, setRecipientCount] = useState<number | null>(null);
+  const [loadingCount, setLoadingCount] = useState(false);
 
   // Import
   const [importRows, setImportRows] = useState<{ email: string; full_name: string }[]>([]);
@@ -82,9 +84,25 @@ export default function MarketingClient({ events, organizerName }: Props) {
     });
   }, [contacts]);
 
+  useEffect(() => {
+    if (!showCreate) return;
+    const audience = audienceType === "all" ? "all" : `events:${selectedEventIds.join(",")}`;
+    if (audienceType === "events" && selectedEventIds.length === 0) { setRecipientCount(0); return; }
+    setLoadingCount(true);
+    fetch("/api/organizador/marketing/audience-count", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ audience }),
+    })
+      .then((r) => r.json())
+      .then((d) => { setRecipientCount(d.count ?? 0); setLoadingCount(false); })
+      .catch(() => setLoadingCount(false));
+  }, [showCreate, audienceType, selectedEventIds]);
+
   function resetForm() {
     setFSubject(""); setFImageUrl(""); setFBody(""); setFCtaText(""); setFCtaUrl("");
     setAudienceType("all"); setSelectedEventIds([]); setSendError(""); setSendSuccess("");
+    setRecipientCount(null);
   }
 
   function toggleEventId(id: string) {
@@ -212,10 +230,11 @@ export default function MarketingClient({ events, organizerName }: Props) {
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-[#0a0a0a]">Marketing</h1>
         <div className="flex gap-2">
-          {tab === "contactos" && contacts.length > 0 && (
+          {tab === "contactos" && (
             <button
               onClick={exportCSV}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+              disabled={contacts.length === 0}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-30"
               style={{ background: "rgba(0,0,0,0.07)", color: "#0a0a0a" }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -459,7 +478,13 @@ export default function MarketingClient({ events, organizerName }: Props) {
               {sendSuccess && <p className="text-emerald-600 text-xs font-semibold">{sendSuccess}</p>}
             </div>
 
-            <div className="px-6 py-4" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
+            <div className="px-6 py-4 flex flex-col gap-3" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[#0a0a0a]/40">Destinatarios estimados</span>
+                <span className="text-sm font-bold text-[#0a0a0a]">
+                  {loadingCount ? "…" : recipientCount !== null ? recipientCount.toLocaleString() : "—"}
+                </span>
+              </div>
               <button onClick={handleSend} disabled={sending} className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-40 transition-opacity" style={{ background: "#0a0a0a", color: "#fff" }}>
                 {sending ? "Enviando…" : "Enviar campaña"}
               </button>
