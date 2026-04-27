@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { transporter } from "./mailer";
+import { resend } from "./mailer";
 
 export type TicketEmailData = {
   to: string;
@@ -176,10 +176,12 @@ export async function sendTicketEmail(data: TicketEmailData) {
 </body>
 </html>`;
 
-  await transporter.sendMail({
-    from: `"Vybz Tickets" <${process.env.GMAIL_USER}>`,
+  const { error } = await resend.emails.send({
+    from: "Vybz Tickets <onboarding@resend.dev>",
     to: data.to,
     subject: `Tu entrada para ${data.eventName} 🎟`,
     html,
   });
+
+  if (error) throw new Error(error.message);
 }
