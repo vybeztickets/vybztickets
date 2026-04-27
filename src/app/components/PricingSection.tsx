@@ -36,59 +36,53 @@ export default function PricingSection() {
               style={{ fontSize: "clamp(52px,7vw,100px)" }}
             >
               Sin mensualidad.<br />
-              Solo&nbsp;<span style={{ color: "rgba(0,0,0,0.18)" }}>15%.</span>
+              <span style={{ color: "rgba(0,0,0,0.18)" }}>Solo un</span><br />
+              <span style={{ color: "rgba(0,0,0,0.18)" }}>service fee.</span>
             </h2>
             <p className="text-[#0a0a0a]/45 text-base leading-relaxed mb-8 max-w-md">
-              Pagás solo cuando vendés. El fee del 15% lo paga el comprador sobre el precio del ticket. Vos te quedás con el 100% del precio que pusiste.
+              Sin cuota fija. Sin letra chica. Pagás solo cuando vendés — el service fee lo cubre el comprador sobre el precio del ticket. Vos te quedás con exactamente lo que pusiste.
             </p>
 
-            {/* example calculator */}
+            {/* How it works card */}
             <div
               className="rounded-2xl p-6 mb-8"
               style={{ background: "#f7f7f7", border: "1px solid rgba(0,0,0,0.06)" }}
             >
-              <p className="text-[#0a0a0a]/40 text-[9px] uppercase tracking-widest mb-4">Ejemplo de cálculo</p>
-              <div className="space-y-3">
+              <p className="text-[#0a0a0a]/40 text-[9px] uppercase tracking-widest mb-5">Cómo funciona</p>
+              <div className="space-y-4">
                 {[
-                  { label: "Precio del ticket", val: "₡10.000", muted: false },
-                  { label: "Fee de plataforma (15%)", val: "+ ₡1.500", muted: true },
-                  { label: "Lo que paga el comprador", val: "₡11.500", bold: true },
-                ].map(({ label, val, muted, bold }) => (
-                  <div
-                    key={label}
-                    className="flex items-center justify-between"
-                    style={
-                      bold
-                        ? { paddingTop: 12, borderTop: "1px solid rgba(0,0,0,0.07)" }
-                        : {}
-                    }
-                  >
-                    <p
-                      className="text-sm"
-                      style={{ color: muted ? "rgba(0,0,0,0.35)" : bold ? "#0a0a0a" : "#0a0a0a" }}
+                  { step: "01", text: "Vos definís el precio de tu ticket." },
+                  { step: "02", text: "El comprador paga ese precio más el service fee de la plataforma." },
+                  { step: "03", text: "Vos recibís el 100% del precio que pusiste." },
+                ].map(({ step, text }) => (
+                  <div key={step} className="flex items-start gap-4">
+                    <span
+                      className="font-[family-name:var(--font-bebas)] text-lg leading-none shrink-0 mt-0.5"
+                      style={{ color: "rgba(0,0,0,0.15)" }}
                     >
-                      {label}
-                    </p>
-                    <p
-                      className={bold ? "font-bold text-[#0a0a0a]" : "text-sm"}
-                      style={{ color: muted ? "rgba(0,0,0,0.35)" : "#0a0a0a" }}
-                    >
-                      {val}
-                    </p>
+                      {step}
+                    </span>
+                    <p className="text-[#0a0a0a]/60 text-sm leading-snug">{text}</p>
                   </div>
                 ))}
               </div>
               <div
-                className="mt-4 pt-4 flex items-center justify-between"
+                className="mt-6 pt-5 flex items-center justify-between"
                 style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}
               >
-                <p className="text-[11px] text-[#0a0a0a]/40">Lo que recibís vos</p>
-                <p
-                  className="font-[family-name:var(--font-bebas)] text-[#0a0a0a]"
-                  style={{ fontSize: 28 }}
-                >
-                  ₡10.000
+                <p className="text-[#0a0a0a]/40 text-xs leading-snug max-w-[200px]">
+                  ¿Querés saber el porcentaje exacto del service fee?
                 </p>
+                <Link
+                  href="mailto:hola@vybztickets.com"
+                  className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-colors"
+                  style={{ background: "#0a0a0a", color: "#fff" }}
+                >
+                  Hablar con ventas
+                  <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <path d="M2 10L10 2M10 2H4M10 2V8"/>
+                  </svg>
+                </Link>
               </div>
             </div>
 
@@ -141,41 +135,19 @@ export default function PricingSection() {
               </div>
               <div className="divide-y" style={{ borderColor: "rgba(0,0,0,0.06)" }}>
                 {[
-                  {
-                    label: "Cuota mensual",
-                    vybz: "₡0",
-                    others: "₡30K–₡150K/mes",
-                    vybzGood: true,
-                  },
-                  {
-                    label: "Fee por ticket",
-                    vybz: "15% (lo paga el comprador)",
-                    others: "8–12% + fijos",
-                    vybzGood: true,
-                  },
-                  {
-                    label: "Pago en CRC",
-                    vybz: "Sí (ONVO Pay)",
-                    others: "No (solo USD)",
-                    vybzGood: true,
-                  },
-                  {
-                    label: "Scanner incluido",
-                    vybz: "Sí, sin app",
-                    others: "App de pago",
-                    vybzGood: true,
-                  },
-                ].map(({ label, vybz, others, vybzGood }) => (
+                  { label: "Cuota mensual", vybz: "₡0", others: "₡30K–₡150K/mes" },
+                  { label: "Fee por ticket", vybz: "Lo paga el comprador", others: "Compartido o mixto" },
+                  { label: "Pago en CRC", vybz: "Sí (ONVO Pay)", others: "No (solo USD)" },
+                  { label: "Scanner incluido", vybz: "Sí, sin app", others: "App de pago" },
+                ].map(({ label, vybz, others }) => (
                   <div key={label} className="grid grid-cols-3 px-5 py-3.5 items-center">
                     <p className="text-[#0a0a0a]/50 text-xs">{label}</p>
-                    <p className={`text-xs font-semibold ${vybzGood ? "text-[#0a0a0a]" : "text-[#0a0a0a]/40"}`}>
-                      {vybz}
-                    </p>
+                    <p className="text-xs font-semibold text-[#0a0a0a]">{vybz}</p>
                     <p className="text-[#0a0a0a]/25 text-xs">{others}</p>
                   </div>
                 ))}
                 <div className="grid grid-cols-3 px-5 py-2" style={{ background: "#f7f7f7" }}>
-                  <p className="text-[9px] text-[#0a0a0a]/25 uppercase tracking-wider"></p>
+                  <p className="text-[9px] text-[#0a0a0a]/25 uppercase tracking-wider" />
                   <p className="text-[9px] font-bold text-[#0a0a0a]/50 uppercase tracking-wider">Vybz</p>
                   <p className="text-[9px] text-[#0a0a0a]/25 uppercase tracking-wider">Otras plataformas</p>
                 </div>
