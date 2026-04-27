@@ -41,7 +41,7 @@ export default function FeaturedCarousel({ slides }: { slides: Slide[] }) {
   const slide = slides[current];
 
   return (
-    <section className="relative w-full overflow-hidden" style={{ background: "#000" }}>
+    <section className="relative w-full" style={{ background: "#000" }}>
       {/* Banner */}
       <Link
         href={`/eventos/${slide.eventId}`}
