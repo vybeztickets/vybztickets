@@ -12,33 +12,45 @@ export default async function FinanzasPage() {
 
   const admin = createAdminClient();
 
-  const { data: events } = await admin
-    .from("events")
-    .select("id")
-    .eq("organizer_id", user.id);
+  const [profileRes, eventsRes] = await Promise.all([
+    admin.from("profiles").select("currency").eq("id", user.id).single(),
+    admin.from("events").select("id, currency").eq("organizer_id", user.id),
+  ]);
 
-  const eventIds = (events ?? []).map((e) => e.id);
+  const profileCurrency: string = (profileRes.data as any)?.currency ?? "CRC";
+  const eventsWithCurrency = eventsRes.data ?? [];
+  const eventCurrencyMap: Record<string, string> = {};
+  for (const e of eventsWithCurrency as { id: string; currency?: string }[]) {
+    eventCurrencyMap[e.id] = e.currency ?? profileCurrency;
+  }
+  const eventIds = eventsWithCurrency.map((e) => e.id);
 
   const { data: tickets } = await admin
     .from("tickets")
-    .select("purchase_price, created_at, status")
+    .select("purchase_price, created_at, status, event_id")
     .in("event_id", eventIds.length > 0 ? eventIds : ["none"]);
 
-  const allTickets = tickets ?? [];
-  const totalRevenue = allTickets.filter((t) => t.status === "active" || t.status === "used")
-    .reduce((s, t) => s + t.purchase_price, 0);
+  const activeTickets = (tickets ?? []).filter((t) => t.status === "active" || t.status === "used");
 
-  const platformFee = Math.round(totalRevenue * 0.15);
-  const available = totalRevenue - platformFee;
+  // Revenue grouped by currency — never mix
+  const revenueByCurrency: Record<string, number> = {};
+  for (const t of activeTickets) {
+    const cur = eventCurrencyMap[t.event_id] ?? profileCurrency;
+    revenueByCurrency[cur] = (revenueByCurrency[cur] ?? 0) + t.purchase_price;
+  }
 
-  // Group by date for transactions
+  const primaryRevenue = revenueByCurrency[profileCurrency] ?? 0;
+  const platformFee = Math.round(primaryRevenue * 0.15);
+  const available = primaryRevenue - platformFee;
+
+  // Transactions only in primary currency
   const txByDate: Record<string, number> = {};
-  allTickets.forEach((t) => {
-    if (t.status !== "active" && t.status !== "used") return;
+  for (const t of activeTickets) {
+    const cur = eventCurrencyMap[t.event_id] ?? profileCurrency;
+    if (cur !== profileCurrency) continue;
     const date = t.created_at.slice(0, 10);
     txByDate[date] = (txByDate[date] ?? 0) + t.purchase_price;
-  });
-
+  }
   const transactions = Object.entries(txByDate)
     .sort((a, b) => b[0].localeCompare(a[0]))
     .slice(0, 20)
@@ -51,7 +63,6 @@ export default async function FinanzasPage() {
     .order("is_primary", { ascending: false })
     .order("created_at", { ascending: true });
 
-  // Featured event costs (unpaid, deducted at withdrawal)
   const { data: featuredData } = await (admin as any)
     .from("featured_events")
     .select("total_cost, currency, event_id, start_date, end_date, days, status")
@@ -74,12 +85,14 @@ export default async function FinanzasPage() {
       </div>
       <FinanzasTabs
         available={available}
-        totalRevenue={totalRevenue}
+        totalRevenue={primaryRevenue}
         platformFee={platformFee}
         transactions={transactions}
         initialAccounts={bankAccountsData ?? []}
         featuredCostsUSD={featuredCostsUSD}
         featuredItems={featuredData ?? []}
+        currency={profileCurrency}
+        revenueByCurrency={revenueByCurrency}
       />
     </div>
   );

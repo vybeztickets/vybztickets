@@ -12,6 +12,7 @@ type Profile = {
   email: string | null;
   role: string;
   avatar_url: string | null;
+  currency?: string | null;
 };
 
 const inputClass = "w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none";
@@ -43,6 +44,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
   // Perfil state
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [orgEmail, setOrgEmail] = useState(profile?.email ?? userEmail);
+  const [profileCurrency, setProfileCurrency] = useState(profile?.currency ?? "CRC");
   const [description, setDescription] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [publicProfile, setPublicProfile] = useState(true);
@@ -127,7 +129,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
     await fetch("/api/organizador/perfil", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ full_name: fullName, email: orgEmail }),
+      body: JSON.stringify({ full_name: fullName, email: orgEmail, currency: profileCurrency }),
     });
     setSaving(false);
     setSaved(true);
@@ -281,6 +283,41 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe tu organización..."
             />
+          </div>
+
+          {/* Moneda principal */}
+          <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "rgba(0,0,0,0.02)" }}>
+              <p className="text-[#0a0a0a] font-semibold text-sm">Moneda principal</p>
+              <p className="text-[#0a0a0a]/40 text-xs mt-0.5 leading-relaxed">
+                Define la moneda en que vendés tus entradas. <strong>Todos tus eventos y el panel financiero usarán esta moneda.</strong>
+              </p>
+            </div>
+            <div className="px-5 py-4 flex gap-3">
+              {(["CRC", "USD"] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setProfileCurrency(c)}
+                  className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: profileCurrency === c ? "#0a0a0a" : "rgba(0,0,0,0.04)",
+                    color: profileCurrency === c ? "#fff" : "rgba(0,0,0,0.45)",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  {c === "CRC" ? "₡ Colón costarricense (CRC)" : "$ Dólar estadounidense (USD)"}
+                </button>
+              ))}
+            </div>
+            <div className="px-5 py-3 flex gap-2 items-start" style={{ borderTop: "1px solid rgba(0,0,0,0.05)", background: "rgba(245,158,11,0.03)" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" className="shrink-0 mt-0.5">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <p className="text-[10px] leading-relaxed" style={{ color: "#92400e" }}>
+                Tu cuenta bancaria de cobro debe estar en la misma moneda que elegís aquí. Si vendés en <strong>₡ colones</strong>, necesitás una cuenta CRC. Si vendés en <strong>$ dólares</strong>, necesitás una cuenta en USD. Cambiar esto no convierte precios existentes.
+              </p>
+            </div>
           </div>
 
           {saved && <p className="text-green-400 text-sm">Guardado correctamente</p>}

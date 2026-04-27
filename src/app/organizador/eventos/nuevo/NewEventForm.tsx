@@ -20,7 +20,7 @@ const emptyTicket = (): TicketTypeInput => ({
   total_available: "",
 });
 
-export default function NewEventForm({ organizerId }: { organizerId: string }) {
+export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: { organizerId: string; defaultCurrency?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +36,7 @@ export default function NewEventForm({ organizerId }: { organizerId: string }) {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [imageUrl, setImageUrl] = useState("");
   const [salesEndDate, setSalesEndDate] = useState("");
-  const [currency, setCurrency] = useState("CRC");
+  const [currency, setCurrency] = useState(defaultCurrency);
   const [ticketTypes, setTicketTypes] = useState<TicketTypeInput[]>([emptyTicket()]);
 
   function updateTicket(i: number, field: keyof TicketTypeInput, value: string) {
@@ -205,6 +205,16 @@ export default function NewEventForm({ organizerId }: { organizerId: string }) {
         className="rounded-2xl p-6 flex flex-col gap-5"
         style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}
       >
+        {currency !== defaultCurrency && (
+          <div className="flex items-start gap-2 px-4 py-3 rounded-xl mb-1" style={{ background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.25)" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" className="shrink-0 mt-0.5">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <p className="text-[11px] leading-relaxed" style={{ color: "#92400e" }}>
+              Este evento está en <strong>{currency}</strong>, diferente a tu moneda principal ({defaultCurrency}). Asegurate de tener una cuenta bancaria en {currency} configurada en Finanzas → Cuentas Bancarias.
+            </p>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <h2 className="text-[#0a0a0a] font-semibold">Tipos de ticket</h2>
           <div className="flex items-center gap-2">

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import NewEventForm from "./NewEventForm";
 
@@ -9,13 +10,15 @@ export default async function NewEventPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login?redirectTo=/organizador");
 
-  const { data: profile } = await supabase
+  const admin = createAdminClient();
+  const { data: profile } = await admin
     .from("profiles")
-    .select("role")
+    .select("role, currency")
     .eq("id", user.id)
     .single();
 
-  const role = profile?.role as string | undefined;
+  const role = (profile as any)?.role as string | undefined;
+  const profileCurrency: string = (profile as any)?.currency ?? "CRC";
   const blocked = role === "suspended" || role === "pending_activation";
 
   if (blocked) {
@@ -45,7 +48,7 @@ export default async function NewEventPage() {
         Nuevo Evento
       </h1>
       <div className="max-w-2xl">
-        <NewEventForm organizerId={user.id} />
+        <NewEventForm organizerId={user.id} defaultCurrency={profileCurrency} />
       </div>
     </div>
   );

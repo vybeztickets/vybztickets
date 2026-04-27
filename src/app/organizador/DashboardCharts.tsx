@@ -2,18 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { formatPrice } from "@/lib/currency";
 
 type DayData = { date: string; revenue: number; tickets: number };
 
 function shortDate(d: string) {
   const date = new Date(d + "T00:00:00");
   return date.toLocaleDateString("es-CR", { day: "2-digit", month: "short" });
-}
-
-function formatAmt(n: number) {
-  if (n >= 1000000) return "₡" + (n / 1000000).toFixed(1) + "M";
-  if (n >= 1000) return "₡" + (n / 1000).toFixed(0) + "K";
-  return "₡" + n;
 }
 
 const tickStyle = { fill: "rgba(0,0,0,0.25)", fontSize: 11 };
@@ -26,10 +21,11 @@ const tooltipStyle = {
   boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
 };
 
-export default function DashboardCharts({ chartData }: { chartData: DayData[] }) {
+export default function DashboardCharts({ chartData, currency = "CRC" }: { chartData: DayData[]; currency?: string }) {
   const totalRevenue = chartData.reduce((s, d) => s + d.revenue, 0);
   const totalTickets = chartData.reduce((s, d) => s + d.tickets, 0);
   const [tab, setTab] = useState<"revenue" | "tickets">("revenue");
+  const formatAmt = (n: number) => formatPrice(n, currency);
   const [now, setNow] = useState("");
 
   useEffect(() => {

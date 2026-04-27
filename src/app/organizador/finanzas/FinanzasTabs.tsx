@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { formatPrice } from "@/lib/currency";
 
-function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
 function fmtDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "long", year: "numeric" });
 }
@@ -44,7 +44,7 @@ const inputStyle = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0
 
 export default function FinanzasTabs({
   available, totalRevenue, platformFee, transactions, initialAccounts,
-  featuredCostsUSD, featuredItems,
+  featuredCostsUSD, featuredItems, currency = "CRC", revenueByCurrency = {},
 }: {
   available: number;
   totalRevenue: number;
@@ -53,7 +53,11 @@ export default function FinanzasTabs({
   initialAccounts: BankAccount[];
   featuredCostsUSD: number;
   featuredItems: FeaturedItem[];
+  currency?: string;
+  revenueByCurrency?: Record<string, number>;
 }) {
+  const fmt = (n: number) => formatPrice(n, currency);
+  const otherCurrencies = Object.entries(revenueByCurrency).filter(([c]) => c !== currency);
   const [tab, setTab] = useState("balances");
   const [accounts, setAccounts] = useState<BankAccount[]>(initialAccounts);
   const [adding, setAdding] = useState(false);
@@ -118,7 +122,7 @@ export default function FinanzasTabs({
           <div className="col-span-2 flex flex-col gap-4">
             <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
               <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-                <h3 className="text-[#0a0a0a] font-semibold mb-1">Balances (CRC)</h3>
+                <h3 className="text-[#0a0a0a] font-semibold mb-1">Balances ({currency})</h3>
               </div>
               {[
                 { label: "Ingresos brutos", value: totalRevenue, color: "rgba(0,0,0,0.7)" },
@@ -134,6 +138,26 @@ export default function FinanzasTabs({
                 </div>
               ))}
             </div>
+
+            {otherCurrencies.length > 0 && (
+              <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(59,111,212,0.2)" }}>
+                <div className="px-6 py-3 flex items-center gap-2" style={{ background: "rgba(59,111,212,0.05)" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b6fd4" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <p className="text-xs font-semibold" style={{ color: "#3b6fd4" }}>Eventos en otras monedas (no incluidos arriba)</p>
+                </div>
+                {otherCurrencies.map(([cur, rev]) => (
+                  <div key={cur} className="flex justify-between items-center px-6 py-3" style={{ borderTop: "1px solid rgba(59,111,212,0.08)" }}>
+                    <span className="text-[#0a0a0a]/50 text-sm">Ingresos en {cur}</span>
+                    <span className="text-[#0a0a0a] font-semibold text-sm">{formatPrice(rev, cur)}</span>
+                  </div>
+                ))}
+                <div className="px-6 py-3" style={{ borderTop: "1px solid rgba(59,111,212,0.08)", background: "rgba(59,111,212,0.03)" }}>
+                  <p className="text-[10px] text-[#0a0a0a]/35">Estos montos se liquidan en su moneda original. Configurá tu moneda principal en Config → Perfil.</p>
+                </div>
+              </div>
+            )}
 
             {featuredCostsUSD > 0 && (
               <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(245,158,11,0.2)" }}>
@@ -256,12 +280,22 @@ export default function FinanzasTabs({
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-[#0a0a0a] text-sm font-medium">{acc.account_holder}</p>
                       {acc.is_primary && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold"
                           style={{ background: "rgba(16,185,129,0.12)", color: "#10b981" }}>
                           Principal
+                        </span>
+                      )}
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold"
+                        style={{ background: acc.currency === "USD" ? "rgba(59,111,212,0.1)" : "rgba(0,0,0,0.06)", color: acc.currency === "USD" ? "#3b6fd4" : "rgba(0,0,0,0.4)" }}>
+                        {acc.currency === "USD" ? "$ USD" : "₡ CRC"}
+                      </span>
+                      {acc.currency !== currency && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold"
+                          style={{ background: "rgba(245,158,11,0.1)", color: "#b45309" }}>
+                          ≠ moneda principal
                         </span>
                       )}
                     </div>
@@ -357,12 +391,12 @@ export default function FinanzasTabs({
             </div>
           )}
 
-          <div className="rounded-2xl p-4 flex gap-3" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="2" className="shrink-0 mt-0.5">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          <div className="rounded-2xl p-4 flex gap-3" style={{ background: "rgba(245,158,11,0.04)", border: "1px solid rgba(245,158,11,0.2)" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" className="shrink-0 mt-0.5">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            <p className="text-[#0a0a0a]/30 text-xs leading-relaxed">
-              Las liquidaciones se procesan a través de ONVO Pay con un costo de $3 por depósito. Podés elegir frecuencia diaria, semanal, quincenal o mensual.
+            <p className="text-xs leading-relaxed" style={{ color: "#92400e" }}>
+              <strong>La moneda de tu cuenta bancaria debe coincidir con la moneda de tus eventos.</strong> Si vendés en ₡ colones, necesitás una cuenta CRC. Si vendés en $ dólares, necesitás una cuenta en USD. Podés tener una cuenta de cada moneda. Las liquidaciones se procesan a través de ONVO Pay ($3 por depósito).
             </p>
           </div>
         </div>
