@@ -19,6 +19,16 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
 
+  // Check access: must be organizer or have scanner_access for this event
+  const { data: event } = await admin.from("events").select("organizer_id").eq("id", eventId).single();
+  if (event && event.organizer_id !== user.id) {
+    const userProfile = await admin.from("profiles").select("email").eq("id", user.id).single();
+    const userEmail = userProfile.data?.email ?? "";
+    const { data: access } = await (admin as any).from("scanner_access")
+      .select("id").eq("event_id", eventId).eq("email", userEmail).single();
+    if (!access) return NextResponse.json({ status: "invalid", message: "Sin acceso a este evento" }, { status: 403 });
+  }
+
   // Find ticket by qr_code
   const { data: rawTicket } = await admin
     .from("tickets")
