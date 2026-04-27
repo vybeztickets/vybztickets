@@ -65,10 +65,14 @@ export default function MarketingClient({ events, organizerName }: Props) {
   useEffect(() => {
     fetch("/api/organizador/marketing/campaigns")
       .then((r) => r.json())
-      .then((d) => { setCampaigns(Array.isArray(d) ? d : []); setLoadingCamp(false); });
+      .then((d) => setCampaigns(Array.isArray(d) ? d : []))
+      .catch(() => setCampaigns([]))
+      .finally(() => setLoadingCamp(false));
     fetch("/api/organizador/marketing/contacts")
       .then((r) => r.json())
-      .then((d) => { setContacts(Array.isArray(d) ? d : []); setLoadingCont(false); });
+      .then((d) => setContacts(Array.isArray(d) ? d : []))
+      .catch(() => setContacts([]))
+      .finally(() => setLoadingCont(false));
   }, []);
 
   // Growth chart: cumulative subscribers last 30 days
