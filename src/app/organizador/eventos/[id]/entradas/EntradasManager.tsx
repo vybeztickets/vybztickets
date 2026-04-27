@@ -31,7 +31,7 @@ function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
 type Tab = "stats" | "entradas" | "mapa";
 type FilterKey = "all" | "general" | "table" | "hidden";
 
-const ZONE_COLORS = ["#0a0a0a", "#b87333", "#2d6a4f", "#6b2d2d", "#2d3d6b", "#6b5a2d", "#2d5a6b", "#5a2d6b"];
+const ZONE_COLORS = ["#3b6fd4", "#c4a050", "#5a8a6a", "#c45040", "#7a5a90", "#407a8a", "#d4704a", "#6a7a50"];
 
 export default function EntradasManager({ eventId, ticketTypes: initial, venueMapUrl: initialMapUrl }: { eventId: string; ticketTypes: TicketType[]; venueMapUrl: string | null }) {
   const router = useRouter();
@@ -369,10 +369,10 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                         </div>
                       </div>
                       <div className="h-2 rounded-full mb-1.5" style={{ background: "rgba(0,0,0,0.06)" }}>
-                        <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: tt.zone_color ?? "#0a0a0a" }} />
+                        <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: tt.zone_color ?? "#3b6fd4" }} />
                       </div>
                       <div className="h-1.5 rounded-full" style={{ background: "rgba(0,0,0,0.04)" }}>
-                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${ingPct}%`, background: "rgba(0,0,0,0.35)" }} />
+                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${ingPct}%`, background: "#5a8a6a" }} />
                       </div>
                       <div className="flex gap-4 mt-1.5">
                         <span className="text-[10px] text-[#0a0a0a]/25">Vendidas {pct.toFixed(0)}%</span>
