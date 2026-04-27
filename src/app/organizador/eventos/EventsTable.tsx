@@ -4,17 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import { formatPrice } from "@/lib/currency";
+
 type TicketType = { id: string; price: number; total_available: number; sold_count: number; is_active: boolean };
 type Event = {
   id: string; name: string; date: string; status: string;
-  venue: string; city: string; ticket_types: TicketType[]; is_visible?: boolean;
+  venue: string; city: string; currency?: string; ticket_types: TicketType[]; is_visible?: boolean;
 };
-
-function formatPrice(n: number) {
-  if (n >= 1000000) return "₡" + (n / 1000000).toFixed(1) + "M";
-  if (n >= 1000) return "₡" + (n / 1000).toFixed(0) + "K";
-  return "₡" + n.toLocaleString("es-CR");
-}
 function formatDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
 }
@@ -198,7 +194,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                   <div className="flex items-end justify-between mb-1 mt-auto">
                     <div>
                       <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-0.5">Ingresos</p>
-                      <p className="text-[#0a0a0a] font-bold text-xl leading-none">{formatPrice(revenue)}</p>
+                      <p className="text-[#0a0a0a] font-bold text-xl leading-none">{formatPrice(revenue, event.currency ?? "CRC")}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-0.5">Entradas</p>

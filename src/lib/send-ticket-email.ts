@@ -20,7 +20,7 @@ export type TicketEmailData = {
 };
 
 function formatPrice(price: number, currency: string) {
-  if (currency === "USD") return `$${(price / 100).toFixed(2)}`;
+  if (currency === "USD") return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   return `₡${price.toLocaleString("es-CR")}`;
 }
 
