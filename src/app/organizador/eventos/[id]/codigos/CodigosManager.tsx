@@ -69,7 +69,7 @@ export default function CodigosManager({
         body: JSON.stringify({
           eventId,
           code: fCode,
-          promoter_name: fName || null,
+          promoter_name: fName || "",
           discount_percent: parseFloat(fDiscount),
           ticket_type_id: fTicketType || null,
           max_uses: fMaxUses ? parseInt(fMaxUses) : null,
@@ -93,7 +93,7 @@ export default function CodigosManager({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          promoter_name: fName || null,
+          promoter_name: fName || "",
           discount_percent: discountNum,
           ticket_type_id: fTicketType || null,
           max_uses: fMaxUses ? parseInt(fMaxUses) : null,
@@ -103,7 +103,7 @@ export default function CodigosManager({
       if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Error"); }
       setCodes((prev) => prev.map((c) => c.id === editId ? {
         ...c,
-        promoter_name: fName || null,
+        promoter_name: fName || "",
         discount_percent: discountNum,
         ticket_type_id: fTicketType || null,
         max_uses: fMaxUses ? parseInt(fMaxUses) : null,

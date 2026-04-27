@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       event_id: eventId,
       organizer_id: user.id,
       code: code.trim().toUpperCase(),
-      promoter_name: promoter_name || null,
+      promoter_name: promoter_name || "",
       discount_percent: discountNum,
       ticket_type_id: ticket_type_id || null,
       max_uses: max_uses ? Number(max_uses) : null,
