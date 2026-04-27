@@ -41,19 +41,18 @@ export default function FeaturedCarousel({ slides }: { slides: Slide[] }) {
   const slide = slides[current];
 
   return (
-    <section className="relative w-full" style={{ background: "#000" }}>
+    <section className="relative w-full" style={{ height: "75vh", background: "#000" }}>
       {/* Banner */}
       <Link
         href={`/eventos/${slide.eventId}`}
-        className="block w-full"
+        className="absolute inset-0"
         style={{ opacity: visible ? 1 : 0, transition: "opacity 300ms ease-in-out" }}
       >
         <Image
           src={slide.bannerUrl}
           alt={slide.eventName}
-          width={3072}
-          height={1280}
-          className="w-full h-auto block"
+          fill
+          className="object-cover"
           priority
           sizes="100vw"
         />
