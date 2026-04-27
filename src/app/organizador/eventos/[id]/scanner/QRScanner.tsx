@@ -21,7 +21,9 @@ function CameraScanner({ eventId }: { eventId: string }) {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [active, setActive] = useState(true);
   const [recentScans, setRecentScans] = useState<Array<ScanResult & { time: string }>>([]);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const processFrame = useCallback(() => {
     const video = videoRef.current;
@@ -63,14 +65,23 @@ function CameraScanner({ eventId }: { eventId: string }) {
     rafRef.current = requestAnimationFrame(processFrame);
   }, [eventId]);
 
-  useEffect(() => {
-    let stream: MediaStream | null = null;
+  function stopCamera() {
+    cancelAnimationFrame(rafRef.current);
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setScanning(false);
+    setActive(false);
+    setResult(null);
+  }
 
+  function startCamera() {
+    setActive(true);
+    setCameraError(null);
     navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
     })
       .then(s => {
-        stream = s;
+        streamRef.current = s;
         if (videoRef.current) {
           videoRef.current.srcObject = s;
           setScanning(true);
@@ -78,11 +89,15 @@ function CameraScanner({ eventId }: { eventId: string }) {
         }
       })
       .catch(() => setCameraError("No se pudo acceder a la cámara. Verificá los permisos del navegador."));
+  }
 
+  useEffect(() => {
+    startCamera();
     return () => {
       cancelAnimationFrame(rafRef.current);
-      stream?.getTracks().forEach(t => t.stop());
+      streamRef.current?.getTracks().forEach(t => t.stop());
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [processFrame]);
 
   const resultColors = {
@@ -96,7 +111,7 @@ function CameraScanner({ eventId }: { eventId: string }) {
       {/* Camera viewport */}
       <div
         className="relative rounded-2xl overflow-hidden"
-        style={{ background: "#000", aspectRatio: "4/3" }}
+        style={{ background: "#000", aspectRatio: "4/3", opacity: active ? 1 : 0.4 }}
       >
         <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
         <canvas ref={canvasRef} className="hidden" />
@@ -170,6 +185,17 @@ function CameraScanner({ eventId }: { eventId: string }) {
           </div>
         )}
       </div>
+
+      {/* Start / Stop button */}
+      <button
+        onClick={active ? stopCamera : startCamera}
+        className="w-full py-3 rounded-2xl text-sm font-semibold transition-colors"
+        style={active
+          ? { background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }
+          : { background: "#0a0a0a", color: "#fff" }}
+      >
+        {active ? "⏹ Detener cámara" : "▶ Iniciar escáner"}
+      </button>
 
       {/* Recent scans */}
       {recentScans.length > 0 && (
