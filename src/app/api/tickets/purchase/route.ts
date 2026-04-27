@@ -68,7 +68,7 @@ export async function POST(request: Request) {
   // Increment sold_count
   await supabase.from("ticket_types").update({ sold_count: ticketType.sold_count + quantity }).eq("id", ticketTypeId);
 
-  // Send ticket emails — grouped by buyer_email (non-blocking)
+  // Send ticket emails — grouped by buyer_email, awaited so Vercel doesn't kill the function
   if (tickets && event) {
     const grouped = new Map<string, typeof tickets>();
     for (const t of tickets) {
@@ -83,8 +83,7 @@ export async function POST(request: Request) {
       weekday: "long", month: "long", day: "numeric", year: "numeric",
     });
 
-    // Fire and forget — don't block the response
-    Promise.all(
+    await Promise.all(
       Array.from(grouped.entries()).map(([email, group]) =>
         sendTicketEmail({
           to: email,
