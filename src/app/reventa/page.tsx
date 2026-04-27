@@ -3,6 +3,7 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import Link from "next/link";
 import Image from "next/image";
+import MeshBackground from "@/app/components/MeshBackground";
 
 export const metadata = { title: "Reventa — Vybz Tickets" };
 
@@ -66,7 +67,8 @@ export default async function ReventaPage() {
   );
 
   return (
-    <div className="page-light min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ color: "#0a0a0a" }}>
+      <MeshBackground />
       <Navbar />
 
       {/* Hero */}

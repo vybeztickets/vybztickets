@@ -3,6 +3,7 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import EventsGrid from "./EventsGrid";
 import FeaturedEvents from "@/app/components/FeaturedEvents";
+import MeshBackground from "@/app/components/MeshBackground";
 
 export const metadata = { title: "Eventos — Vybz Tickets" };
 
@@ -21,7 +22,8 @@ export default async function EventosPage({
     .order("date", { ascending: true });
 
   return (
-    <div className="page-light min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ color: "#0a0a0a" }}>
+      <MeshBackground />
       <Navbar />
       <div>
         <FeaturedEvents />

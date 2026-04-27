@@ -7,10 +7,12 @@ import PlatformSection from "./components/PlatformSection";
 import PricingSection from "./components/PricingSection";
 import UpcomingEvents from "./components/UpcomingEvents";
 import Footer from "./components/Footer";
+import MeshBackground from "./components/MeshBackground";
 
 export default function Home() {
   return (
-    <div style={{ background: "#fff" }}>
+    <div style={{ color: "#0a0a0a" }}>
+      <MeshBackground />
       <Navbar />
       <Hero />
       <MarqueeStrip />
