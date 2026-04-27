@@ -19,6 +19,12 @@ const NAV = [
         badge: "none",
         icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
       },
+      {
+        label: "Admins",
+        href: "/admin/admins",
+        badge: "none",
+        icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+      },
     ],
   },
   {
@@ -41,6 +47,12 @@ const NAV = [
         href: "/admin/finanzas",
         badge: "none",
         icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+      },
+      {
+        label: "Banners",
+        href: "/admin/banners",
+        badge: "banners",
+        icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
       },
     ],
   },
@@ -75,7 +87,7 @@ const NAV = [
   },
 ];
 
-export default function AdminSidebar({ userName, userEmail, pendingCount, pendingKyc }: { userName: string; userEmail: string; pendingCount?: number; pendingKyc?: number }) {
+export default function AdminSidebar({ userName, userEmail, pendingCount, pendingKyc, pendingBanners }: { userName: string; userEmail: string; pendingCount?: number; pendingKyc?: number; pendingBanners?: number }) {
   const pathname = usePathname();
 
   function isActive(href: string) {
@@ -108,7 +120,8 @@ export default function AdminSidebar({ userName, userEmail, pendingCount, pendin
                 const active = isActive(item.href);
                 const badgeCount =
                   item.badge === "pending" ? (pendingCount ?? 0) :
-                  item.badge === "kyc" ? (pendingKyc ?? 0) : 0;
+                  item.badge === "kyc" ? (pendingKyc ?? 0) :
+                  item.badge === "banners" ? (pendingBanners ?? 0) : 0;
                 return (
                   <Link
                     key={item.label}

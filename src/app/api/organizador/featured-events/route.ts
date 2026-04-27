@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { event_id, start_date, end_date } = body;
+  const { event_id, start_date, end_date, banner_url } = body;
 
   if (!event_id || !start_date || !end_date) {
     return NextResponse.json({ error: "Campos requeridos: event_id, start_date, end_date" }, { status: 400 });
@@ -87,6 +87,8 @@ export async function POST(req: NextRequest) {
       total_cost,
       currency: "USD",
       status: "active",
+      banner_url: banner_url || null,
+      banner_status: banner_url ? "pending_review" : null,
     })
     .select()
     .single();

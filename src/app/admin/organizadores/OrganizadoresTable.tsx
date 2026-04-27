@@ -1,0 +1,126 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import ToggleAccount from "./ToggleAccount";
+
+type Org = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  role: string;
+  country: string | null;
+  events: number;
+  revenue: number;
+};
+
+const ROLE_STYLE: Record<string, { bg: string; color: string }> = {
+  admin: { bg: "rgba(255,255,255,0.15)", color: "#fff" },
+  organizer: { bg: "rgba(0,140,0,0.1)", color: "#166534" },
+  suspended: { bg: "rgba(200,0,0,0.08)", color: "#991b1b" },
+  pending_activation: { bg: "rgba(180,83,9,0.12)", color: "#b45309" },
+};
+
+const STATUSES = ["Todos", "organizer", "pending_activation", "suspended"];
+
+function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+
+export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs: Org[]; total: number; pendingCount: number }) {
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("Todos");
+  const [country, setCountry] = useState("Todos");
+
+  const countries = ["Todos", ...Array.from(new Set(orgs.map(o => o.country).filter(Boolean) as string[])).sort()];
+
+  const filtered = orgs.filter(o => {
+    const matchQ = !q || [o.full_name, o.email].some(v => v?.toLowerCase().includes(q.toLowerCase()));
+    const matchStatus = status === "Todos" || o.role === status;
+    const matchCountry = country === "Todos" || o.country === country;
+    return matchQ && matchStatus && matchCountry;
+  });
+
+  return (
+    <>
+      <div className="flex gap-3 mb-5 flex-wrap">
+        <div className="relative flex-1 min-w-52">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Buscar por nombre o email…"
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none"
+            style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}
+          />
+        </div>
+        <select value={status} onChange={e => setStatus(e.target.value)}
+          className="px-3 py-2.5 rounded-xl text-sm focus:outline-none"
+          style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}>
+          {STATUSES.map(s => <option key={s} value={s}>
+            {s === "Todos" ? "Todos los estados" : s === "pending_activation" ? "Pendiente" : s === "organizer" ? "Activo" : s === "suspended" ? "Suspendido" : s}
+          </option>)}
+        </select>
+        {countries.length > 1 && (
+          <select value={country} onChange={e => setCountry(e.target.value)}
+            className="px-3 py-2.5 rounded-xl text-sm focus:outline-none"
+            style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}>
+            {countries.map(c => <option key={c} value={c}>{c === "Todos" ? "Todos los países" : c}</option>)}
+          </select>
+        )}
+      </div>
+
+      <p className="text-[#0a0a0a]/30 text-xs mb-3">
+        {filtered.length} de {total} organizadores
+        {pendingCount > 0 && (
+          <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "rgba(180,83,9,0.12)", color: "#b45309" }}>
+            {pendingCount} pendiente{pendingCount > 1 ? "s" : ""}
+          </span>
+        )}
+      </p>
+
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
+        <table className="w-full">
+          <thead>
+            <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+              {["Organizador", "País", "Eventos", "Revenue", "Estado", "Cuenta", ""].map(h => (
+                <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr><td colSpan={7} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">Sin resultados</td></tr>
+            ) : filtered.map(o => {
+              const rs = ROLE_STYLE[o.role] ?? ROLE_STYLE.organizer;
+              const isPending = o.role === "pending_activation";
+              return (
+                <tr key={o.id}
+                  style={{ borderBottom: "1px solid rgba(0,0,0,0.04)", background: isPending ? "rgba(180,83,9,0.03)" : undefined }}
+                  className="hover:bg-black/[0.01]">
+                  <td className="px-6 py-4">
+                    <p className="text-[#0a0a0a] font-medium text-sm">{o.full_name ?? "Sin nombre"}</p>
+                    <p className="text-[#0a0a0a]/35 text-xs">{o.email}</p>
+                  </td>
+                  <td className="px-6 py-4 text-xs text-[#0a0a0a]/50">{o.country ?? "—"}</td>
+                  <td className="px-6 py-4 text-[#0a0a0a] text-sm">{o.events}</td>
+                  <td className="px-6 py-4 text-[#0a0a0a] text-sm font-semibold">{fmt(o.revenue)}</td>
+                  <td className="px-6 py-4">
+                    <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style={rs}>
+                      {isPending ? "Pendiente" : o.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4"><ToggleAccount userId={o.id} role={o.role} /></td>
+                  <td className="px-6 py-4 text-right">
+                    <Link href={`/admin/organizadores/${o.id}`} className="text-xs font-semibold text-[#0a0a0a]/40 hover:text-[#0a0a0a] transition-colors">Ver →</Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}

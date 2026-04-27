@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import EventsGrid from "./EventsGrid";
+import FeaturedEvents from "@/app/components/FeaturedEvents";
 
 export const metadata = { title: "Eventos — Vybz Tickets" };
 
@@ -22,6 +23,9 @@ export default async function EventosPage({
   return (
     <div className="page-light min-h-screen flex flex-col">
       <Navbar />
+      <div className="mt-16">
+        <FeaturedEvents />
+      </div>
       <main className="flex-1 pt-24 pb-20">
         <div className="max-w-7xl mx-auto px-6 mb-12">
           <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full" style={{ background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.08)" }}>

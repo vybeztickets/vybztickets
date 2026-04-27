@@ -355,7 +355,7 @@ export default function MarketingClient({ events, organizerName }: Props) {
                   <XAxis dataKey="date" tick={{ fontSize: 9, fill: "rgba(0,0,0,0.25)" }} tickLine={false} axisLine={false} interval={4} />
                   <Tooltip
                     contentStyle={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8, fontSize: 12 }}
-                    formatter={(v: unknown) => [v, "Total suscritos"]}
+                    formatter={(v: unknown) => [v as string, "Total suscritos"]}
                   />
                   <Area type="monotone" dataKey="total" stroke="#0a0a0a" strokeWidth={1.5} fill="url(#growthGrad)" dot={false} />
                 </AreaChart>

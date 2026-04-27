@@ -13,6 +13,7 @@ type Profile = {
   role: string;
   avatar_url: string | null;
   currency?: string | null;
+  country?: string | null;
 };
 
 const inputClass = "w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none";
@@ -45,6 +46,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [orgEmail, setOrgEmail] = useState(profile?.email ?? userEmail);
   const [profileCurrency, setProfileCurrency] = useState(profile?.currency ?? "CRC");
+  const [country, setCountry] = useState(profile?.country ?? "");
   const [description, setDescription] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [publicProfile, setPublicProfile] = useState(true);
@@ -129,7 +131,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
     await fetch("/api/organizador/perfil", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ full_name: fullName, email: orgEmail, currency: profileCurrency }),
+      body: JSON.stringify({ full_name: fullName, email: orgEmail, currency: profileCurrency, country }),
     });
     setSaving(false);
     setSaved(true);
@@ -271,6 +273,34 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
               <label className={labelClass}>WhatsApp</label>
               <input type="text" className={inputClass} style={inputStyle} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+506 8888-8888" />
             </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>País</label>
+            <select
+              className={inputClass}
+              style={inputStyle}
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+            >
+              <option value="">Seleccioná un país</option>
+              <option value="Costa Rica">Costa Rica</option>
+              <option value="Guatemala">Guatemala</option>
+              <option value="Honduras">Honduras</option>
+              <option value="El Salvador">El Salvador</option>
+              <option value="Nicaragua">Nicaragua</option>
+              <option value="Panamá">Panamá</option>
+              <option value="México">México</option>
+              <option value="Colombia">Colombia</option>
+              <option value="Venezuela">Venezuela</option>
+              <option value="Perú">Perú</option>
+              <option value="Chile">Chile</option>
+              <option value="Argentina">Argentina</option>
+              <option value="Uruguay">Uruguay</option>
+              <option value="España">España</option>
+              <option value="Estados Unidos">Estados Unidos</option>
+              <option value="Otro">Otro</option>
+            </select>
           </div>
 
           <div>

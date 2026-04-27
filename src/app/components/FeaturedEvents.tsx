@@ -7,23 +7,35 @@ export default async function FeaturedEvents() {
 
   const { data: featured } = await (admin as any)
     .from("featured_events")
-    .select("event_id")
+    .select("event_id, banner_url, banner_status")
     .eq("status", "active")
     .lte("start_date", today)
-    .gte("end_date", today);
+    .gte("end_date", today)
+    .not("banner_url", "is", null)
+    .eq("banner_status", "approved");
 
   if (!featured || featured.length === 0) return null;
 
-  const eventIds = featured.map((f: { event_id: string }) => f.event_id);
+  const bannerMap: Record<string, string> = {};
+  for (const f of featured as { event_id: string; banner_url: string }[]) {
+    bannerMap[f.event_id] = f.banner_url;
+  }
+
+  const eventIds = Object.keys(bannerMap);
 
   const { data: events } = await admin
     .from("events")
-    .select("id, name, date, time, venue, city, image_url, category, ticket_types(id, price, is_active, total_available, sold_count)")
+    .select("id, name")
     .in("id", eventIds)
-    .eq("status", "published")
-    .order("date", { ascending: true });
+    .eq("status", "published");
 
   if (!events || events.length === 0) return null;
 
-  return <FeaturedCarousel events={events as any} />;
+  const slides = (events as { id: string; name: string }[])
+    .filter(e => bannerMap[e.id])
+    .map(e => ({ eventId: e.id, eventName: e.name, bannerUrl: bannerMap[e.id] }));
+
+  if (slides.length === 0) return null;
+
+  return <FeaturedCarousel slides={slides} />;
 }

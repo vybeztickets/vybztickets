@@ -24,9 +24,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const [
     { count: pendingCount },
     { count: pendingKyc },
+    { count: pendingBanners },
   ] = await Promise.all([
     db.from("profiles").select("id", { count: "exact", head: true }).eq("role", "pending_activation"),
     db.from("kyc_verifications").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    db.from("featured_events").select("id", { count: "exact", head: true }).eq("banner_status", "pending_review"),
   ]);
 
   return (
@@ -36,6 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         userEmail={profile?.email ?? user.email ?? ""}
         pendingCount={pendingCount ?? 0}
         pendingKyc={pendingKyc ?? 0}
+        pendingBanners={pendingBanners ?? 0}
       />
       <main className="flex-1 ml-60 min-h-screen">
         {children}

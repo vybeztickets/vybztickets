@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import ImageUploadField from "@/app/components/ImageUploadField";
 
 const PRICE_PER_DAY = 1; // USD
 
@@ -13,6 +14,8 @@ type FeaturedRecord = {
   total_cost: number;
   status: string;
   created_at: string;
+  banner_url?: string | null;
+  banner_status?: string | null;
 };
 
 type HistoryRecord = {
@@ -48,7 +51,10 @@ export default function DestacarForm({
 }) {
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(eventDate >= today ? eventDate : today);
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [replacingBanner, setReplacingBanner] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [savingBanner, setSavingBanner] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState("");
   const [active, setActive] = useState<FeaturedRecord | null>(activeFeatured);
@@ -63,13 +69,30 @@ export default function DestacarForm({
     if (endDate < startDate) setEndDate(startDate);
   }, [startDate, endDate]);
 
+  async function handleSaveBanner() {
+    if (!active || !bannerUrl) return;
+    setSavingBanner(true);
+    setError("");
+    const res = await fetch(`/api/organizador/featured-events/${active.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ banner_url: bannerUrl }),
+    });
+    const data = await res.json();
+    if (!res.ok) { setError(data.error ?? "Error al guardar"); setSavingBanner(false); return; }
+    setActive(data);
+    setReplacingBanner(false);
+    setBannerUrl("");
+    setSavingBanner(false);
+  }
+
   async function handleConfirm() {
     setLoading(true);
     setError("");
     const res = await fetch("/api/organizador/featured-events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ event_id: eventId, start_date: startDate, end_date: endDate }),
+      body: JSON.stringify({ event_id: eventId, start_date: startDate, end_date: endDate, banner_url: bannerUrl || null }),
     });
     const data = await res.json();
     if (!res.ok) { setError(data.error ?? "Error al activar"); setLoading(false); return; }
@@ -213,6 +236,75 @@ export default function DestacarForm({
           <p className="text-[#0a0a0a]/40 text-xs leading-relaxed">
             Tu evento se muestra en la sección destacada del homepage. Costo cobrado al retirar fondos.
           </p>
+        </div>
+      </div>
+
+      {/* Banner upload */}
+      <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+          <p className="text-[#0a0a0a] font-semibold text-sm">Flyer / Banner</p>
+          <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Imagen horizontal que aparece en el carousel. Recomendado: 3072×1280px.</p>
+        </div>
+        <div className="p-5">
+          {/* Show locked existing banner when active and has banner */}
+          {active?.banner_url && !replacingBanner ? (
+            <div className="flex flex-col gap-3">
+              <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: "3/1" }}>
+                <Image src={active.banner_url} alt="Banner actual" fill className="object-cover" />
+                <span
+                  className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                  style={
+                    active.banner_status === "approved"
+                      ? { background: "rgba(16,185,129,0.9)", color: "#fff" }
+                      : active.banner_status === "rejected"
+                      ? { background: "rgba(239,68,68,0.9)", color: "#fff" }
+                      : { background: "rgba(245,158,11,0.9)", color: "#fff" }
+                  }
+                >
+                  {active.banner_status === "approved" ? "Aprobado" : active.banner_status === "rejected" ? "Rechazado" : "En revisión"}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReplacingBanner(true)}
+                className="text-xs font-medium px-3 py-2 rounded-lg self-start transition-colors"
+                style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.5)", border: "1px solid rgba(0,0,0,0.08)" }}
+              >
+                Reemplazar banner
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {replacingBanner && (
+                <div className="rounded-xl px-4 py-3 flex gap-2 items-start" style={{ background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" className="shrink-0 mt-0.5">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  <p className="text-xs leading-relaxed" style={{ color: "#92400e" }}>El nuevo banner necesitará revisión y aprobación antes de aparecer en el carousel.</p>
+                </div>
+              )}
+              <ImageUploadField value={bannerUrl} onChange={setBannerUrl} label="" hint="JPG, PNG o WebP · máx 10MB · 3072×1280 recomendado" aspectRatio="16:9" />
+              {replacingBanner && (
+                <div className="flex items-center gap-3">
+                  {bannerUrl && (
+                    <button
+                      type="button"
+                      onClick={handleSaveBanner}
+                      disabled={savingBanner}
+                      className="text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-40"
+                      style={{ background: "#0a0a0a", color: "#fff" }}
+                    >
+                      {savingBanner ? "Guardando…" : "Enviar a revisión"}
+                    </button>
+                  )}
+                  <button type="button" onClick={() => { setReplacingBanner(false); setBannerUrl(""); }}
+                    className="text-xs text-[#0a0a0a]/30 hover:text-[#0a0a0a] transition-colors">
+                    ← Cancelar
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

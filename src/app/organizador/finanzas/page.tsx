@@ -18,9 +18,9 @@ export default async function FinanzasPage() {
   ]);
 
   const profileCurrency: string = (profileRes.data as any)?.currency ?? "CRC";
-  const eventsWithCurrency = eventsRes.data ?? [];
+  const eventsWithCurrency: { id: string; currency?: string }[] = (eventsRes.data as any[]) ?? [];
   const eventCurrencyMap: Record<string, string> = {};
-  for (const e of eventsWithCurrency as { id: string; currency?: string }[]) {
+  for (const e of eventsWithCurrency) {
     eventCurrencyMap[e.id] = e.currency ?? profileCurrency;
   }
   const eventIds = eventsWithCurrency.map((e) => e.id);
