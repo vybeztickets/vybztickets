@@ -7,10 +7,10 @@ export default function MeshBackground() {
     <div className="fixed inset-0 -z-10">
       <MeshGradient
         className="w-full h-full"
-        colors={["#ffffff", "#f0f0f0", "#e2e2e2", "#ebebeb"]}
-        speed={0.4}
-        distortion={0.5}
-        swirl={0.1}
+        colors={["#ffffff", "#999999", "#f0f0f0", "#bbbbbb"]}
+        speed={0.5}
+        distortion={1.0}
+        swirl={0.5}
       />
     </div>
   );
