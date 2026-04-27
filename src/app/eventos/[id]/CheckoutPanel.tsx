@@ -41,6 +41,9 @@ export default function CheckoutPanel({
   venueMapUrl,
   platformFeePercent = 15,
   currency = "CRC",
+  postPurchaseMessage = null,
+  termsConditions = null,
+  buyerEmail: initialEmail = "",
 }: {
   ticketTypes: TicketType[];
   eventId: string;
@@ -48,6 +51,9 @@ export default function CheckoutPanel({
   venueMapUrl: string | null;
   platformFeePercent?: number;
   currency?: string;
+  postPurchaseMessage?: string | null;
+  termsConditions?: string | null;
+  buyerEmail?: string;
 }) {
   const activeTypes = ticketTypes.filter((t) => t.is_active && !t.is_hidden && t.total_available - t.sold_count > 0);
   const generalTypes = activeTypes.filter((t) => !t.category || t.category === "general");
@@ -242,49 +248,108 @@ export default function CheckoutPanel({
   if (step === "done") {
     return (
       <div>
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(16,185,129,0.12)" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        {/* Header */}
+        <div
+          className="rounded-2xl p-6 mb-5 text-center"
+          style={{ background: "#0a0a0a" }}
+        >
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ background: "rgba(16,185,129,0.15)" }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
           </div>
-          <div>
-            <p className="text-[#0a0a0a] font-bold text-base">{isTable ? "¡Reserva confirmada!" : "¡Compra exitosa!"}</p>
-            <p className="text-[#0a0a0a]/40 text-xs mt-0.5">
-              {isTable ? `${selected?.name} · ${paxCount} persona${paxCount !== 1 ? "s" : ""}` : `${qty} ticket${qty > 1 ? "s" : ""} · ${eventName}`}
-            </p>
-          </div>
+          <p className="text-white font-bold text-xl mb-1">
+            {isTable ? "¡Reserva confirmada!" : "¡Compra exitosa!"}
+          </p>
+          <p className="text-white/40 text-sm">
+            {isTable
+              ? `${selected?.name} · ${paxCount} persona${paxCount !== 1 ? "s" : ""}`
+              : `${qty} entrada${qty > 1 ? "s" : ""} · ${eventName}`}
+          </p>
         </div>
 
-        <p className="text-[#0a0a0a]/40 text-sm mb-6">
-          Tu QR llegará a <span className="text-[#0a0a0a] font-medium">{email}</span>
-        </p>
+        {/* Email confirmation note */}
+        <div
+          className="flex items-start gap-3 px-4 py-3.5 rounded-xl mb-5"
+          style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)" }}
+        >
+          <svg className="shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <p className="text-sm" style={{ color: "rgba(0,0,0,0.55)" }}>
+            Tus entradas fueron enviadas a{" "}
+            <span className="font-semibold text-[#0a0a0a]">{email}</span>
+            {" "}— revisá tu bandeja de entrada (y spam).
+          </p>
+        </div>
 
+        {/* QR tickets */}
         {purchasedQRs.length > 0 && (
-          <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col gap-3 mb-5">
             {purchasedQRs.map((qr, i) => (
-              <div key={i} className="rounded-2xl p-5 flex flex-col items-center" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                <p className="text-[#0a0a0a]/40 text-xs mb-4">
-                  {purchasedQRs.length > 1 ? `Ticket ${i + 1} de ${purchasedQRs.length}` : "Tu entrada"}
+              <div
+                key={i}
+                className="rounded-2xl p-5 flex flex-col items-center"
+                style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}
+              >
+                <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider mb-3">
+                  {purchasedQRs.length > 1 ? `Entrada ${i + 1} de ${purchasedQRs.length}` : "Tu entrada"}
                 </p>
-                <div className="p-4 rounded-2xl bg-white border border-black/10">
-                  <QRCode value={qr} size={160} />
+                <div className="p-4 rounded-2xl bg-white border border-black/08">
+                  <QRCode value={qr} size={150} />
                 </div>
-                <p className="text-[#0a0a0a]/25 text-[10px] font-mono mt-3">{qr.slice(0, 8).toUpperCase()}</p>
-                <a href={`/ticket/${qr}`} target="_blank" rel="noopener noreferrer"
-                  className="mt-3 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
-                  style={{ background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.6)" }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
-                    <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
-                  </svg>
-                  Ver y descargar entrada
+                <p className="text-[#0a0a0a]/20 text-[9px] font-mono mt-2 tracking-widest">
+                  {qr.slice(0, 8).toUpperCase()}
+                </p>
+                <a
+                  href={`/ticket/${qr}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                  style={{ background: "#0a0a0a", color: "#fff" }}
+                >
+                  Ver entrada completa →
                 </a>
               </div>
             ))}
           </div>
         )}
 
-        <button onClick={() => { setStep("select"); setSelectedId(""); setPurchasedQRs([]); }}
-          className="text-[#0a0a0a]/30 text-xs hover:text-[#0a0a0a]/60 transition-colors">
+        {/* Post-purchase message */}
+        {postPurchaseMessage && (
+          <div
+            className="rounded-xl p-5 mb-4"
+            style={{ background: "#f7f7f7", border: "1px solid rgba(0,0,0,0.06)" }}
+          >
+            <p className="text-[#0a0a0a]/35 text-[9px] uppercase tracking-widest font-semibold mb-2">
+              Mensaje del organizador
+            </p>
+            <p className="text-[#0a0a0a]/65 text-sm leading-relaxed whitespace-pre-line">
+              {postPurchaseMessage}
+            </p>
+          </div>
+        )}
+
+        {/* Terms */}
+        {termsConditions && (
+          <div className="mb-5" style={{ borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 16 }}>
+            <p className="text-[#0a0a0a]/30 text-[9px] uppercase tracking-widest font-semibold mb-2">
+              Términos y condiciones del evento
+            </p>
+            <p className="text-[#0a0a0a]/35 text-xs leading-relaxed whitespace-pre-line">
+              {termsConditions}
+            </p>
+          </div>
+        )}
+
+        <button
+          onClick={() => { setStep("select"); setSelectedId(""); setPurchasedQRs([]); }}
+          className="text-[#0a0a0a]/30 text-xs hover:text-[#0a0a0a]/60 transition-colors"
+        >
           ← Volver al evento
         </button>
       </div>

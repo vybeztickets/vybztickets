@@ -25,6 +25,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     description: string | null; image_url: string | null; venue: string; city: string;
     country: string; category: string | null; venue_map_url: string | null;
     location_lat: number | null; location_lng: number | null;
+    post_purchase_message: string | null; terms_conditions: string | null;
     ticket_types: { id: string; name: string; description: string | null; price: number; total_available: number; sold_count: number; is_active: boolean; is_hidden?: boolean | null; category?: string; capacity?: number | null; zone_name?: string | null; zone_color?: string | null }[];
   };
 
@@ -110,6 +111,8 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                 venueMapUrl={(event as any).venue_map_url ?? null}
                 platformFeePercent={(event as any).platform_fee_percent ?? 15}
                 currency={event.currency ?? "CRC"}
+                postPurchaseMessage={event.post_purchase_message}
+                termsConditions={event.terms_conditions}
               />
 
               <ResendTicket eventId={event.id} />
