@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       weekday: "long", month: "long", day: "numeric", year: "numeric",
     });
 
-    await Promise.all(
+    const emailResults = await Promise.allSettled(
       Array.from(grouped.entries()).map(([email, group]) =>
         sendTicketEmail({
           to: email,
@@ -101,9 +101,17 @@ export async function POST(request: Request) {
           postPurchaseMessage: (event as any).post_purchase_message ?? null,
           termsConditions: (event as any).terms_conditions ?? null,
           siteUrl,
-        }).catch(err => console.error("Email send error:", err))
+        })
       )
     );
+
+    const emailErrors = emailResults
+      .filter((r): r is PromiseRejectedResult => r.status === "rejected")
+      .map(r => r.reason?.message ?? String(r.reason));
+
+    if (emailErrors.length > 0) {
+      console.error("Email send errors:", emailErrors);
+    }
   }
 
   return NextResponse.json({

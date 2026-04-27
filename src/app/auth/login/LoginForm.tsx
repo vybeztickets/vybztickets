@@ -136,18 +136,30 @@ export default function LoginForm({
           onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
           onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
         />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none transition-colors"
-          style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
-        />
+        <div>
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none transition-colors"
+            style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
+          />
+          {tab === "login" && (
+            <div className="text-right mt-1.5">
+              <a
+                href="/auth/reset-password"
+                className="text-xs text-[#0a0a0a]/35 hover:text-[#0a0a0a] transition-colors"
+              >
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+          )}
+        </div>
 
         {error && <p className="text-red-500 text-xs px-1">{error}</p>}
         {success && <p className="text-emerald-600 text-xs px-1">{success}</p>}
