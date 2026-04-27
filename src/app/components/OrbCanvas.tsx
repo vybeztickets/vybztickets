@@ -100,6 +100,11 @@ export default function OrbCanvas({ className = "", light = false }: { className
       const lx = cx + orbR * (-0.3 - tiltX);
       const ly = orbCY + orbR * (-0.32 + tiltY);
 
+      if (!isFinite(lx) || !isFinite(ly) || !isFinite(orbR) || orbR <= 0) {
+        raf.current = requestAnimationFrame(frame);
+        return;
+      }
+
       // ── Base sphere ──
       const baseG = ctx.createRadialGradient(lx, ly, 0, cx, orbCY, orbR);
       baseG.addColorStop(0, "#dfdfdf");

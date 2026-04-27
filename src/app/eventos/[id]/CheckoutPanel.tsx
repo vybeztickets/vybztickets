@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import QRCode from "react-qr-code";
+import { PaymentCardVisual } from "@/app/components/ui/credit-card-form";
 
 type TicketType = {
   id: string;
@@ -365,6 +366,15 @@ export default function CheckoutPanel({
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           Volver
         </button>
+
+        <div className="mb-5">
+          <PaymentCardVisual
+            holderName={name}
+            amount={formatPrice(total, currency)}
+            eventName={eventName}
+          />
+          <p className="text-center text-[#0a0a0a]/20 text-[9px] mt-2">Click para ver reverso</p>
+        </div>
 
         <div className="p-4 rounded-xl mb-5" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
           <div className="flex justify-between items-center">

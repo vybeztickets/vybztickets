@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import OrbCanvas from "./OrbCanvas";
 
 const METRICS = [
   { value: "₡2.4M", label: "Vendidos este mes", delay: 900 },
@@ -17,7 +16,6 @@ export default function Hero() {
   return (
     <section
       className="relative min-h-screen flex items-center overflow-hidden"
-      style={{ background: "#fff" }}
     >
       {/* Grid overlay */}
       <div
@@ -135,7 +133,7 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* ── RIGHT: Orb + floating cards ── */}
+        {/* ── RIGHT: Floating cards ── */}
         <div
           className="relative hidden lg:block"
           style={{
@@ -144,8 +142,6 @@ export default function Hero() {
             transition: "opacity 1.4s ease .3s",
           }}
         >
-          <OrbCanvas className="absolute inset-0" light />
-
           {/* Floating metric cards */}
           {METRICS.map((m, i) => {
             const positions = [

@@ -47,26 +47,26 @@ function Counter({ value, prefix = "", suffix = "" }: { value: number; prefix?: 
 
 export default function StatsSection() {
   return (
-    <section style={{ background: "#111" }} className="py-20 px-6 overflow-hidden">
+    <section className="py-20 px-6 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <div
           className="grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-0"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "3rem" }}
+          style={{ borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: "3rem" }}
         >
           {STATS.map((s, i) => (
             <div
               key={i}
               className="lg:px-10 first:pl-0 last:pr-0"
-              style={{ borderRight: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none" }}
+              style={{ borderRight: i < 3 ? "1px solid rgba(0,0,0,0.06)" : "none" }}
             >
               <div
-                className="font-[family-name:var(--font-bebas)] text-white leading-none mb-2"
+                className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none mb-2"
                 style={{ fontSize: "clamp(50px,6.5vw,84px)" }}
               >
                 <Counter value={s.value} prefix={s.prefix} suffix={s.suffix} />
               </div>
-              <p className="text-white/55 text-sm font-semibold mb-0.5">{s.label}</p>
-              <p className="text-white/20 text-xs">{s.desc}</p>
+              <p className="text-[#0a0a0a]/55 text-sm font-semibold mb-0.5">{s.label}</p>
+              <p className="text-[#0a0a0a]/20 text-xs">{s.desc}</p>
             </div>
           ))}
         </div>
