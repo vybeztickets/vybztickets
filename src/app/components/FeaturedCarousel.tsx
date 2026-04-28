@@ -41,12 +41,28 @@ export default function FeaturedCarousel({ slides }: { slides: Slide[] }) {
   const slide = slides[current];
 
   return (
-    <section className="relative w-full" style={{ height: "75vh", background: "#000" }}>
-      {/* Banner */}
+    <section className="relative w-full overflow-hidden" style={{ background: "#000" }}>
+      {/* Full-bleed blurred backdrop */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <Image
+          src={slide.bannerUrl}
+          alt=""
+          fill
+          className="object-cover"
+          style={{ filter: "blur(32px) brightness(0.28)", transform: "scale(1.12)" }}
+        />
+      </div>
+
+      {/* Centered banner at natural 2:1 ratio, max 1340px wide */}
       <Link
         href={`/eventos/${slide.eventId}`}
-        className="absolute inset-0"
-        style={{ opacity: visible ? 1 : 0, transition: "opacity 300ms ease-in-out" }}
+        className="relative block mx-auto"
+        style={{
+          width: "min(92%, 1340px)",
+          aspectRatio: "2 / 1",
+          opacity: visible ? 1 : 0,
+          transition: "opacity 300ms ease-in-out",
+        }}
       >
         <Image
           src={slide.bannerUrl}
@@ -54,7 +70,7 @@ export default function FeaturedCarousel({ slides }: { slides: Slide[] }) {
           fill
           className="object-cover"
           priority
-          sizes="100vw"
+          sizes="min(92vw, 1340px)"
         />
       </Link>
 
