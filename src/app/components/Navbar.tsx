@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { StarButton } from "./ui/star-button";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -51,34 +52,36 @@ export default function Navbar() {
         {/* CTA */}
         <div className="flex items-center gap-3">
           {isReventa ? (
-            <Link
+            <StarButton
               href="/auth/login?redirectTo=/revendedor/nueva-venta"
-              className="hidden md:flex items-center gap-1.5 text-sm font-semibold bg-[#0a0a0a] text-white px-5 py-2.5 rounded-full hover:bg-[#222] transition-colors"
+              dark
+              className="hidden md:inline-flex py-2.5 px-5 text-sm"
             >
               Vender entrada
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M2 10L10 2M10 2H4M10 2V8" />
               </svg>
-            </Link>
+            </StarButton>
           ) : isEventos ? (
-            <Link
+            <StarButton
               href="/auth/login?redirectTo=/organizador/eventos/nuevo"
-              className="hidden md:flex items-center gap-1.5 text-sm font-semibold bg-[#0a0a0a] text-white px-5 py-2.5 rounded-full hover:bg-[#222] transition-colors"
+              dark
+              className="hidden md:inline-flex py-2.5 px-5 text-sm"
             >
               Crear evento
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M2 10L10 2M10 2H4M10 2V8" />
               </svg>
-            </Link>
+            </StarButton>
           ) : (
             <>
-              <Link
+              <StarButton
                 href="/auth/login?redirectTo=/organizador/eventos/nuevo"
-                className="hidden md:flex items-center gap-1.5 text-sm font-medium text-[#0a0a0a]/60 hover:text-[#0a0a0a] px-4 py-2.5 rounded-full transition-colors"
-                style={{ border: "1px solid rgba(0,0,0,0.15)" }}
+                dark
+                className="hidden md:inline-flex py-2.5 px-5 text-sm"
               >
                 Crear evento
-              </Link>
+              </StarButton>
               <Link
                 href="/eventos"
                 className="hidden md:flex items-center gap-1.5 text-sm font-semibold bg-[#0a0a0a] text-white px-5 py-2.5 rounded-full hover:bg-[#222] transition-colors"

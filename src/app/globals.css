@@ -42,6 +42,10 @@
   0%   { offset-distance: 0%; }
   100% { offset-distance: 100%; }
 }
+@keyframes star-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 
 /* ─── Base ───────────────────────────────────────────── */
 body {
