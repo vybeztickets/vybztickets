@@ -59,7 +59,9 @@ export function StarButton({
 
   const sharedClassName = cn(
     "relative inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-full text-sm font-bold px-7 py-3.5 transition-all duration-200",
-    dark ? "text-white hover:opacity-90" : "text-[#0a0a0a] hover:opacity-90",
+    dark
+      ? "text-white hover:opacity-90 shadow-[0_0_18px_rgba(255,255,255,0.12),0_4px_14px_rgba(0,0,0,0.5)]"
+      : "text-[#0a0a0a] hover:opacity-90 shadow-[0_2px_12px_rgba(0,0,0,0.12)]",
     className,
   );
 
