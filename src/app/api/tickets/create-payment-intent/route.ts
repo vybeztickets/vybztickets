@@ -1,8 +1,13 @@
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 const ONVO_API = "https://api.onvopay.com/v1";
 
 export async function POST(request: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
   const { amount, currency = "CRC", description } = await request.json();
   if (!amount || amount <= 0) {
     return NextResponse.json({ error: "Monto inválido" }, { status: 400 });

@@ -7,6 +7,9 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  if (profile?.role !== "organizer") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   const body = await request.json();
   const { name, description, date, time, end_time, till_late, venue, city, category, image_url, sales_end_date, currency, ticketTypes } = body;
 
