@@ -84,14 +84,16 @@ export function StarButton({
         style={{ background: bg, zIndex: 1 }}
         aria-hidden
       />
-      {/* ── Star dot pattern ── */}
-      <span
-        className="absolute inset-0 rounded-[inherit] overflow-hidden pointer-events-none"
-        style={{ zIndex: 2 }}
-        aria-hidden
-      >
-        <StarBackground color={resolvedStar} />
-      </span>
+      {/* ── Star dot pattern (light variant only) ── */}
+      {!dark && (
+        <span
+          className="absolute inset-0 rounded-[inherit] overflow-hidden pointer-events-none"
+          style={{ zIndex: 2 }}
+          aria-hidden
+        >
+          <StarBackground color={resolvedStar} />
+        </span>
+      )}
       {/* ── Text + icon ── */}
       <span className="relative flex items-center gap-2" style={{ zIndex: 3 }}>
         {children}
