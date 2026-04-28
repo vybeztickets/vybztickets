@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const ONVO_API = "https://api.dev.onvopay.com/v1";
+const ONVO_API = "https://api.onvopay.com/v1";
 
 export async function POST(request: Request) {
   const { amount, currency = "CRC", description } = await request.json();
@@ -29,7 +29,11 @@ export async function POST(request: Request) {
 
   let data: Record<string, unknown>;
   try { data = JSON.parse(text); } catch {
-    return NextResponse.json({ error: "Respuesta inválida del procesador de pagos" }, { status: 502 });
+    const preview = text.slice(0, 200);
+    return NextResponse.json(
+      { error: `ONVO devolvió una respuesta no-JSON (status ${res.status}): ${preview}` },
+      { status: 502 },
+    );
   }
 
   if (!res.ok) {

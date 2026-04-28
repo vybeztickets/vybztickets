@@ -3,12 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { StarButton } from "./ui/star-button";
-
-const METRICS = [
-  { value: "₡2.4M", label: "Vendidos este mes", delay: 900 },
-  { value: "1,240", label: "Asistentes confirmados", delay: 1050 },
-  { value: "98%", label: "Satisfacción", delay: 1200 },
-];
+import { HeroGlobe } from "./ui/cobe-globe";
 
 export default function Hero() {
   const [ready, setReady] = useState(false);
@@ -131,43 +126,23 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* ── RIGHT: Floating cards ── */}
+        {/* ── RIGHT: Interactive globe ── */}
         <div
-          className="relative hidden lg:block"
+          className="hidden lg:flex flex-col items-center justify-center"
           style={{
-            height: "72vh",
             opacity: ready ? 1 : 0,
-            transition: "opacity 1.4s ease .3s",
+            transition: "opacity 1.6s ease .4s",
           }}
         >
-          {/* Floating metric cards */}
-          {METRICS.map((m, i) => {
-            const positions = [
-              { top: "14%", right: "6%" },
-              { bottom: "22%", right: "0%" },
-              { top: "46%", right: "26%" },
-            ];
-            return (
-              <div
-                key={i}
-                className="absolute px-4 py-3 rounded-2xl"
-                style={{
-                  ...positions[i],
-                  background: "#fff",
-                  border: "1px solid rgba(0,0,0,0.08)",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
-                  opacity: ready ? 1 : 0,
-                  transform: ready ? "translateY(0)" : "translateY(14px)",
-                  transition: `opacity .8s ease ${m.delay}ms,transform .8s ease ${m.delay}ms`,
-                  animation: `float-card ${5 + i * 1.2}s ease-in-out ${i * 1.3}s infinite`,
-                  "--r": `${i % 2 === 0 ? 1.5 : -1.5}deg`,
-                } as unknown as React.CSSProperties}
-              >
-                <p className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] text-2xl leading-none">{m.value}</p>
-                <p className="text-[10px] mt-0.5 whitespace-nowrap" style={{ color: "rgba(0,0,0,0.35)" }}>{m.label}</p>
-              </div>
-            );
-          })}
+          <div className="relative w-full max-w-[540px]">
+            <HeroGlobe className="w-full" />
+            <p
+              className="text-center mt-5 text-[11px] font-semibold tracking-[0.22em] uppercase"
+              style={{ color: "rgba(0,0,0,0.22)" }}
+            >
+              Conectado al mundo
+            </p>
+          </div>
         </div>
       </div>
 

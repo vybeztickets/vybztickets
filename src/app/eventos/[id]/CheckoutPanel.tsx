@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import QRCode from "react-qr-code";
 import { PaymentCardVisual } from "@/app/components/ui/credit-card-form";
@@ -84,6 +84,7 @@ export default function CheckoutPanel({
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [error, setError] = useState("");
   const [purchasedQRs, setPurchasedQRs] = useState<string[]>([]);
+  const onvoInitialized = useRef(false);
 
   const selected = activeTypes.find((t) => t.id === selectedId);
   const isTable = selected?.category === "table" || selected?.category === "seat";
@@ -215,14 +216,11 @@ export default function CheckoutPanel({
   // Cargar ONVO widget cuando llega al paso de pago
   useEffect(() => {
     if (step !== "payment" || !paymentIntentId) return;
-    const existing = document.getElementById("onvo-sdk");
-    if (existing) { initOnvo(); return; }
-    const script = document.createElement("script");
-    script.id = "onvo-sdk";
-    script.src = "https://onvo-pay-widget.vercel.app/sdk.js";
-    script.async = true;
-    script.onload = initOnvo;
-    document.head.appendChild(script);
+    if (onvoInitialized.current) return;
+    onvoInitialized.current = true;
+
+    const widgetEl = document.getElementById("onvo-widget");
+    if (widgetEl) widgetEl.innerHTML = "";
 
     function initOnvo() {
       const w = window as unknown as { onvo?: { pay: (o: unknown) => { render: (s: string) => void } } };
@@ -235,7 +233,22 @@ export default function CheckoutPanel({
         onError: () => { setError("El pago no se pudo completar. Intentá de nuevo."); setStep("details"); },
       }).render("#onvo-widget");
     }
-  }, [step, paymentIntentId, completePurchase]);
+
+    const existing = document.getElementById("onvo-sdk");
+    if (existing && (window as unknown as { onvo?: unknown }).onvo) {
+      initOnvo();
+    } else if (!existing) {
+      const script = document.createElement("script");
+      script.id = "onvo-sdk";
+      script.src = "https://sdk.onvopay.com/sdk.js";
+      script.async = true;
+      script.onload = initOnvo;
+      document.head.appendChild(script);
+    }
+
+    return () => { onvoInitialized.current = false; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, paymentIntentId]);
 
   if (activeTypes.length === 0) {
     return (
@@ -367,10 +380,9 @@ export default function CheckoutPanel({
           Volver
         </button>
 
-        <div className="mb-5">
+        <div className="mb-4">
           <PaymentCardVisual
             holderName={name}
-            amount={formatPrice(total, currency)}
             eventName={eventName}
           />
           <p className="text-center text-[#0a0a0a]/20 text-[9px] mt-2">Click para ver reverso</p>
