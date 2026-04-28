@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { StarButton } from "./ui/star-button";
 
 const METRICS = [
   { value: "₡2.4M", label: "Vendidos este mes", delay: 900 },
@@ -89,19 +90,17 @@ export default function Hero() {
               transition: "opacity .8s ease .52s,transform .8s ease .52s",
             }}
           >
-            <Link
+            <StarButton
               href="/auth/login?redirectTo=/organizador/eventos/nuevo"
-              className="group flex items-center gap-2.5 text-sm font-bold px-7 py-3.5 rounded-full transition-all duration-200"
-              style={{ background: "#0a0a0a", color: "#fff" }}
+              dark
+              duration={2.5}
+              lightWidth={130}
             >
               Crear evento gratis
-              <svg
-                className="transition-transform duration-200 group-hover:translate-x-0.5"
-                width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2"
-              >
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M2 10L10 2M10 2H4M10 2V8"/>
               </svg>
-            </Link>
+            </StarButton>
             <Link
               href="/organizadores"
               className="flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-full transition-colors"

@@ -3,6 +3,7 @@
 @theme inline {
   --font-heading: var(--font-bebas);
   --font-body: var(--font-space-grotesk);
+  --animate-star-btn: star-btn calc(var(--duration) * 1s) linear infinite;
 }
 
 /* ─── Blob keyframes ─────────────────────────────────── */
@@ -36,6 +37,10 @@
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
+}
+@keyframes star-btn {
+  0%   { offset-distance: 0%; }
+  100% { offset-distance: 100%; }
 }
 
 /* ─── Base ───────────────────────────────────────────── */
