@@ -25,7 +25,7 @@ export default async function EventosPage({
     <div className="min-h-screen flex flex-col" style={{ color: "#0a0a0a" }}>
       <MeshBackground />
       <Navbar />
-      <div>
+      <div style={{ paddingTop: "64px" }}>
         <FeaturedEvents />
       </div>
       <main className="flex-1 pt-24 pb-20">

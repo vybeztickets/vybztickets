@@ -59,7 +59,7 @@ export default function FeaturedCarousel({ slides }: { slides: Slide[] }) {
         className="relative block mx-auto"
         style={{
           width: "min(92%, 1340px)",
-          aspectRatio: "2 / 1",
+          aspectRatio: "3072 / 1280",
           opacity: visible ? 1 : 0,
           transition: "opacity 300ms ease-in-out",
         }}
