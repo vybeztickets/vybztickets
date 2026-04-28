@@ -13,6 +13,7 @@ const MARKERS = [
   { location: [1.36, 103.99] as [number, number], size: 0.05 },
   { location: [19.09, 72.87] as [number, number], size: 0.05 },
   { location: [9.9, -84.1] as [number, number], size: 0.08 },
+  { location: [25.77, -80.19] as [number, number], size: 0.06 },
 ];
 
 interface HeroGlobeProps {
@@ -63,7 +64,7 @@ export function HeroGlobe({ className = "", speed = 0.003 }: HeroGlobeProps) {
 
     let globe: ReturnType<typeof createGlobe> | null = null;
     let raf: number;
-    let phi = 0;
+    let phi = 1.4;
 
     function init() {
       if (!canvas || globe) return;
