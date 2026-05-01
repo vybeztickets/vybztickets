@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function ChooseRolePage() {
+function ChooseRoleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const then = searchParams.get("then") ?? "/";
@@ -97,5 +97,17 @@ export default function ChooseRolePage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function ChooseRolePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#fafafa" }}>
+        <div className="w-5 h-5 rounded-full border-2 border-black/20 border-t-black animate-spin" />
+      </div>
+    }>
+      <ChooseRoleContent />
+    </Suspense>
   );
 }
