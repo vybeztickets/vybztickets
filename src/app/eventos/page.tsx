@@ -28,7 +28,7 @@ export default async function EventosPage({
       <div style={{ paddingTop: "64px" }}>
         <FeaturedEvents />
       </div>
-      <main className="flex-1 pt-8 pb-20">
+      <main className="flex-1 pt-14 pb-20">
         <div className="max-w-7xl mx-auto px-6 mb-12">
           <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide" style={{ fontSize: "clamp(48px,7vw,88px)" }}>
             Próximos Eventos
