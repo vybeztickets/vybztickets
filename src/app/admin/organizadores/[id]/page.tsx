@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ToggleAccount from "../ToggleAccount";
 
-function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
 }
@@ -65,10 +65,6 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ id: 
           <p className="text-[#0a0a0a]/25 text-xs mt-0.5">Desde {fmtDate(org.created_at)}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[9px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-full"
-            style={{ background: org.role === "suspended" ? "rgba(200,0,0,0.08)" : org.role === "pending_activation" ? "rgba(180,83,9,0.12)" : "rgba(0,0,0,0.06)", color: org.role === "suspended" ? "#991b1b" : org.role === "pending_activation" ? "#b45309" : "rgba(0,0,0,0.4)" }}>
-            {org.role === "pending_activation" ? "Pendiente activación" : org.role}
-          </span>
           {org.role !== "admin" && <ToggleAccount userId={org.id} role={org.role} />}
         </div>
       </div>
@@ -86,6 +82,20 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ id: 
           </div>
         ))}
       </div>
+
+      {/* Activation request alert */}
+      {org.role === "pending_activation" && (
+        <div className="mb-6 rounded-2xl p-5 flex items-start gap-4" style={{ background: "rgba(180,83,9,0.06)", border: "1px solid rgba(180,83,9,0.2)" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" className="shrink-0 mt-0.5">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div className="flex-1">
+            <p className="text-sm font-semibold" style={{ color: "#92400e" }}>Solicitud de activación de cuenta</p>
+            <p className="text-xs mt-0.5" style={{ color: "#b45309" }}>El organizador ha solicitado la activación de su cuenta. Usa el toggle para aprobarla o rechazarla.</p>
+          </div>
+        </div>
+      )}
 
       {/* Events table */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>

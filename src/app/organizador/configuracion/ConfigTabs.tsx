@@ -106,21 +106,6 @@ function StatusTab({ role }: { role: string }) {
         )}
       </div>
 
-      <div className="rounded-2xl p-5" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
-        <h3 className="text-[#0a0a0a]/60 text-sm font-semibold mb-3">Resumen de la cuenta</h3>
-        <div className="flex flex-col gap-2 text-xs">
-          {[
-            { label: "Plan", value: "Vybz Organizer" },
-            { label: "Fee de plataforma", value: "15% por venta" },
-            { label: "Soporte", value: "soporte@vybztickets.com" },
-          ].map((r) => (
-            <div key={r.label} className="flex justify-between">
-              <span className="text-[#0a0a0a]/30">{r.label}</span>
-              <span className="text-[#0a0a0a]/60">{r.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

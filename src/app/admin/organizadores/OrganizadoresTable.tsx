@@ -22,7 +22,7 @@ const ROLE_STYLE: Record<string, { bg: string; color: string; label: string }> =
 
 const STATUSES = ["Todos", "organizer", "pending_activation", "suspended"];
 
-function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 
 export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs: Org[]; total: number; pendingCount: number }) {
   const [q, setQ] = useState("");
@@ -83,14 +83,14 @@ export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-              {["Organizador", "País", "Eventos", "Revenue", "Estado", "Cuenta", ""].map(h => (
+              {["Organizador", "País", "Eventos", "Revenue", "Estado", "Cuenta", "Alertas", ""].map(h => (
                 <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={7} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">Sin resultados</td></tr>
+              <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">Sin resultados</td></tr>
             ) : filtered.map(o => {
               const rs = ROLE_STYLE[o.role] ?? ROLE_STYLE.organizer;
               const isPending = o.role === "pending_activation";
@@ -111,6 +111,17 @@ export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs
                     </span>
                   </td>
                   <td className="px-6 py-4"><ToggleAccount userId={o.id} role={o.role} /></td>
+                  <td className="px-6 py-4">
+                    {isPending && (
+                      <Link href={`/admin/organizadores/${o.id}`} className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "#b45309" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        Ver más
+                      </Link>
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <Link href={`/admin/organizadores/${o.id}`} className="text-xs font-semibold text-[#0a0a0a]/40 hover:text-[#0a0a0a] transition-colors">Ver →</Link>
                   </td>

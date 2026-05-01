@@ -4,21 +4,24 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function ToggleAccount({ userId, role }: { userId: string; role: string }) {
+  const [currentRole, setCurrentRole] = useState(role);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const isActive = role === "organizer" || role === "admin";
-  const isSuspended = role === "suspended";
-  const isPending = role === "pending_activation";
-  const isAdmin = role === "admin";
+  const isActive = currentRole === "organizer" || currentRole === "admin";
+  const isPending = currentRole === "pending_activation";
+  const isAdmin = currentRole === "admin";
 
   async function setRole(activate: boolean) {
+    const newRole = activate ? "organizer" : "suspended";
+    setCurrentRole(newRole);
     setLoading(true);
-    await fetch("/api/admin/users/toggle", {
+    const res = await fetch("/api/admin/users/toggle", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, suspend: !activate, activate }),
     });
+    if (!res.ok) setCurrentRole(currentRole);
     setLoading(false);
     router.refresh();
   }
