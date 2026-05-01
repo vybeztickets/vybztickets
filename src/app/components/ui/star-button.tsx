@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, CSSProperties } from "react";
+import React, { ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -35,67 +35,42 @@ function StarBackground({ color }: { color?: string }) {
 
 type StarButtonProps = {
   children: ReactNode;
-  duration?: number;
-  lightColor?: string;
   starColor?: string;
   className?: string;
-  /** dark = dark bg + white text; light = white bg + dark text */
   dark?: boolean;
 } & ({ href: string; onClick?: never } | { href?: never; onClick?: () => void });
 
 export function StarButton({
   children,
   href,
-  duration = 2.5,
-  lightColor,
   starColor,
   className,
   dark = false,
   onClick,
 }: StarButtonProps) {
-  const bg = dark ? "#0a0a0a" : "#ffffff";
-  const resolvedLight = lightColor ?? (dark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.55)");
-  const resolvedStar = starColor ?? (dark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.13)");
+  const resolvedStar = starColor ?? "rgba(0,0,0,0.13)";
 
   const sharedClassName = cn(
     "relative inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-full text-sm font-bold px-7 py-3.5 transition-all duration-200",
     dark
-      ? "text-white hover:opacity-90 shadow-[0_0_18px_rgba(255,255,255,0.12),0_4px_14px_rgba(0,0,0,0.5)]"
+      ? "text-white hover:opacity-90"
       : "text-[#0a0a0a] hover:opacity-90 shadow-[0_2px_12px_rgba(0,0,0,0.12)]",
     className,
   );
 
   const content = (
     <>
-      {/* ── Spinning conic border glow ── */}
-      <span
-        className="absolute rounded-[inherit] pointer-events-none"
-        style={{
-          inset: -1,
-          background: `conic-gradient(from 0deg, transparent 0%, transparent 65%, ${resolvedLight} 80%, transparent 95%)`,
-          animation: `star-spin ${duration}s linear infinite`,
-          zIndex: 0,
-        } as CSSProperties}
-        aria-hidden
-      />
-      {/* ── Solid fill masks the interior (keeps border-only glow) ── */}
-      <span
-        className="absolute inset-0 rounded-[inherit] pointer-events-none"
-        style={{ background: bg, zIndex: 1 }}
-        aria-hidden
-      />
       {/* ── Star dot pattern (light variant only) ── */}
       {!dark && (
         <span
           className="absolute inset-0 rounded-[inherit] overflow-hidden pointer-events-none"
-          style={{ zIndex: 2 }}
           aria-hidden
         >
           <StarBackground color={resolvedStar} />
         </span>
       )}
       {/* ── Text + icon ── */}
-      <span className="relative flex items-center gap-2" style={{ zIndex: 3 }}>
+      <span className="relative flex items-center gap-2">
         {children}
       </span>
     </>
