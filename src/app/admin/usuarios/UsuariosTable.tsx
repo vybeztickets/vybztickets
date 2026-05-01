@@ -13,15 +13,15 @@ type User = {
   ticketCount: number;
 };
 
-const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
-  admin: { bg: "#0a0a0a", color: "#fff" },
-  organizer: { bg: "rgba(0,140,0,0.1)", color: "#166534" },
-  reseller: { bg: "rgba(0,80,200,0.1)", color: "#1e40af" },
-  buyer: { bg: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.4)" },
-  suspended: { bg: "rgba(200,0,0,0.08)", color: "#991b1b" },
+const ROLE_COLORS: Record<string, { bg: string; color: string; label: string }> = {
+  admin:              { bg: "#0a0a0a",                  color: "#fff",               label: "Admin" },
+  organizer:          { bg: "rgba(0,140,0,0.1)",        color: "#166534",            label: "Organizador" },
+  pending_activation: { bg: "rgba(180,83,9,0.12)",      color: "#b45309",            label: "Pendiente" },
+  suspended:          { bg: "rgba(200,0,0,0.08)",       color: "#991b1b",            label: "Suspendido" },
+  user:               { bg: "rgba(0,0,0,0.06)",         color: "rgba(0,0,0,0.4)",    label: "Attendee" },
 };
 
-const ROLES = ["Todos", "organizer", "buyer", "reseller", "admin", "suspended"];
+const ROLES = ["Todos", "user", "organizer", "pending_activation", "admin", "suspended"];
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
@@ -61,7 +61,7 @@ export default function UsuariosTable({ users, total }: { users: User[]; total: 
         <select value={role} onChange={e => setRole(e.target.value)}
           className="px-3 py-2.5 rounded-xl text-sm focus:outline-none"
           style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}>
-          {ROLES.map(r => <option key={r} value={r}>{r === "Todos" ? "Todos los roles" : r}</option>)}
+          {ROLES.map(r => <option key={r} value={r}>{r === "Todos" ? "Todos los roles" : (ROLE_COLORS[r]?.label ?? r)}</option>)}
         </select>
         {countries.length > 1 && (
           <select value={country} onChange={e => setCountry(e.target.value)}
@@ -87,7 +87,7 @@ export default function UsuariosTable({ users, total }: { users: User[]; total: 
             {filtered.length === 0 ? (
               <tr><td colSpan={6} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">Sin resultados</td></tr>
             ) : filtered.map(u => {
-              const rc = ROLE_COLORS[u.role] ?? ROLE_COLORS.buyer;
+              const rc = ROLE_COLORS[u.role] ?? ROLE_COLORS.user;
               return (
                 <tr key={u.id} style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }} className="hover:bg-black/[0.01]">
                   <td className="px-6 py-4">
@@ -95,7 +95,7 @@ export default function UsuariosTable({ users, total }: { users: User[]; total: 
                     <p className="text-[#0a0a0a]/35 text-xs">{u.email}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style={rc}>{u.role}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style={{ background: rc.bg, color: rc.color }}>{rc.label}</span>
                   </td>
                   <td className="px-6 py-4 text-xs text-[#0a0a0a]/50">{u.country ?? "—"}</td>
                   <td className="px-6 py-4 text-[#0a0a0a] text-sm">{u.ticketCount}</td>
