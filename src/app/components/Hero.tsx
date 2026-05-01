@@ -42,7 +42,7 @@ export default function Hero() {
             >
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: "rgba(0,0,0,0.4)" }}>
-                Activo en Costa Rica · Latam
+                Tiquetera de eventos
               </span>
             </span>
           </div>
@@ -139,7 +139,7 @@ export default function Hero() {
               className="text-center mt-5 text-[11px] font-semibold tracking-[0.22em] uppercase"
               style={{ color: "rgba(0,0,0,0.22)" }}
             >
-              Conectado al mundo
+              Eventos por todo el mundo
             </p>
           </div>
         </div>
