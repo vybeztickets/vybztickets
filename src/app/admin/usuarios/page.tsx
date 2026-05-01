@@ -10,6 +10,7 @@ export default async function AdminUsuariosPage() {
   const { data: users, count } = await db
     .from("profiles")
     .select("id, full_name, email, role, country, created_at", { count: "exact" })
+    .eq("role", "user")
     .order("created_at", { ascending: false });
 
   const { data: ticketCounts } = await db.from("tickets").select("user_id");
