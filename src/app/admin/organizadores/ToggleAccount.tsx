@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function ToggleAccount({ userId, role }: { userId: string; role: string }) {
   const [currentRole, setCurrentRole] = useState(role);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const isActive = currentRole === "organizer" || currentRole === "admin";
   const isPending = currentRole === "pending_activation";
@@ -21,9 +19,8 @@ export default function ToggleAccount({ userId, role }: { userId: string; role: 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, suspend: !activate, activate }),
     });
-    if (!res.ok) setCurrentRole(currentRole);
+    if (!res.ok) setCurrentRole(role);
     setLoading(false);
-    router.refresh();
   }
 
   if (isPending) {
