@@ -14,13 +14,23 @@ export default function ToggleAccount({ userId, role }: { userId: string; role: 
     const newRole = activate ? "organizer" : "suspended";
     setCurrentRole(newRole);
     setLoading(true);
-    const res = await fetch("/api/admin/users/toggle", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, suspend: !activate, activate }),
-    });
-    if (!res.ok) setCurrentRole(role);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/users/toggle", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, suspend: !activate, activate }),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("[toggle] API error:", res.status, errText);
+        setCurrentRole(role);
+      }
+    } catch (e) {
+      console.error("[toggle] fetch error:", e);
+      setCurrentRole(role);
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (isPending) {

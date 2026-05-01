@@ -18,12 +18,21 @@ export async function GET() {
 
   const eventIds = featured.map((f: { event_id: string }) => f.event_id);
 
+  const { data: activeOrgs } = await (admin as any)
+    .from("profiles")
+    .select("id")
+    .in("role", ["organizer", "admin"]);
+
+  const activeOrgIds = new Set((activeOrgs ?? []).map((p: { id: string }) => p.id));
+
   const { data: events } = await admin
     .from("events")
-    .select("id, name, date, time, venue, city, image_url, category, ticket_types(id, price, is_active, total_available, sold_count)")
+    .select("id, name, date, time, venue, city, image_url, category, organizer_id, ticket_types(id, price, is_active, total_available, sold_count)")
     .in("id", eventIds)
     .eq("status", "published")
     .order("date", { ascending: true });
 
-  return NextResponse.json(events ?? []);
+  const activeEvents = (events ?? []).filter((e: any) => activeOrgIds.has(e.organizer_id));
+
+  return NextResponse.json(activeEvents);
 }

@@ -23,16 +23,23 @@ export default async function FeaturedEvents() {
 
   const eventIds = Object.keys(bannerMap);
 
+  const { data: activeOrgs } = await (admin as any)
+    .from("profiles")
+    .select("id")
+    .in("role", ["organizer", "admin"]);
+
+  const activeOrgIds = new Set((activeOrgs ?? []).map((p: { id: string }) => p.id));
+
   const { data: events } = await admin
     .from("events")
-    .select("id, name")
+    .select("id, name, organizer_id")
     .in("id", eventIds)
     .eq("status", "published");
 
   if (!events || events.length === 0) return null;
 
-  const slides = (events as { id: string; name: string }[])
-    .filter(e => bannerMap[e.id])
+  const slides = (events as { id: string; name: string; organizer_id: string }[])
+    .filter(e => bannerMap[e.id] && activeOrgIds.has(e.organizer_id))
     .map(e => ({ eventId: e.id, eventName: e.name, bannerUrl: bannerMap[e.id] }));
 
   if (slides.length === 0) return null;

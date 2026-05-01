@@ -6,6 +6,7 @@ import Image from "next/image";
 import CheckoutPanel from "./CheckoutPanel";
 import ResendTicket from "./ResendTicket";
 import Countdown from "./Countdown";
+import EventMap from "./EventMap";
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -46,7 +47,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           <div className="flex flex-col lg:flex-row gap-10">
 
             {/* ── LEFT: flyer + info + location ── */}
-            <div className="lg:w-[300px] shrink-0">
+            <div className="lg:w-[420px] shrink-0 lg:sticky lg:top-20 lg:self-start" style={{ maxHeight: "calc(100vh - 5rem)", overflowY: "auto" }}>
               <div className="rounded-2xl overflow-hidden mb-6" style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" }}>
                 {event.image_url ? (
                   <Image src={event.image_url} alt={event.name} width={600} height={800} className="w-full h-auto" style={{ display: "block" }} />
@@ -69,18 +70,14 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
               <div>
                 <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Ubicación</p>
-                <p className="text-[#0a0a0a]/60 text-sm leading-relaxed">
-                  {event.venue}<br />
-                  {event.city}, {event.country}
-                </p>
-                <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[#0a0a0a]/35 text-xs mt-2 hover:text-[#0a0a0a] transition-colors">
-                  Ver en Google Maps
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                  </svg>
-                </a>
+                <EventMap
+                  lat={event.location_lat}
+                  lng={event.location_lng}
+                  venue={event.venue}
+                  city={event.city}
+                  country={event.country}
+                  mapsUrl={mapsUrl}
+                />
                 <ResendTicket eventId={event.id} />
               </div>
             </div>

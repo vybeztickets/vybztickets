@@ -234,15 +234,13 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
   return (
     <div className="p-8">
       {isBlocked && (
-        <div className="flex items-center justify-between px-5 py-3 rounded-xl mb-6" style={{ background: "rgba(180,83,9,0.1)", border: "1px solid rgba(180,83,9,0.2)" }}>
-          <div className="flex items-center gap-3">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <p className="text-sm font-semibold" style={{ color: "#92400e" }}>
-              Cuenta inactiva — el envío de emails está bloqueado
-            </p>
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-lg mb-6" style={{ background: "#0a0a0a" }}>
+          <div className="flex items-center gap-2.5">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <p className="text-xs text-white/50">Cuenta pendiente de activación — el envío de emails está deshabilitado</p>
           </div>
-          <a href="/organizador/configuracion" className="text-xs font-bold underline" style={{ color: "#b45309" }}>
-            Activar cuenta →
+          <a href="/organizador/configuracion" className="text-xs font-semibold text-white/80 hover:text-white transition-colors">
+            Ver estado →
           </a>
         </div>
       )}
@@ -433,20 +431,20 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
               </button>
             </div>
             {isBlocked && (
-              <div className="px-6 py-8 flex flex-col items-center gap-4 text-center">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "rgba(180,83,9,0.1)" }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <div className="flex-1 flex flex-col items-center justify-center gap-5 py-12 px-6 text-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "rgba(0,0,0,0.06)" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </div>
                 <div>
-                  <p className="font-bold text-[#0a0a0a] mb-1">No puedes crear mensajes aún</p>
-                  <p className="text-sm text-[#0a0a0a]/40">Por favor, completa los pasos requeridos para activar tu cuenta.</p>
+                  <p className="font-semibold text-[#0a0a0a] text-base mb-1.5">Cuenta pendiente de activación</p>
+                  <p className="text-sm text-[#0a0a0a]/40 max-w-xs">Tu cuenta debe estar activa para poder crear y enviar campañas de marketing.</p>
                 </div>
                 <a
                   href="/organizador/configuracion"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold"
-                  style={{ background: "rgba(180,83,9,0.1)", color: "#b45309", border: "1px solid rgba(180,83,9,0.2)" }}
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold"
+                  style={{ background: "#0a0a0a", color: "#fff" }}
                 >
-                  Activar cuenta →
+                  Ir a configuración
                 </a>
               </div>
             )}

@@ -11,8 +11,8 @@ create table if not exists public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
   full_name   text,
   email       text,
-  role        text not null default 'attendee'
-                check (role in ('attendee', 'organizer', 'staff', 'admin')),
+  role        text not null default 'user'
+                check (role in ('admin', 'organizer', 'pending_activation', 'user', 'suspended')),
   avatar_url  text,
   created_at  timestamptz not null default now()
 );

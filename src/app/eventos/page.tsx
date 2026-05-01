@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import EventsGrid from "./EventsGrid";
@@ -12,13 +12,21 @@ export default async function EventosPage({
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
-  const supabase = await createClient();
+  const admin = createAdminClient();
   const { category } = await searchParams;
 
-  const { data: events } = await supabase
+  const { data: activeOrgs } = await (admin as any)
+    .from("profiles")
+    .select("id")
+    .in("role", ["organizer", "admin"]);
+
+  const activeOrgIds = (activeOrgs ?? []).map((p: { id: string }) => p.id);
+
+  const { data: events } = await admin
     .from("events")
     .select(`*, ticket_types (id, price, total_available, sold_count, is_active)`)
     .eq("status", "published")
+    .in("organizer_id", activeOrgIds.length ? activeOrgIds : ["none"])
     .order("date", { ascending: true });
 
   return (

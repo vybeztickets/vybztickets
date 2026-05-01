@@ -114,7 +114,7 @@ export default function EventsGrid({ events, initialCategory: _ }: { events: Eve
             return (
               <Link key={event.id} href={`/eventos/${event.id}`} className="card-light group block overflow-hidden">
                 {/* Image */}
-                <div className="relative h-52 overflow-hidden rounded-t-[15px]">
+                <div className="relative h-96 overflow-hidden rounded-t-[15px]">
                   {event.image_url ? (
                     <Image
                       src={event.image_url}

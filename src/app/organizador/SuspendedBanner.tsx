@@ -13,13 +13,11 @@ export default function SuspendedBanner({ isPending }: { isPending: boolean }) {
 
   return (
     <div
-      className="flex items-center justify-between px-6 py-3 text-sm font-medium"
-      style={{ background: "#b45309", color: "#fff" }}
+      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 text-sm font-medium"
+      style={{ background: "#dc2626", color: "#fff" }}
     >
-      <div className="flex items-center gap-2">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
+      <div className="flex items-center gap-2.5">
+        <span className="flex items-center justify-center w-5 h-5 rounded-full text-xs font-black shrink-0" style={{ background: "rgba(255,255,255,0.25)" }}>!</span>
         <span>Cuenta inactiva — no puedes crear eventos ni enviar comunicaciones hasta que el equipo active tu cuenta.</span>
       </div>
       {status === "done" ? (
