@@ -81,6 +81,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                     <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
                   </svg>
                 </a>
+                <ResendTicket eventId={event.id} />
               </div>
             </div>
 
@@ -114,8 +115,6 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                 postPurchaseMessage={event.post_purchase_message}
                 termsConditions={event.terms_conditions}
               />
-
-              <ResendTicket eventId={event.id} />
             </div>
           </div>
         </div>

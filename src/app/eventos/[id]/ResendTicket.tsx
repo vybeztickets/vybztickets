@@ -29,41 +29,56 @@ export default function ResendTicket({ eventId }: { eventId: string }) {
 
   if (!open) {
     return (
-      <div className="mt-14 text-center">
-        <button onClick={() => setOpen(true)} className="text-white/20 text-xs hover:text-white/35 transition-colors underline underline-offset-2">
-          ¿Ya compraste una entrada? Reenviar mi entrada
+      <div className="mt-4">
+        <button
+          onClick={() => setOpen(true)}
+          className="text-xs transition-colors"
+          style={{ color: "rgba(0,0,0,0.25)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "rgba(0,0,0,0.45)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "rgba(0,0,0,0.25)")}
+        >
+          ¿Ya compraste? Reenviar mi entrada
         </button>
       </div>
     );
   }
 
   return (
-    <div className="mt-14 text-center">
-      <p className="text-white/25 text-xs mb-3">Ingresa el email con el que compraste tu entrada</p>
+    <div className="mt-4">
       {status === "sent" ? (
-        <p className="text-green-400/80 text-sm">¡Listo! Tu entrada fue reenviada a <span className="font-medium">{email}</span></p>
+        <p className="text-xs" style={{ color: "rgba(0,0,0,0.4)" }}>
+          Entrada reenviada a <span style={{ color: "#0a0a0a", fontWeight: 600 }}>{email}</span>
+        </p>
       ) : status === "used" ? (
-        <p className="text-yellow-400/60 text-xs">Ya usaste tu reenvío para este evento. Contacta al organizador si necesitas ayuda.</p>
+        <p className="text-xs" style={{ color: "rgba(0,0,0,0.35)" }}>
+          Ya usaste tu reenvío para este evento.
+        </p>
       ) : status === "notfound" ? (
-        <p className="text-red-400/60 text-xs">No encontramos una entrada activa con ese email para este evento.</p>
+        <p className="text-xs" style={{ color: "rgba(0,0,0,0.35)" }}>
+          No encontramos una entrada activa con ese email.
+        </p>
       ) : (
-        <div className="flex gap-2 max-w-sm mx-auto">
+        <div className="flex gap-2">
           <input
             type="email"
             placeholder="tu@email.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleResend()}
-            className="flex-1 px-3 py-2 rounded-xl text-xs text-white placeholder-white/20 focus:outline-none"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleResend()}
+            className="flex-1 px-3 py-1.5 rounded-lg text-xs focus:outline-none"
+            style={{
+              background: "rgba(0,0,0,0.03)",
+              border: "1px solid rgba(0,0,0,0.1)",
+              color: "#0a0a0a",
+            }}
           />
           <button
             onClick={handleResend}
             disabled={!email || status === "sending"}
-            className="px-4 py-2 rounded-xl text-xs font-semibold disabled:opacity-40 transition-colors"
-            style={{ background: "rgba(124,58,237,0.25)", color: "#c084fc", border: "1px solid rgba(124,58,237,0.3)" }}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-40"
+            style={{ background: "#0a0a0a", color: "#fff" }}
           >
-            {status === "sending" ? "..." : "Reenviar"}
+            {status === "sending" ? "..." : "Enviar"}
           </button>
         </div>
       )}
