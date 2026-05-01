@@ -1,7 +1,6 @@
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import MarqueeStrip from "./components/MarqueeStrip";
-import StatsSection from "./components/StatsSection";
 import ScrollShowcase from "./components/ScrollShowcase";
 import PlatformSection from "./components/PlatformSection";
 import PricingSection from "./components/PricingSection";
@@ -16,7 +15,6 @@ export default function Home() {
       <Navbar />
       <Hero />
       <MarqueeStrip />
-      <StatsSection />
       <ScrollShowcase />
       <PlatformSection />
       <PricingSection />
