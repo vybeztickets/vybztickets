@@ -27,11 +27,15 @@ export default function LoginForm({
 
   async function handleGoogle() {
     setLoading(true);
+    if (tab === "signup") {
+      localStorage.setItem("vybz_pending_role", roleChoice === "organizer" ? "pending_activation" : "user");
+    }
+    const callbackRedirect = tab === "signup"
+      ? `${window.location.origin}/auth/callback?redirectTo=/auth/choose-role&then=${encodeURIComponent(redirectTo)}`
+      : `${window.location.origin}/auth/callback?redirectTo=${redirectTo}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirectTo=${redirectTo}`,
-      },
+      options: { redirectTo: callbackRedirect },
     });
     if (error) setError(error.message);
     setLoading(false);
@@ -95,6 +99,30 @@ export default function LoginForm({
         ))}
       </div>
 
+      {/* Role selector — shown in signup tab above all auth options */}
+      {tab === "signup" && (
+        <div className="flex rounded-xl overflow-hidden mb-6" style={{ border: "1.5px solid rgba(0,0,0,0.1)" }}>
+          {([
+            { value: "attendee", label: "Attendee", sub: "Compra entradas" },
+            { value: "organizer", label: "Organizador", sub: "Vende entradas" },
+          ] as const).map(({ value, label, sub }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setRoleChoice(value)}
+              className="flex-1 py-3 px-3 text-left transition-all"
+              style={{
+                background: roleChoice === value ? "#0a0a0a" : "rgba(0,0,0,0.02)",
+                borderRight: value === "attendee" ? "1px solid rgba(0,0,0,0.1)" : undefined,
+              }}
+            >
+              <p className="text-xs font-semibold" style={{ color: roleChoice === value ? "#fff" : "#0a0a0a" }}>{label}</p>
+              <p className="text-[10px]" style={{ color: roleChoice === value ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.35)" }}>{sub}</p>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Google */}
       <button
         onClick={handleGoogle}
@@ -124,40 +152,17 @@ export default function LoginForm({
       {/* Email form */}
       <form onSubmit={handleEmail} className="flex flex-col gap-3">
         {tab === "signup" && (
-          <>
-            <input
-              type="text"
-              placeholder="Nombre completo"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none transition-colors"
-              style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
-            />
-            {/* Role selector */}
-            <div className="flex rounded-xl overflow-hidden" style={{ border: "1.5px solid rgba(0,0,0,0.1)" }}>
-              {([
-                { value: "attendee", label: "Attendee", sub: "Compra entradas" },
-                { value: "organizer", label: "Organizador", sub: "Vende entradas" },
-              ] as const).map(({ value, label, sub }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setRoleChoice(value)}
-                  className="flex-1 py-3 px-3 text-left transition-all"
-                  style={{
-                    background: roleChoice === value ? "#0a0a0a" : "rgba(0,0,0,0.02)",
-                    borderRight: value === "attendee" ? "1px solid rgba(0,0,0,0.1)" : undefined,
-                  }}
-                >
-                  <p className="text-xs font-semibold" style={{ color: roleChoice === value ? "#fff" : "#0a0a0a" }}>{label}</p>
-                  <p className="text-[10px]" style={{ color: roleChoice === value ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.35)" }}>{sub}</p>
-                </button>
-              ))}
-            </div>
-          </>
+          <input
+            type="text"
+            placeholder="Nombre completo"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none transition-colors"
+            style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
+          />
         )}
         <input
           type="email"
