@@ -36,6 +36,95 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   );
 }
 
+function StatusTab({ role }: { role: string }) {
+  const [requesting, setRequesting] = useState(false);
+  const [requested, setRequested] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleRequest() {
+    setRequesting(true); setError("");
+    const res = await fetch("/api/organizador/activation-request", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) setError(data.error ?? "Error");
+    else setRequested(true);
+    setRequesting(false);
+  }
+
+  const isActive = role === "organizer";
+  const isSuspended = role === "suspended";
+  const isPending = role === "pending_activation";
+
+  return (
+    <div className="max-w-2xl flex flex-col gap-4">
+      <div>
+        <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Estado de la cuenta</h2>
+        <p className="text-[#0a0a0a]/35 text-sm">El estado de tu cuenta es gestionado por el equipo de Vybz.</p>
+      </div>
+
+      <div className="p-5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
+        {isActive && (
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0" />
+            <div>
+              <p className="text-[#0a0a0a] font-medium text-sm">Cuenta activa</p>
+              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Puedes vender tickets y recibir pagos.</p>
+            </div>
+          </div>
+        )}
+        {isSuspended && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "#ef4444" }} />
+              <div>
+                <p className="text-[#0a0a0a] font-medium text-sm">Cuenta suspendida</p>
+                <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Tu cuenta está inactiva. Los eventos no aceptan nuevas compras.</p>
+              </div>
+            </div>
+            {requested ? (
+              <p className="text-xs font-semibold" style={{ color: "#b45309" }}>Solicitud enviada. El equipo de Vybz la revisará pronto.</p>
+            ) : (
+              <button
+                onClick={handleRequest}
+                disabled={requesting}
+                className="self-start px-5 py-2.5 rounded-full text-sm font-semibold transition-opacity disabled:opacity-40"
+                style={{ background: "#0a0a0a", color: "#fff" }}
+              >
+                {requesting ? "Enviando..." : "Solicitar activación"}
+              </button>
+            )}
+            {error && <p className="text-xs" style={{ color: "#ef4444" }}>{error}</p>}
+          </div>
+        )}
+        {isPending && (
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full animate-pulse shrink-0" style={{ background: "#f59e0b" }} />
+            <div>
+              <p className="text-[#0a0a0a] font-medium text-sm">Solicitud de activación pendiente</p>
+              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">El equipo de Vybz revisará tu solicitud próximamente.</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-2xl p-5" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
+        <h3 className="text-[#0a0a0a]/60 text-sm font-semibold mb-3">Resumen de la cuenta</h3>
+        <div className="flex flex-col gap-2 text-xs">
+          {[
+            { label: "Plan", value: "Vybz Organizer" },
+            { label: "Fee de plataforma", value: "15% por venta" },
+            { label: "Soporte", value: "soporte@vybztickets.com" },
+          ].map((r) => (
+            <div key={r.label} className="flex justify-between">
+              <span className="text-[#0a0a0a]/30">{r.label}</span>
+              <span className="text-[#0a0a0a]/60">{r.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: { profile: Profile | null; userId: string; userEmail: string; initialTeam: TeamMember[] }) {
   const [tab, setTab] = useState("Estado");
   const [saving, setSaving] = useState(false);
@@ -186,44 +275,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
 
       {/* Estado */}
       {tab === "Estado" && (
-        <div className="max-w-2xl flex flex-col gap-4">
-          <div>
-            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Estado de la cuenta</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Activa o desactiva tu cuenta de organizador.</p>
-          </div>
-
-          <div className="flex items-center justify-between p-5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-            <div>
-              <p className="text-[#0a0a0a] font-medium text-sm">Cuenta activa</p>
-              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">
-                {accountActive ? "Tu cuenta está activa. Puedes vender tickets y recibir pagos." : "Cuenta desactivada. Los eventos no aceptarán nuevas compras."}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold" style={{ color: accountActive ? "#10b981" : "#ef4444" }}>
-                {accountActive ? "Activa" : "Inactiva"}
-              </span>
-              <Toggle checked={accountActive} onChange={setAccountActive} />
-            </div>
-          </div>
-
-          <div className="rounded-2xl p-5" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
-            <h3 className="text-[#0a0a0a]/60 text-sm font-semibold mb-3">Resumen de la cuenta</h3>
-            <div className="flex flex-col gap-2 text-xs">
-              {[
-                { label: "Plan", value: "Vybz Organizer" },
-                { label: "Comisión", value: "5% por venta" },
-                { label: "Pago de comisiones", value: "Mensual" },
-                { label: "Soporte", value: "soporte@vybztickets.com" },
-              ].map((r) => (
-                <div key={r.label} className="flex justify-between">
-                  <span className="text-[#0a0a0a]/30">{r.label}</span>
-                  <span className="text-[#0a0a0a]/60">{r.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <StatusTab role={profile?.role ?? "organizer"} />
       )}
 
       {/* Perfil */}

@@ -7,37 +7,34 @@ export default function ToggleAccount({ userId, role }: { userId: string; role: 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const suspended = role === "suspended";
-  const pendingActivation = role === "pending_activation";
+  const isActive = role === "organizer";
+  const isSuspended = role === "suspended";
+  const isPending = role === "pending_activation";
 
-  async function toggle(activate?: boolean) {
+  async function setRole(activate: boolean) {
     setLoading(true);
     await fetch("/api/admin/users/toggle", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, suspend: !suspended && !activate, activate }),
+      body: JSON.stringify({ userId, suspend: !activate, activate }),
     });
     setLoading(false);
     router.refresh();
   }
 
-  if (pendingActivation) {
+  if (isPending) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full animate-pulse"
-          style={{ background: "rgba(180,83,9,0.12)", color: "#b45309" }}>
-          Solicitud pendiente
-        </span>
         <button
-          onClick={() => toggle(true)}
+          onClick={() => setRole(true)}
           disabled={loading}
           className="text-xs font-semibold px-3 py-1.5 rounded-full transition-colors disabled:opacity-40"
           style={{ background: "rgba(0,140,0,0.1)", color: "#166534" }}
         >
-          {loading ? "…" : "✓ Activar"}
+          {loading ? "…" : "Activar"}
         </button>
         <button
-          onClick={() => toggle(false)}
+          onClick={() => setRole(false)}
           disabled={loading}
           className="text-xs font-semibold px-3 py-1.5 rounded-full transition-colors disabled:opacity-40"
           style={{ background: "rgba(200,0,0,0.08)", color: "#991b1b" }}
@@ -50,15 +47,17 @@ export default function ToggleAccount({ userId, role }: { userId: string; role: 
 
   return (
     <button
-      onClick={() => toggle()}
+      type="button"
+      onClick={() => setRole(!isActive)}
       disabled={loading}
-      className="text-xs font-semibold px-3 py-1.5 rounded-full transition-colors disabled:opacity-40"
-      style={suspended
-        ? { background: "rgba(0,140,0,0.1)", color: "#166534" }
-        : { background: "rgba(200,0,0,0.08)", color: "#991b1b" }
-      }
+      className="relative w-11 h-6 rounded-full transition-colors disabled:opacity-40"
+      style={{ background: isActive ? "#0a0a0a" : "rgba(0,0,0,0.12)" }}
+      title={isActive ? "Suspender cuenta" : "Activar cuenta"}
     >
-      {loading ? "…" : suspended ? "Activar" : "Suspender"}
+      <span
+        className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all"
+        style={{ left: isActive ? "24px" : "4px" }}
+      />
     </button>
   );
 }

@@ -14,11 +14,10 @@ type Org = {
   revenue: number;
 };
 
-const ROLE_STYLE: Record<string, { bg: string; color: string }> = {
-  admin: { bg: "rgba(255,255,255,0.15)", color: "#fff" },
-  organizer: { bg: "rgba(0,140,0,0.1)", color: "#166534" },
-  suspended: { bg: "rgba(200,0,0,0.08)", color: "#991b1b" },
-  pending_activation: { bg: "rgba(180,83,9,0.12)", color: "#b45309" },
+const ROLE_STYLE: Record<string, { bg: string; color: string; label: string }> = {
+  organizer:          { bg: "rgba(0,140,0,0.1)",    color: "#166534", label: "Activo" },
+  suspended:          { bg: "rgba(200,0,0,0.08)",   color: "#991b1b", label: "Suspendido" },
+  pending_activation: { bg: "rgba(180,83,9,0.12)",  color: "#b45309", label: "Pendiente" },
 };
 
 const STATUSES = ["Todos", "organizer", "pending_activation", "suspended"];
@@ -107,8 +106,8 @@ export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs
                   <td className="px-6 py-4 text-[#0a0a0a] text-sm">{o.events}</td>
                   <td className="px-6 py-4 text-[#0a0a0a] text-sm font-semibold">{fmt(o.revenue)}</td>
                   <td className="px-6 py-4">
-                    <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style={rs}>
-                      {isPending ? "Pendiente" : o.role}
+                    <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full" style={{ background: rs.bg, color: rs.color }}>
+                      {rs.label ?? o.role}
                     </span>
                   </td>
                   <td className="px-6 py-4"><ToggleAccount userId={o.id} role={o.role} /></td>
