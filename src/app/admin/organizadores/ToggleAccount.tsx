@@ -7,9 +7,10 @@ export default function ToggleAccount({ userId, role }: { userId: string; role: 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const isActive = role === "organizer";
+  const isActive = role === "organizer" || role === "admin";
   const isSuspended = role === "suspended";
   const isPending = role === "pending_activation";
+  const isAdmin = role === "admin";
 
   async function setRole(activate: boolean) {
     setLoading(true);
@@ -49,10 +50,10 @@ export default function ToggleAccount({ userId, role }: { userId: string; role: 
     <button
       type="button"
       onClick={() => setRole(!isActive)}
-      disabled={loading}
+      disabled={loading || isAdmin}
       className="relative w-11 h-6 rounded-full transition-colors disabled:opacity-40"
       style={{ background: isActive ? "#0a0a0a" : "rgba(0,0,0,0.12)" }}
-      title={isActive ? "Suspender cuenta" : "Activar cuenta"}
+      title={isAdmin ? "Cuenta admin" : isActive ? "Suspender cuenta" : "Activar cuenta"}
     >
       <span
         className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all"
