@@ -53,12 +53,10 @@ export default function FeaturedCarousel({ slides }: { slides: Slide[] }) {
         />
       </div>
 
-      {/* Centered banner at natural 2:1 ratio, max 1340px wide */}
       <Link
         href={`/eventos/${slide.eventId}`}
-        className="relative block mx-auto"
+        className="relative block w-full"
         style={{
-          width: "min(92%, 1340px)",
           aspectRatio: "3072 / 1280",
           opacity: visible ? 1 : 0,
           transition: "opacity 300ms ease-in-out",
@@ -70,7 +68,7 @@ export default function FeaturedCarousel({ slides }: { slides: Slide[] }) {
           fill
           className="object-cover"
           priority
-          sizes="min(92vw, 1340px)"
+          sizes="100vw"
         />
       </Link>
 
