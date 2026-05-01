@@ -88,7 +88,6 @@ export default function Hero() {
             <StarButton
               href="/auth/login?redirectTo=/organizador/eventos/nuevo"
               dark
-              duration={2.5}
             >
               Crear evento gratis
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
