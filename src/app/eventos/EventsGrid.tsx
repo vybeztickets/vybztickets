@@ -11,7 +11,20 @@ type Event = {
   image_url: string | null; status: string; ticket_types: TicketType[];
 };
 
-const CATEGORIES = ["Todos", "Festival", "Música", "Tecnología", "Entretenimiento", "Gastronomía", "Deportes"];
+const TIME_FILTERS = ["Todos", "Esta semana", "Este mes"] as const;
+type TimeFilter = typeof TIME_FILTERS[number];
+
+function isThisWeek(dateStr: string) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const end = new Date(today); end.setDate(today.getDate() + 7);
+  const d = new Date(dateStr + "T00:00:00");
+  return d >= today && d <= end;
+}
+function isThisMonth(dateStr: string) {
+  const today = new Date();
+  const d = new Date(dateStr + "T00:00:00");
+  return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
+}
 
 function getMinPrice(tt: TicketType[]) {
   const active = tt.filter((t) => t.is_active);
@@ -30,19 +43,20 @@ function formatDate(d: string) {
 }
 function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
 
-export default function EventsGrid({ events, initialCategory }: { events: Event[]; initialCategory?: string }) {
-  const [activeCategory, setActiveCategory] = useState(() =>
-    CATEGORIES.includes(initialCategory ?? "") ? (initialCategory ?? "Todos") : "Todos"
-  );
+export default function EventsGrid({ events, initialCategory: _ }: { events: Event[]; initialCategory?: string }) {
+  const [activeFilter, setActiveFilter] = useState<TimeFilter>("Todos");
   const [search, setSearch] = useState("");
 
   const filtered = events.filter((e) => {
-    const matchCat = activeCategory === "Todos" || e.category === activeCategory;
+    const matchTime =
+      activeFilter === "Todos" ? true :
+      activeFilter === "Esta semana" ? isThisWeek(e.date) :
+      isThisMonth(e.date);
     const matchSearch = !search ||
       e.name.toLowerCase().includes(search.toLowerCase()) ||
       e.city.toLowerCase().includes(search.toLowerCase()) ||
       e.venue.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
+    return matchTime && matchSearch;
   });
 
   return (
@@ -63,18 +77,18 @@ export default function EventsGrid({ events, initialCategory }: { events: Event[
           />
         </div>
         <div className="flex gap-2 flex-wrap">
-          {CATEGORIES.map((cat) => (
+          {TIME_FILTERS.map((f) => (
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+              key={f}
+              onClick={() => setActiveFilter(f)}
               className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
               style={
-                activeCategory === cat
+                activeFilter === f
                   ? { background: "#0a0a0a", color: "#fff" }
                   : { background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.45)", border: "1px solid rgba(0,0,0,0.08)" }
               }
             >
-              {cat}
+              {f}
             </button>
           ))}
         </div>
