@@ -31,7 +31,9 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     .eq("id", (rawEvent as any).organizer_id)
     .maybeSingle();
 
-  const showOrgChip = organizer && ["organizer", "admin"].includes(organizer.role) && organizer.is_public !== false && organizer.organizer_slug;
+  const orgSlug = organizer?.organizer_slug
+    ?? (organizer?.full_name ? organizer.full_name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") : null);
+  const showOrgChip = organizer && ["organizer", "admin"].includes(organizer.role) && organizer.is_public !== false && orgSlug;
 
   const event = rawEvent as unknown as {
     id: string; name: string; date: string; time: string | null; end_time: string | null; till_late: boolean | null; currency: string | null;
@@ -62,7 +64,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             <div className="lg:w-[420px] shrink-0 lg:sticky lg:top-20 lg:self-start" style={{ maxHeight: "calc(100vh - 5rem)", overflowY: "auto" }}>
               {showOrgChip && (
                 <Link
-                  href={`/o/${organizer.organizer_slug}`}
+                  href={`/o/${orgSlug}`}
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-3 transition-opacity hover:opacity-70"
                   style={{ background: "rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.09)" }}
                 >
