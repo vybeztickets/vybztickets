@@ -9,7 +9,6 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const isReventa = pathname.startsWith("/reventa");
   const isEventos = pathname.startsWith("/eventos");
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           {[
             { label: "Eventos", href: "/eventos" },
-            { label: "Reventa", href: "/reventa" },
           ].map(({ label, href }) => (
             <Link
               key={label}
@@ -51,18 +49,7 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="flex items-center gap-3">
-          {isReventa ? (
-            <StarButton
-              href="/auth/login?redirectTo=/revendedor/nueva-venta"
-              dark
-              className="hidden md:inline-flex py-2.5 px-5 text-sm"
-            >
-              Vender entrada
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M2 10L10 2M10 2H4M10 2V8" />
-              </svg>
-            </StarButton>
-          ) : isEventos ? (
+          {isEventos ? (
             <StarButton
               href="/auth/login?redirectTo=/organizador/eventos/nuevo"
               dark
@@ -106,7 +93,7 @@ export default function Navbar() {
               ) : (
                 <>
                   <line x1="3" y1="6" x2="19" y2="6" stroke="currentColor" strokeWidth="1.5" />
-                  <line x1="3" y1="11" x2="19" y2="11" stroke="currentColor" strokeWidth="1.5" />
+                  <line x1="3" y1="11" x2="19" y2="11" strokeWidth="1.5" />
                   <line x1="3" y1="16" x2="19" y2="16" stroke="currentColor" strokeWidth="1.5" />
                 </>
               )}
@@ -122,7 +109,6 @@ export default function Navbar() {
         >
           {[
             { label: "Eventos", href: "/eventos" },
-            { label: "Reventa", href: "/reventa" },
             { label: "Crear evento", href: "/auth/login?redirectTo=/organizador/eventos/nuevo" },
           ].map(({ label, href }) => (
             <Link

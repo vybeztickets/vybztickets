@@ -30,10 +30,8 @@ export default async function AdminOrganizadoresPage() {
     statsMap.set(ev.organizer_id, s);
   }
 
-  const ORG_ROLES = new Set(["organizer", "suspended", "pending_activation"]);
-
   const orgsWithEvents = (organizers ?? [])
-    .filter((o: any) => ORG_ROLES.has(o.role))
+    .filter((o: any) => statsMap.has(o.id) || o.role === "pending_activation")
     .map((o: any) => ({
       id: o.id,
       full_name: o.full_name,

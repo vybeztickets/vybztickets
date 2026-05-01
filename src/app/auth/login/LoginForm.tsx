@@ -17,6 +17,7 @@ export default function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [roleChoice, setRoleChoice] = useState<"attendee" | "organizer">("attendee");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(urlError ?? "");
   const [success, setSuccess] = useState("");
@@ -47,12 +48,22 @@ export default function LoginForm({
       router.push(redirectTo);
       router.refresh();
     } else {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: fullName } },
       });
       if (error) { setError(error.message); setLoading(false); return; }
+
+      if (data.user) {
+        const role = roleChoice === "organizer" ? "pending_activation" : "user";
+        await fetch("/api/auth/set-role", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: data.user.id, role }),
+        });
+      }
+
       setSuccess("Revisá tu email para confirmar tu cuenta.");
     }
     setLoading(false);
@@ -113,17 +124,40 @@ export default function LoginForm({
       {/* Email form */}
       <form onSubmit={handleEmail} className="flex flex-col gap-3">
         {tab === "signup" && (
-          <input
-            type="text"
-            placeholder="Nombre completo"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none transition-colors"
-            style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
-          />
+          <>
+            <input
+              type="text"
+              placeholder="Nombre completo"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none transition-colors"
+              style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
+            />
+            {/* Role selector */}
+            <div className="flex rounded-xl overflow-hidden" style={{ border: "1.5px solid rgba(0,0,0,0.1)" }}>
+              {([
+                { value: "attendee", label: "Attendee", sub: "Compra entradas" },
+                { value: "organizer", label: "Organizador", sub: "Vende entradas" },
+              ] as const).map(({ value, label, sub }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setRoleChoice(value)}
+                  className="flex-1 py-3 px-3 text-left transition-all"
+                  style={{
+                    background: roleChoice === value ? "#0a0a0a" : "rgba(0,0,0,0.02)",
+                    borderRight: value === "attendee" ? "1px solid rgba(0,0,0,0.1)" : undefined,
+                  }}
+                >
+                  <p className="text-xs font-semibold" style={{ color: roleChoice === value ? "#fff" : "#0a0a0a" }}>{label}</p>
+                  <p className="text-[10px]" style={{ color: roleChoice === value ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.35)" }}>{sub}</p>
+                </button>
+              ))}
+            </div>
+          </>
         )}
         <input
           type="email"
