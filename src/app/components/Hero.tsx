@@ -26,7 +26,7 @@ export default function Hero() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-4 items-center min-h-screen py-28">
         {/* ── LEFT: Copy ── */}
-        <div className="flex flex-col">
+        <div className="flex flex-col order-2 lg:order-1">
           {/* Badge */}
           <div
             style={{
@@ -127,7 +127,7 @@ export default function Hero() {
 
         {/* ── RIGHT: Interactive globe ── */}
         <div
-          className="hidden lg:flex flex-col items-center justify-center"
+          className="flex flex-col items-center justify-center order-1 lg:order-2"
           style={{
             opacity: ready ? 1 : 0,
             transition: "opacity 1.6s ease .4s",
