@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import ImageUploadField from "@/app/components/ImageUploadField";
 
 type TeamMember = { id: string; member_email: string; role: string; created_at: string };
+type CustomLink = { name: string; url: string };
 
 const TABS = ["Estado", "Perfil", "Imagen de marca", "Seguridad", "Detalles de la empresa", "Impuestos", "Notificaciones", "Integraciones"];
 
@@ -12,8 +14,14 @@ type Profile = {
   email: string | null;
   role: string;
   avatar_url: string | null;
+  cover_url?: string | null;
+  instagram_url?: string | null;
+  custom_links?: CustomLink[] | null;
   currency?: string | null;
   country?: string | null;
+  description?: string | null;
+  whatsapp?: string | null;
+  is_public?: boolean | null;
 };
 
 const inputClass = "w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none";
@@ -121,9 +129,15 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
   const [orgEmail, setOrgEmail] = useState(profile?.email ?? userEmail);
   const [profileCurrency, setProfileCurrency] = useState(profile?.currency ?? "CRC");
   const [country, setCountry] = useState(profile?.country ?? "");
-  const [description, setDescription] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [publicProfile, setPublicProfile] = useState(true);
+  const [description, setDescription] = useState(profile?.description ?? "");
+  const [whatsapp, setWhatsapp] = useState(profile?.whatsapp ?? "");
+  const [publicProfile, setPublicProfile] = useState(profile?.is_public ?? true);
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? "");
+  const [coverUrl, setCoverUrl] = useState(profile?.cover_url ?? "");
+  const [instagramUrl, setInstagramUrl] = useState(profile?.instagram_url ?? "");
+  const [customLinks, setCustomLinks] = useState<CustomLink[]>(
+    Array.isArray(profile?.custom_links) ? profile.custom_links : []
+  );
 
   // Detalles empresa
   const [accountType, setAccountType] = useState("Personal");
@@ -205,11 +219,23 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
     await fetch("/api/organizador/perfil", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ full_name: fullName, email: orgEmail, currency: profileCurrency, country }),
+      body: JSON.stringify({
+        full_name: fullName, email: orgEmail, currency: profileCurrency, country,
+        description, whatsapp, is_public: publicProfile,
+        avatar_url: avatarUrl || null, cover_url: coverUrl || null,
+        instagram_url: instagramUrl || null,
+        custom_links: customLinks.filter(l => l.name && l.url),
+      }),
     });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  function addLink() { setCustomLinks(l => [...l, { name: "", url: "" }]); }
+  function removeLink(i: number) { setCustomLinks(l => l.filter((_, idx) => idx !== i)); }
+  function updateLink(i: number, field: "name" | "url", val: string) {
+    setCustomLinks(l => l.map((link, idx) => idx === i ? { ...link, [field]: val } : link));
   }
 
   async function handleSaveTax() {
@@ -275,6 +301,69 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
               <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Los asistentes pueden ver tu perfil de organizador y próximos eventos.</p>
             </div>
             <Toggle checked={publicProfile} onChange={setPublicProfile} />
+          </div>
+
+          {/* Profile picture + Cover */}
+          <div className="flex flex-col gap-4">
+            <div>
+              <label className={labelClass}>Foto de perfil</label>
+              <ImageUploadField value={avatarUrl} onChange={setAvatarUrl} label="" hint="JPG, PNG · recomendado 400×400px" aspectRatio="1:1" />
+            </div>
+            <div>
+              <label className={labelClass}>Imagen de portada (banner)</label>
+              <ImageUploadField value={coverUrl} onChange={setCoverUrl} label="" hint="JPG, PNG · recomendado 1200×300px" aspectRatio="16:9" />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Instagram</label>
+            <input
+              type="text"
+              className={inputClass}
+              style={inputStyle}
+              value={instagramUrl}
+              onChange={(e) => setInstagramUrl(e.target.value)}
+              placeholder="@tuorganizacion o https://instagram.com/..."
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Links adicionales</label>
+            <div className="flex flex-col gap-2">
+              {customLinks.map((link, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    className={inputClass}
+                    style={{ ...inputStyle, flex: "0 0 140px" }}
+                    placeholder="Nombre"
+                    value={link.name}
+                    onChange={(e) => updateLink(i, "name", e.target.value)}
+                  />
+                  <input
+                    type="url"
+                    className={inputClass}
+                    style={inputStyle}
+                    placeholder="https://..."
+                    value={link.url}
+                    onChange={(e) => updateLink(i, "url", e.target.value)}
+                  />
+                  <button type="button" onClick={() => removeLink(i)} className="text-[#0a0a0a]/25 hover:text-red-400 transition-colors shrink-0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addLink}
+                className="self-start text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.5)" }}
+              >
+                + Agregar link
+              </button>
+            </div>
           </div>
 
           <div>

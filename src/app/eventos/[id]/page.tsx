@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import Image from "next/image";
+import Link from "next/link";
 import CheckoutPanel from "./CheckoutPanel";
 import ResendTicket from "./ResendTicket";
 import Countdown from "./Countdown";
@@ -20,6 +22,16 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     .single();
 
   if (!rawEvent) notFound();
+
+  // Fetch organizer profile for the "by" chip
+  const db = createAdminClient();
+  const { data: organizer } = await (db as any)
+    .from("profiles")
+    .select("full_name, avatar_url, organizer_slug, is_public, role")
+    .eq("id", (rawEvent as any).organizer_id)
+    .maybeSingle();
+
+  const showOrgChip = organizer && ["organizer", "admin"].includes(organizer.role) && organizer.is_public !== false && organizer.organizer_slug;
 
   const event = rawEvent as unknown as {
     id: string; name: string; date: string; time: string | null; end_time: string | null; till_late: boolean | null; currency: string | null;
@@ -48,6 +60,25 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
             {/* ── LEFT: flyer + info + location ── */}
             <div className="lg:w-[420px] shrink-0 lg:sticky lg:top-20 lg:self-start" style={{ maxHeight: "calc(100vh - 5rem)", overflowY: "auto" }}>
+              {showOrgChip && (
+                <Link
+                  href={`/o/${organizer.organizer_slug}`}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-3 transition-opacity hover:opacity-70"
+                  style={{ background: "rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.09)" }}
+                >
+                  <div className="w-5 h-5 rounded-full overflow-hidden shrink-0" style={{ background: "rgba(0,0,0,0.15)" }}>
+                    {organizer.avatar_url ? (
+                      <Image src={organizer.avatar_url} alt="" width={20} height={20} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-white text-[8px] font-bold">{(organizer.full_name ?? "?")[0]}</span>
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[#0a0a0a]/55 text-xs">by</span>
+                  <span className="text-[#0a0a0a] text-xs font-semibold">{organizer.full_name}</span>
+                </Link>
+              )}
               <div className="rounded-2xl overflow-hidden mb-6" style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" }}>
                 {event.image_url ? (
                   <Image src={event.image_url} alt={event.name} width={600} height={800} className="w-full h-auto" style={{ display: "block" }} />
