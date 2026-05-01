@@ -28,11 +28,8 @@ export default async function EventosPage({
       <div style={{ paddingTop: "64px" }}>
         <FeaturedEvents />
       </div>
-      <main className="flex-1 pt-24 pb-20">
+      <main className="flex-1 pt-8 pb-20">
         <div className="max-w-7xl mx-auto px-6 mb-12">
-          <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full" style={{ background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.08)" }}>
-            <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-black/40">✦ TODOS LOS EVENTOS</span>
-          </div>
           <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide" style={{ fontSize: "clamp(48px,7vw,88px)" }}>
             Próximos Eventos
           </h1>
