@@ -73,7 +73,7 @@ export default function Hero() {
               transition: "opacity .8s ease .38s,transform .8s ease .38s",
             }}
           >
-            La plataforma completa para organizadores en Costa Rica y Latam. Venta online, POS, emails masivos, datos en tiempo real y reventa segura — todo en uno.
+            La plataforma completa para organizadores. Venta online, Point of Sale, emails masivos, datos en tiempo real y reventa segura — todo en uno.
           </p>
 
           {/* CTAs */}
