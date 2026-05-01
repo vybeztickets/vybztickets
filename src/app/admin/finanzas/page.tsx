@@ -4,7 +4,7 @@ import ReporteButton from "./ReporteButton";
 
 const SERVICE_FEE = 0.15;
 
-function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 
 type OrgRow = {
   organizer_id: string;
@@ -149,7 +149,7 @@ export default async function AdminFinanzasPage() {
         <div className="flex items-end gap-3 h-32">
           {months.map((m) => (
             <div key={m.label} className="flex-1 flex flex-col items-center gap-1">
-              {m.revenue > 0 && <p className="text-[8px] font-semibold text-[#0a0a0a]/35 text-center">{fmt(m.revenue).replace("₡","₡")}</p>}
+              {m.revenue > 0 && <p className="text-[8px] font-semibold text-[#0a0a0a]/35 text-center">{fmt(m.revenue)}</p>}
               <div className="w-full flex flex-col">
                 <div className="w-full rounded-t-md" style={{ background: "#10b981", height: `${Math.max(2, (m.fee / maxMonth) * 90)}px`, opacity: m.fee > 0 ? 0.8 : 0.08 }} />
                 <div className="w-full" style={{ background: "#0a0a0a", height: `${Math.max(2, ((m.revenue - m.fee) / maxMonth) * 90)}px`, opacity: m.revenue > 0 ? 0.85 : 0.08 }} />

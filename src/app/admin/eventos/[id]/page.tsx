@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import PedidosManager from "@/app/organizador/eventos/[id]/pedidos/PedidosManager";
 
-function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
 }

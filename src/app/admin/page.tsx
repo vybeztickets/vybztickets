@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const SERVICE_FEE = 0.15;
 
-function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 function fmtDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
 }

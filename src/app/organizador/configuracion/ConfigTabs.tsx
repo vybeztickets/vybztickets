@@ -50,7 +50,7 @@ function StatusTab({ role }: { role: string }) {
     setRequesting(false);
   }
 
-  const isActive = role === "organizer";
+  const isActive = role === "organizer" || role === "admin";
   const isSuspended = role === "suspended";
   const isPending = role === "pending_activation";
 
