@@ -3,7 +3,6 @@ import Hero from "./components/Hero";
 import MarqueeStrip from "./components/MarqueeStrip";
 import ScrollShowcase from "./components/ScrollShowcase";
 import PlatformSection from "./components/PlatformSection";
-import PricingSection from "./components/PricingSection";
 import UpcomingEvents from "./components/UpcomingEvents";
 import Footer from "./components/Footer";
 import MeshBackground from "./components/MeshBackground";
@@ -17,7 +16,6 @@ export default function Home() {
       <MarqueeStrip />
       <ScrollShowcase />
       <PlatformSection />
-      <PricingSection />
       <UpcomingEvents />
       <Footer />
     </div>
