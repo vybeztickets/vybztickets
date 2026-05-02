@@ -93,6 +93,7 @@ export default function TransferClient({ tickets, userEmail }: Props) {
   const [recipientName, setRecipientName] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
+  const [dialCode, setDialCode] = useState("+506");
   const [check1, setCheck1] = useState(false);
   const [check2, setCheck2] = useState(false);
   const [transferring, setTransferring] = useState(false);
@@ -109,6 +110,7 @@ export default function TransferClient({ tickets, userEmail }: Props) {
     setRecipientName("");
     setRecipientEmail("");
     setRecipientPhone("");
+    setDialCode("+506");
     setCheck1(false);
     setCheck2(false);
     setError(null);
@@ -134,7 +136,7 @@ export default function TransferClient({ tickets, userEmail }: Props) {
           ticketId: selectedTicket.id,
           recipientName,
           recipientEmail,
-          recipientPhone: recipientPhone || undefined,
+          recipientPhone: dialCode + recipientPhone,
         }),
       });
 
@@ -166,6 +168,7 @@ export default function TransferClient({ tickets, userEmail }: Props) {
     check2 &&
     recipientName.trim().length > 0 &&
     recipientEmail.trim().length > 0 &&
+    recipientPhone.trim().length > 0 &&
     !transferring;
 
   const inputClass =
@@ -404,17 +407,46 @@ export default function TransferClient({ tickets, userEmail }: Props) {
                       className="block text-xs mb-1"
                       style={{ color: "rgba(0,0,0,0.45)" }}
                     >
-                      Recipient phone{" "}
-                      <span style={{ color: "rgba(0,0,0,0.25)" }}>(optional)</span>
+                      Recipient phone *
                     </label>
-                    <input
-                      type="tel"
-                      placeholder="+1 555 000 0000"
-                      value={recipientPhone}
-                      onChange={(e) => setRecipientPhone(e.target.value)}
-                      className={inputClass}
-                      style={inputStyle}
-                    />
+                    <div className="flex gap-2">
+                      <select
+                        value={dialCode}
+                        onChange={(e) => setDialCode(e.target.value)}
+                        className="shrink-0 px-3 py-3 rounded-xl text-sm text-[#0a0a0a] focus:outline-none"
+                        style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)", colorScheme: "light" }}
+                      >
+                        <option value="+506">🇨🇷 +506</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+52">🇲🇽 +52</option>
+                        <option value="+502">🇬🇹 +502</option>
+                        <option value="+503">🇸🇻 +503</option>
+                        <option value="+504">🇭🇳 +504</option>
+                        <option value="+505">🇳🇮 +505</option>
+                        <option value="+507">🇵🇦 +507</option>
+                        <option value="+57">🇨🇴 +57</option>
+                        <option value="+58">🇻🇪 +58</option>
+                        <option value="+593">🇪🇨 +593</option>
+                        <option value="+51">🇵🇪 +51</option>
+                        <option value="+56">🇨🇱 +56</option>
+                        <option value="+54">🇦🇷 +54</option>
+                        <option value="+55">🇧🇷 +55</option>
+                        <option value="+598">🇺🇾 +598</option>
+                        <option value="+34">🇪🇸 +34</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+39">🇮🇹 +39</option>
+                      </select>
+                      <input
+                        type="tel"
+                        placeholder="8888 8888"
+                        value={recipientPhone}
+                        onChange={(e) => setRecipientPhone(e.target.value)}
+                        className={inputClass}
+                        style={inputStyle}
+                      />
+                    </div>
                   </div>
                 </div>
 
