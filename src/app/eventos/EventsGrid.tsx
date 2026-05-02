@@ -105,7 +105,7 @@ export default function EventsGrid({ events, initialCategory: _ }: { events: Eve
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((event) => {
+          {filtered.map((event, i) => {
             const { day, month, weekday } = formatDate(event.date);
             const minPrice = getMinPrice(event.ticket_types);
             const available = getAvailability(event.ticket_types);
@@ -120,6 +120,8 @@ export default function EventsGrid({ events, initialCategory: _ }: { events: Eve
                       src={event.image_url}
                       alt={event.name}
                       fill
+                      priority={i < 3}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (

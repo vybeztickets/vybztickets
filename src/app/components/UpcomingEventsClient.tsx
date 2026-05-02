@@ -101,7 +101,7 @@ export default function UpcomingEventsClient({ events }: { events: UpcomingEvent
             const price = minPrice(event.ticket_types, event.currency);
             const sold = event.ticket_types.reduce((acc, t) => acc + (t.sold_count ?? 0), 0);
             return (
-              <Reveal key={event.id} delay={i * 80}>
+              <Reveal key={event.id} delay={i * 50}>
                 <Link href={`/eventos/${event.id}`} className="card-light group block overflow-hidden">
                   <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-[15px]">
                     {event.image_url ? (
@@ -109,6 +109,7 @@ export default function UpcomingEventsClient({ events }: { events: UpcomingEvent
                         src={event.image_url}
                         alt={event.name}
                         fill
+                        priority={i < 3}
                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
