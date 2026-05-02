@@ -18,10 +18,10 @@ export default function SuspendedBanner({ isPending }: { isPending: boolean }) {
     >
       <div className="flex items-center gap-2.5">
         <span className="flex items-center justify-center w-5 h-5 rounded-full text-xs font-black shrink-0" style={{ background: "rgba(255,255,255,0.25)" }}>!</span>
-        <span>Cuenta inactiva — no puedes crear eventos ni enviar comunicaciones hasta que el equipo active tu cuenta.</span>
+        <span>Inactive account — you cannot create events or send communications until the team activates your account.</span>
       </div>
       {status === "done" ? (
-        <span className="text-xs opacity-75 shrink-0 ml-4">Solicitud enviada · en revisión</span>
+        <span className="text-xs opacity-75 shrink-0 ml-4">Request sent · under review</span>
       ) : (
         <button
           onClick={requestActivation}
@@ -29,7 +29,7 @@ export default function SuspendedBanner({ isPending }: { isPending: boolean }) {
           className="ml-4 shrink-0 text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-lg transition-colors disabled:opacity-50"
           style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}
         >
-          {status === "loading" ? "Enviando…" : "Activar cuenta →"}
+          {status === "loading" ? "Sending…" : "Activate account →"}
         </button>
       )}
     </div>

@@ -6,7 +6,7 @@ import ImageUploadField from "@/app/components/ImageUploadField";
 type TeamMember = { id: string; member_email: string; role: string; created_at: string };
 type CustomLink = { name: string; url: string };
 
-const TABS = ["Estado", "Perfil", "Imagen de marca", "Seguridad", "Detalles de la empresa", "Impuestos", "Notificaciones"];
+const TABS = ["Status", "Profile", "Brand image", "Security", "Business details", "Taxes", "Notifications"];
 
 type Profile = {
   id: string;
@@ -65,8 +65,8 @@ function StatusTab({ role }: { role: string }) {
   return (
     <div className="max-w-2xl flex flex-col gap-4">
       <div>
-        <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Estado de la cuenta</h2>
-        <p className="text-[#0a0a0a]/35 text-sm">El estado de tu cuenta es gestionado por el equipo de Vybz.</p>
+        <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Account status</h2>
+        <p className="text-[#0a0a0a]/35 text-sm">Your account status is managed by the Vybz team.</p>
       </div>
 
       <div className="p-5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
@@ -74,8 +74,8 @@ function StatusTab({ role }: { role: string }) {
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0" />
             <div>
-              <p className="text-[#0a0a0a] font-medium text-sm">Cuenta activa</p>
-              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Puedes vender tickets y recibir pagos.</p>
+              <p className="text-[#0a0a0a] font-medium text-sm">Active account</p>
+              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">You can sell tickets and receive payments.</p>
             </div>
           </div>
         )}
@@ -84,12 +84,12 @@ function StatusTab({ role }: { role: string }) {
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "#ef4444" }} />
               <div>
-                <p className="text-[#0a0a0a] font-medium text-sm">Cuenta suspendida</p>
-                <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Tu cuenta está inactiva. Los eventos no aceptan nuevas compras.</p>
+                <p className="text-[#0a0a0a] font-medium text-sm">Suspended account</p>
+                <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Your account is inactive. Events don't accept new purchases.</p>
               </div>
             </div>
             {requested ? (
-              <p className="text-xs font-semibold" style={{ color: "#b45309" }}>Solicitud enviada. El equipo de Vybz la revisará pronto.</p>
+              <p className="text-xs font-semibold" style={{ color: "#b45309" }}>Request sent. The Vybz team will review it shortly.</p>
             ) : (
               <button
                 onClick={handleRequest}
@@ -97,7 +97,7 @@ function StatusTab({ role }: { role: string }) {
                 className="self-start px-5 py-2.5 rounded-full text-sm font-semibold transition-opacity disabled:opacity-40"
                 style={{ background: "#0a0a0a", color: "#fff" }}
               >
-                {requesting ? "Enviando..." : "Solicitar activación"}
+                {requesting ? "Sending..." : "Request activation"}
               </button>
             )}
             {error && <p className="text-xs" style={{ color: "#ef4444" }}>{error}</p>}
@@ -107,8 +107,8 @@ function StatusTab({ role }: { role: string }) {
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full animate-pulse shrink-0" style={{ background: "#f59e0b" }} />
             <div>
-              <p className="text-[#0a0a0a] font-medium text-sm">Solicitud de activación pendiente</p>
-              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">El equipo de Vybz revisará tu solicitud próximamente.</p>
+              <p className="text-[#0a0a0a] font-medium text-sm">Activation request pending</p>
+              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">The Vybz team will review your request soon.</p>
             </div>
           </div>
         )}
@@ -119,7 +119,7 @@ function StatusTab({ role }: { role: string }) {
 }
 
 export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: { profile: Profile | null; userId: string; userEmail: string; initialTeam: TeamMember[] }) {
-  const [tab, setTab] = useState("Estado");
+  const [tab, setTab] = useState("Status");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [accountActive, setAccountActive] = useState(true);
@@ -191,7 +191,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
     });
     const data = await res.json();
     if (!res.ok) {
-      setTeamError(data.error ?? "Error al agregar");
+      setTeamError(data.error ?? "Error adding member");
     } else {
       setTeam((t) => [...t, data as TeamMember]);
       setNewMemberEmail("");
@@ -263,7 +263,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
       setTaxSaved(true);
       setTimeout(() => setTaxSaved(false), 2500);
     } catch (e: unknown) {
-      setTaxError(e instanceof Error ? e.message : "Error al guardar");
+      setTaxError(e instanceof Error ? e.message : "Error saving");
     } finally { setTaxSaving(false); }
   }
 
@@ -285,33 +285,33 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
         ))}
       </div>
 
-      {/* Estado */}
-      {tab === "Estado" && (
+      {/* Status */}
+      {tab === "Status" && (
         <StatusTab role={profile?.role ?? "organizer"} />
       )}
 
-      {/* Perfil */}
-      {tab === "Perfil" && (
+      {/* Profile */}
+      {tab === "Profile" && (
         <form onSubmit={handleSavePerfil} className="max-w-2xl flex flex-col gap-6">
           <div className="rounded-2xl p-5 flex items-start gap-4" style={sectionStyle}>
             <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(16,185,129,0.2)" }}>
               <div className="w-3 h-3 rounded-full" style={{ background: "#10b981" }} />
             </div>
             <div className="flex-1">
-              <p className="text-[#0a0a0a] font-semibold text-sm">Página de organizador visible públicamente</p>
-              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Los asistentes pueden ver tu perfil de organizador y próximos eventos.</p>
+              <p className="text-[#0a0a0a] font-semibold text-sm">Publicly visible organizer page</p>
+              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Attendees can view your organizer profile and upcoming events.</p>
             </div>
             <Toggle checked={publicProfile} onChange={setPublicProfile} />
           </div>
 
           <div>
-            <label className={labelClass}>Nombre del organizador *</label>
+            <label className={labelClass}>Organizer name *</label>
             <input type="text" className={inputClass} style={inputStyle} value={fullName} onChange={(e) => setFullName(e.target.value)} required />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Correo electrónico *</label>
+              <label className={labelClass}>Email *</label>
               <input type="email" className={inputClass} style={inputStyle} value={orgEmail} onChange={(e) => setOrgEmail(e.target.value)} required />
             </div>
             <div>
@@ -321,9 +321,9 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
           </div>
 
           <div>
-            <label className={labelClass}>País</label>
+            <label className={labelClass}>Country</label>
             <select className={inputClass} style={inputStyle} value={country} onChange={(e) => setCountry(e.target.value)}>
-              <option value="">Seleccioná un país</option>
+              <option value="">Select a country</option>
               <option value="Costa Rica">Costa Rica</option>
               <option value="Guatemala">Guatemala</option>
               <option value="Honduras">Honduras</option>
@@ -346,9 +346,9 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
           {/* Moneda principal */}
           <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "rgba(0,0,0,0.02)" }}>
-              <p className="text-[#0a0a0a] font-semibold text-sm">Moneda principal</p>
+              <p className="text-[#0a0a0a] font-semibold text-sm">Primary currency</p>
               <p className="text-[#0a0a0a]/40 text-xs mt-0.5 leading-relaxed">
-                Define la moneda en que vendés tus entradas. <strong>Todos tus eventos y el panel financiero usarán esta moneda.</strong>
+                Defines the currency in which you sell your tickets. <strong>All your events and the financial panel will use this currency.</strong>
               </p>
             </div>
             <div className="px-5 py-4 flex gap-3">
@@ -364,7 +364,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                     border: "1px solid rgba(0,0,0,0.08)",
                   }}
                 >
-                  {c === "CRC" ? "₡ Colón costarricense (CRC)" : "$ Dólar estadounidense (USD)"}
+                  {c === "CRC" ? "₡ Costa Rican colón (CRC)" : "$ US dollar (USD)"}
                 </button>
               ))}
             </div>
@@ -373,45 +373,45 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
               <p className="text-[10px] leading-relaxed" style={{ color: "#92400e" }}>
-                Tu cuenta bancaria de cobro debe estar en la misma moneda que elegís aquí. Si vendés en <strong>₡ colones</strong>, necesitás una cuenta CRC. Si vendés en <strong>$ dólares</strong>, necesitás una cuenta en USD. Cambiar esto no convierte precios existentes.
+                Your bank account must be in the same currency you choose here. If you sell in <strong>₡ colones</strong>, you need a CRC account. If you sell in <strong>$ dollars</strong>, you need a USD account. Changing this does not convert existing prices.
               </p>
             </div>
           </div>
 
-          {saved && <p className="text-green-400 text-sm">Guardado correctamente</p>}
+          {saved && <p className="text-green-400 text-sm">Saved successfully</p>}
           <button type="submit" disabled={saving} className="w-full py-3 rounded-xl font-semibold disabled:opacity-50" style={{ background: "#0a0a0a", color: "#fff" }}>
-            {saving ? "Guardando..." : "Guardar"}
+            {saving ? "Saving..." : "Save"}
           </button>
         </form>
       )}
 
-      {/* Imagen de marca */}
-      {tab === "Imagen de marca" && (
+      {/* Brand image */}
+      {tab === "Brand image" && (
         <form onSubmit={handleSavePerfil} className="max-w-2xl flex flex-col gap-6">
           <div>
-            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Imagen de marca</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Configurá cómo aparece tu perfil público de organizador.</p>
+            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Brand image</h2>
+            <p className="text-[#0a0a0a]/35 text-sm">Configure how your public organizer profile appears.</p>
           </div>
 
           <div>
-            <label className={labelClass}>Foto de perfil</label>
-            <ImageUploadField value={avatarUrl} onChange={setAvatarUrl} label="" hint="JPG, PNG · recomendado 400×400px" aspectRatio="1:1" />
+            <label className={labelClass}>Profile photo</label>
+            <ImageUploadField value={avatarUrl} onChange={setAvatarUrl} label="" hint="JPG, PNG · recommended 400×400px" aspectRatio="1:1" />
           </div>
 
           <div>
-            <label className={labelClass}>Imagen de portada (banner)</label>
-            <ImageUploadField value={coverUrl} onChange={setCoverUrl} label="" hint="JPG, PNG · recomendado 1200×300px" aspectRatio="16:9" />
+            <label className={labelClass}>Cover image (banner)</label>
+            <ImageUploadField value={coverUrl} onChange={setCoverUrl} label="" hint="JPG, PNG · recommended 1200×300px" aspectRatio="16:9" />
           </div>
 
           <div>
-            <label className={labelClass}>Descripción del organizador</label>
+            <label className={labelClass}>Organizer description</label>
             <textarea
               rows={4}
               className={inputClass}
               style={{ ...inputStyle, resize: "none" }}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe tu organización..."
+              placeholder="Describe your organization..."
             />
           </div>
 
@@ -423,12 +423,12 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
               style={inputStyle}
               value={instagramUrl}
               onChange={(e) => setInstagramUrl(e.target.value)}
-              placeholder="@tuorganizacion o https://instagram.com/..."
+              placeholder="@yourorganization or https://instagram.com/..."
             />
           </div>
 
           <div>
-            <label className={labelClass}>Links adicionales</label>
+            <label className={labelClass}>Additional links</label>
             <div className="flex flex-col gap-2">
               {customLinks.map((link, i) => (
                 <div key={i} className="flex gap-2 items-center">
@@ -436,7 +436,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                     type="text"
                     className={inputClass}
                     style={{ ...inputStyle, flex: "0 0 140px" }}
-                    placeholder="Nombre"
+                    placeholder="Name"
                     value={link.name}
                     onChange={(e) => updateLink(i, "name", e.target.value)}
                   />
@@ -461,44 +461,44 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                 className="self-start text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
                 style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.5)" }}
               >
-                + Agregar link
+                + Add link
               </button>
             </div>
           </div>
 
           <div>
-            <label className={labelClass}>URL pública del organizador</label>
+            <label className={labelClass}>Public organizer URL</label>
             <input
               type="text"
               readOnly
-              value={`https://vybztickets.com/o/${fullName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || "tu-organizacion"}`}
+              value={`https://vybztickets.com/o/${fullName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || "your-organization"}`}
               className={inputClass}
               style={{ ...inputStyle, color: "rgba(0,0,0,0.35)" }}
             />
           </div>
 
-          {saved && <p className="text-green-400 text-sm">Guardado correctamente</p>}
+          {saved && <p className="text-green-400 text-sm">Saved successfully</p>}
           <button type="submit" disabled={saving} className="w-full py-3 rounded-xl font-semibold disabled:opacity-50" style={{ background: "#0a0a0a", color: "#fff" }}>
-            {saving ? "Guardando..." : "Guardar"}
+            {saving ? "Saving..." : "Save"}
           </button>
         </form>
       )}
 
-      {/* Seguridad */}
-      {tab === "Seguridad" && (
+      {/* Security */}
+      {tab === "Security" && (
         <div className="max-w-2xl flex flex-col gap-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-[#0a0a0a] font-semibold text-lg">Equipo</h2>
-              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Agrega miembros con rol Check-in para el scanner QR de tus eventos.</p>
+              <h2 className="text-[#0a0a0a] font-semibold text-lg">Team</h2>
+              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Add members with Check-in role for your event QR scanner.</p>
             </div>
             <button
               onClick={() => { setAddingMember((v) => !v); setTeamError(""); }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
               style={{ background: addingMember ? "rgba(0,0,0,0.06)" : "#0a0a0a", color: addingMember ? "#0a0a0a" : "#fff" }}
             >
-              {addingMember ? "Cancelar" : "+ Agregar"}
+              {addingMember ? "Cancel" : "+ Add"}
             </button>
           </div>
 
@@ -514,7 +514,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                 borderBottom: "1px solid rgba(0,0,0,0.07)",
               }}
             >
-              <div>Miembro</div><div>Rol</div><div />
+              <div>Member</div><div>Role</div><div />
             </div>
 
             {/* Owner */}
@@ -528,10 +528,10 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                 </div>
                 <div className="min-w-0">
                   <p className="text-[#0a0a0a] text-sm font-medium truncate">{userEmail}</p>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>Tú</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>You</span>
                 </div>
               </div>
-              <span className="text-[#0a0a0a]/50 text-xs">Propietario</span>
+              <span className="text-[#0a0a0a]/50 text-xs">Owner</span>
               <div />
             </div>
 
@@ -557,7 +557,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                   onBlur={(e) => e.currentTarget.style.borderColor = "transparent"}
                 >
                   <option value="checkin">Check-in</option>
-                  <option value="stats">Estadísticas</option>
+                  <option value="stats">Statistics</option>
                   <option value="pos">POS</option>
                   <option value="admin">Admin</option>
                 </select>
@@ -580,7 +580,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                 <input
                   type="email"
                   required
-                  placeholder="correo@ejemplo.com"
+                  placeholder="email@example.com"
                   value={newMemberEmail}
                   onChange={(e) => setNewMemberEmail(e.target.value)}
                   className="flex-1 px-3 py-2 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none"
@@ -593,7 +593,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                   style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.1)" }}
                 >
                   <option value="checkin">Check-in</option>
-                  <option value="stats">Estadísticas</option>
+                  <option value="stats">Statistics</option>
                   <option value="pos">POS</option>
                   <option value="admin">Admin</option>
                 </select>
@@ -603,7 +603,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
                   className="px-4 py-2 rounded-xl text-xs font-semibold disabled:opacity-40"
                   style={{ background: "#0a0a0a", color: "#fff" }}
                 >
-                  {teamSaving ? "..." : "Agregar"}
+                  {teamSaving ? "..." : "Add"}
                 </button>
               </form>
             )}
@@ -613,53 +613,53 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
         </div>
       )}
 
-      {/* Detalles de la empresa */}
-      {tab === "Detalles de la empresa" && (
+      {/* Business details */}
+      {tab === "Business details" && (
         <div className="max-w-2xl flex flex-col gap-6">
           <div>
-            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Detalles de negocio</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Aquí puedes configurar tus detalles de negocio.</p>
+            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Business details</h2>
+            <p className="text-[#0a0a0a]/35 text-sm">Configure your business details here.</p>
           </div>
 
           <div>
-            <label className={labelClass}>Tipo de cuenta</label>
+            <label className={labelClass}>Account type</label>
             <select className={inputClass} style={inputStyle} value={accountType} onChange={(e) => setAccountType(e.target.value)}>
               <option value="Personal">Personal</option>
-              <option value="Empresa">Empresa</option>
+              <option value="Empresa">Company</option>
             </select>
           </div>
 
-          {/* Sección representante / datos personales */}
+          {/* Representative / personal data section */}
           <div className="pt-1 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
             <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider">
-              {accountType === "Empresa" ? "Datos del representante legal" : "Datos personales"}
+              {accountType === "Empresa" ? "Legal representative details" : "Personal details"}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Nombre</label>
+              <label className={labelClass}>First name</label>
               <input type="text" className={inputClass} style={inputStyle} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
             </div>
             <div>
-              <label className={labelClass}>Apellido</label>
+              <label className={labelClass}>Last name</label>
               <input type="text" className={inputClass} style={inputStyle} value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Número de ID</label>
+              <label className={labelClass}>ID number</label>
               <input type="text" className={inputClass} style={inputStyle} value={idNumber} onChange={(e) => setIdNumber(e.target.value)} placeholder="1-2345-6789" />
             </div>
             <div>
-              <label className={labelClass}>Correo electrónico (legal)</label>
-              <input type="email" className={inputClass} style={inputStyle} value={businessEmail} onChange={(e) => setBusinessEmail(e.target.value)} placeholder="correo@empresa.com" />
+              <label className={labelClass}>Email (legal)</label>
+              <input type="email" className={inputClass} style={inputStyle} value={businessEmail} onChange={(e) => setBusinessEmail(e.target.value)} placeholder="email@company.com" />
             </div>
           </div>
 
           <div>
-            <label className={labelClass}>Número de teléfono</label>
+            <label className={labelClass}>Phone number</label>
             <div className="flex gap-0 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
               <select
                 value={phoneCode}
@@ -719,15 +719,15 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
           {accountType === "Empresa" && (
             <>
               <div className="pt-1 pb-2" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-                <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider">Detalles de negocio</p>
+                <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider">Business details</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelClass}>Nombre de la empresa</label>
+                  <label className={labelClass}>Company name</label>
                   <input type="text" className={inputClass} style={inputStyle} value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
                 </div>
                 <div>
-                  <label className={labelClass}>Identificación de la empresa</label>
+                  <label className={labelClass}>Company ID</label>
                   <input type="text" className={inputClass} style={inputStyle} value={companyId} onChange={(e) => setCompanyId(e.target.value)} />
                 </div>
               </div>
@@ -736,28 +736,28 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
 
           <div className="flex flex-col gap-2 pt-2">
             <button className="w-full py-3 rounded-xl font-semibold" style={{ background: "#0a0a0a", color: "#fff" }}>
-              Guardar
+              Save
             </button>
             <button className="w-full py-3 rounded-xl font-semibold" style={{ background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)" }}>
-              Cancelar
+              Cancel
             </button>
           </div>
         </div>
       )}
 
-      {/* Impuestos */}
-      {tab === "Impuestos" && (
+      {/* Taxes */}
+      {tab === "Taxes" && (
         <div className="max-w-2xl flex flex-col gap-6">
           <div>
-            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Impuestos</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Configura si deseas cobrar impuestos en tus eventos y los datos fiscales de tu entidad.</p>
+            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Taxes</h2>
+            <p className="text-[#0a0a0a]/35 text-sm">Configure whether you want to charge taxes on your events and your entity's tax details.</p>
           </div>
 
-          {/* Toggle cobrar impuestos */}
+          {/* Toggle charge taxes */}
           <div className="flex items-center justify-between p-5 rounded-2xl" style={sectionStyle}>
             <div>
-              <p className="text-[#0a0a0a]/80 text-sm font-medium">¿Cobrar impuestos en tus eventos?</p>
-              <p className="text-[#0a0a0a]/30 text-xs mt-0.5">El impuesto se mostrará desglosado en el resumen de compra</p>
+              <p className="text-[#0a0a0a]/80 text-sm font-medium">Charge taxes on your events?</p>
+              <p className="text-[#0a0a0a]/30 text-xs mt-0.5">Tax will be shown broken down in the purchase summary</p>
             </div>
             <Toggle checked={chargesTax} onChange={setChargesTax} />
           </div>
@@ -767,28 +767,28 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
               {/* Porcentaje e nombre */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelClass}>Nombre del impuesto</label>
-                  <input type="text" value={taxName} onChange={(e) => setTaxName(e.target.value)} placeholder="IVA" className={inputClass} style={inputStyle} />
+                  <label className={labelClass}>Tax name</label>
+                  <input type="text" value={taxName} onChange={(e) => setTaxName(e.target.value)} placeholder="VAT" className={inputClass} style={inputStyle} />
                 </div>
                 <div>
-                  <label className={labelClass}>Porcentaje (%)</label>
+                  <label className={labelClass}>Percentage (%)</label>
                   <input type="number" min="0" max="100" step="0.01" value={taxPercent} onChange={(e) => setTaxPercent(e.target.value)} className={inputClass} style={inputStyle} />
                 </div>
               </div>
 
               {/* Separador */}
               <div className="pt-2 pb-1" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-                <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider">Datos fiscales de la entidad</p>
-                <p className="text-[#0a0a0a]/20 text-xs mt-1">Requeridos para facturación electrónica y documentos legales (ACAM, HACIENDA)</p>
+                <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider">Entity tax details</p>
+                <p className="text-[#0a0a0a]/20 text-xs mt-1">Required for electronic invoicing and legal documents (ACAM, HACIENDA)</p>
               </div>
 
               {/* Tipo de entidad */}
               <div>
-                <label className={labelClass}>Tipo de entidad</label>
+                <label className={labelClass}>Entity type</label>
                 <div className="flex gap-4">
                   {([
-                    { key: "company", label: "Empresa / Sociedad" },
-                    { key: "individual", label: "Persona física" },
+                    { key: "company", label: "Company / Corporation" },
+                    { key: "individual", label: "Individual" },
                   ] as { key: "company" | "individual"; label: string }[]).map(({ key, label }) => (
                     <label key={key} className="flex items-center gap-2.5 cursor-pointer">
                       <button
@@ -812,55 +812,55 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
               {entityType === "company" ? (
                 <>
                   <div>
-                    <label className={labelClass}>Razón social *</label>
-                    <input type="text" value={taxLegalName} onChange={(e) => setTaxLegalName(e.target.value)} placeholder="Nombre legal de la empresa" className={inputClass} style={inputStyle} />
+                    <label className={labelClass}>Legal name *</label>
+                    <input type="text" value={taxLegalName} onChange={(e) => setTaxLegalName(e.target.value)} placeholder="Company legal name" className={inputClass} style={inputStyle} />
                   </div>
                   <div>
-                    <label className={labelClass}>Cédula jurídica *</label>
+                    <label className={labelClass}>Tax ID *</label>
                     <input type="text" value={taxId} onChange={(e) => setTaxId(e.target.value)} placeholder="3-101-XXXXXX" className={inputClass} style={inputStyle} />
                   </div>
                 </>
               ) : (
                 <>
                   <div>
-                    <label className={labelClass}>Nombre completo *</label>
-                    <input type="text" value={taxLegalName} onChange={(e) => setTaxLegalName(e.target.value)} placeholder="Nombre completo según cédula" className={inputClass} style={inputStyle} />
+                    <label className={labelClass}>Full name *</label>
+                    <input type="text" value={taxLegalName} onChange={(e) => setTaxLegalName(e.target.value)} placeholder="Full name as on ID" className={inputClass} style={inputStyle} />
                   </div>
                   <div>
-                    <label className={labelClass}>Número de cédula *</label>
+                    <label className={labelClass}>ID number *</label>
                     <input type="text" value={taxId} onChange={(e) => setTaxId(e.target.value)} placeholder="1-XXXX-XXXX" className={inputClass} style={inputStyle} />
                   </div>
                 </>
               )}
 
               <div>
-                <label className={labelClass}>Dirección *</label>
-                <input type="text" value={taxAddress} onChange={(e) => setTaxAddress(e.target.value)} placeholder="Dirección exacta" className={inputClass} style={inputStyle} />
+                <label className={labelClass}>Address *</label>
+                <input type="text" value={taxAddress} onChange={(e) => setTaxAddress(e.target.value)} placeholder="Exact address" className={inputClass} style={inputStyle} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelClass}>Código postal</label>
+                  <label className={labelClass}>Postal code</label>
                   <input type="text" value={taxPostcode} onChange={(e) => setTaxPostcode(e.target.value)} placeholder="10101" className={inputClass} style={inputStyle} />
                 </div>
                 <div>
-                  <label className={labelClass}>País *</label>
+                  <label className={labelClass}>Country *</label>
                   <input type="text" value={taxCountry} onChange={(e) => setTaxCountry(e.target.value)} className={inputClass} style={inputStyle} />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelClass}>Provincia *</label>
+                  <label className={labelClass}>Province *</label>
                   <select value={taxProvince} onChange={(e) => setTaxProvince(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "dark" }}>
-                    <option value="">Seleccionar</option>
+                    <option value="">Select</option>
                     {["San José", "Alajuela", "Cartago", "Heredia", "Guanacaste", "Puntarenas", "Limón"].map((p) => (
                       <option key={p} value={p} style={{ background: "#fff" }}>{p}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className={labelClass}>Ciudad / Cantón *</label>
+                  <label className={labelClass}>City / Canton *</label>
                   <input type="text" value={taxCity} onChange={(e) => setTaxCity(e.target.value)} placeholder="San José" className={inputClass} style={inputStyle} />
                 </div>
               </div>
@@ -874,37 +874,37 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
             className="w-full py-3 rounded-xl font-semibold disabled:opacity-50 transition-all"
             style={{ background: taxSaved ? "rgba(16,185,129,0.2)" : "#0a0a0a", color: taxSaved ? "#10b981" : "#fff", border: taxSaved ? "1px solid rgba(16,185,129,0.4)" : "none" }}
           >
-            {taxSaving ? "Guardando..." : taxSaved ? "¡Guardado!" : "Guardar"}
+            {taxSaving ? "Saving..." : taxSaved ? "Saved!" : "Save"}
           </button>
         </div>
       )}
 
-      {/* Notificaciones */}
-      {tab === "Notificaciones" && (
+      {/* Notifications */}
+      {tab === "Notifications" && (
         <div className="max-w-2xl flex flex-col gap-6">
           <div>
-            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Correo electrónico de clientes</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Gestiona a qué correos son enviadas las notificaciones.</p>
+            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Customer email</h2>
+            <p className="text-[#0a0a0a]/35 text-sm">Manage which emails receive notifications.</p>
           </div>
 
           <div>
-            <label className={labelClass}>Idioma por defecto</label>
+            <label className={labelClass}>Default language</label>
             <select className={inputClass} style={inputStyle}>
-              <option>Español</option>
               <option>English</option>
+              <option>Español</option>
             </select>
           </div>
 
           <div>
-            <label className={labelClass}>Emails para notificaciones de compra</label>
+            <label className={labelClass}>Emails for purchase notifications</label>
             <input type="email" className={inputClass} style={inputStyle} value={notifyEmail} onChange={(e) => setNotifyEmail(e.target.value)} />
           </div>
 
           <div className="flex flex-col gap-3">
             {[
-              { label: "Notificar compras de cortesía", state: notifyCourtesy, set: setNotifyCourtesy },
-              { label: "Notificar pagos exitosos", state: notifyPayments, set: setNotifyPayments },
-              { label: "Notificar reembolsos", state: notifyRefunds, set: setNotifyRefunds },
+              { label: "Notify complimentary purchases", state: notifyCourtesy, set: setNotifyCourtesy },
+              { label: "Notify successful payments", state: notifyPayments, set: setNotifyPayments },
+              { label: "Notify refunds", state: notifyRefunds, set: setNotifyRefunds },
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between p-4 rounded-xl" style={sectionStyle}>
                 <span className="text-[#0a0a0a]/60 text-sm">{item.label}</span>
@@ -914,7 +914,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
           </div>
 
           <button className="w-full py-3 rounded-xl font-semibold" style={{ background: "#0a0a0a", color: "#fff" }}>
-            Guardar
+            Save
           </button>
         </div>
       )}

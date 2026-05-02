@@ -11,7 +11,7 @@ type Event = {
   image_url: string | null; status: string; ticket_types: TicketType[];
 };
 
-const TIME_FILTERS = ["Todos", "Esta semana", "Este mes"] as const;
+const TIME_FILTERS = ["All", "This week", "This month"] as const;
 type TimeFilter = typeof TIME_FILTERS[number];
 
 function isThisWeek(dateStr: string) {
@@ -36,21 +36,23 @@ function getAvailability(tt: TicketType[]) {
 function formatDate(d: string) {
   const date = new Date(d + "T00:00:00");
   return {
-    day: date.toLocaleDateString("es-CR", { day: "2-digit" }),
-    month: date.toLocaleDateString("es-CR", { month: "short" }).toUpperCase(),
-    weekday: date.toLocaleDateString("es-CR", { weekday: "short" }).toUpperCase(),
+    day: date.toLocaleDateString("en-US", { day: "2-digit" }),
+    month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
+    weekday: date.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(),
   };
 }
-function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
-export default function EventsGrid({ events, initialCategory: _ }: { events: Event[]; initialCategory?: string }) {
-  const [activeFilter, setActiveFilter] = useState<TimeFilter>("Todos");
+const FILTER_MAP: Record<string, TimeFilter> = { week: "This week", month: "This month" };
+
+export default function EventsGrid({ events, initialFilter }: { events: Event[]; initialCategory?: string; initialFilter?: string }) {
+  const [activeFilter, setActiveFilter] = useState<TimeFilter>(FILTER_MAP[initialFilter ?? ""] ?? "All");
   const [search, setSearch] = useState("");
 
   const filtered = events.filter((e) => {
     const matchTime =
-      activeFilter === "Todos" ? true :
-      activeFilter === "Esta semana" ? isThisWeek(e.date) :
+      activeFilter === "All" ? true :
+      activeFilter === "This week" ? isThisWeek(e.date) :
       isThisMonth(e.date);
     const matchSearch = !search ||
       e.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -69,7 +71,7 @@ export default function EventsGrid({ events, initialCategory: _ }: { events: Eve
           </svg>
           <input
             type="text"
-            placeholder="Buscar evento, ciudad..."
+            placeholder="Search event, city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-[#0a0a0a] placeholder-[#0a0a0a]/25 focus:outline-none"
@@ -95,13 +97,13 @@ export default function EventsGrid({ events, initialCategory: _ }: { events: Eve
       </div>
 
       <p className="text-[#0a0a0a]/30 text-xs mb-6">
-        {filtered.length} evento{filtered.length !== 1 ? "s" : ""} encontrado{filtered.length !== 1 ? "s" : ""}
+        {filtered.length} event{filtered.length !== 1 ? "s" : ""} found
       </p>
 
       {filtered.length === 0 ? (
         <div className="text-center py-24 text-[#0a0a0a]/20">
-          <p className="text-2xl mb-2">Sin resultados</p>
-          <p className="text-sm">Intenta con otra categoría o búsqueda</p>
+          <p className="text-2xl mb-2">No results</p>
+          <p className="text-sm">Try a different category or search term</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -149,7 +151,7 @@ export default function EventsGrid({ events, initialCategory: _ }: { events: Eve
 
                   {soldOut && (
                     <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.75)", backdropFilter: "blur(4px)" }}>
-                      <span className="text-[#0a0a0a] font-bold tracking-widest text-sm uppercase">Agotado</span>
+                      <span className="text-[#0a0a0a] font-bold tracking-widest text-sm uppercase">Sold out</span>
                     </div>
                   )}
                 </div>
@@ -170,16 +172,16 @@ export default function EventsGrid({ events, initialCategory: _ }: { events: Eve
                     <div>
                       {minPrice !== null ? (
                         <>
-                          <p className="text-[#0a0a0a]/25 text-[9px] uppercase tracking-wider">Desde</p>
+                          <p className="text-[#0a0a0a]/25 text-[9px] uppercase tracking-wider">From</p>
                           <p className="text-[#0a0a0a] font-bold text-base">{formatPrice(minPrice)}</p>
                         </>
                       ) : (
-                        <p className="text-[#0a0a0a]/30 text-sm">Sin tickets</p>
+                        <p className="text-[#0a0a0a]/30 text-sm">No tickets</p>
                       )}
                     </div>
                     {!soldOut && (
                       <div className="px-4 py-2 rounded-full text-xs font-semibold bg-[#0a0a0a] text-white hover:bg-[#333] transition-colors">
-                        Ver tickets
+                        Get tickets
                       </div>
                     )}
                   </div>

@@ -6,18 +6,18 @@ import {
 
 type Day = { date: string; revenue: number; tickets: number };
 
-function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
 function shortDate(d: string) {
   if (typeof window === "undefined") return d;
-  return new Date(d).toLocaleDateString("es-CR", { month: "short", day: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export default function EventStatsCharts({ data }: { data: Day[] }) {
   return (
     <div className="grid grid-cols-1 gap-6">
       <div className="rounded-2xl p-6" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-        <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Volumen de ventas (últimos 28 días)</p>
+        <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Sales volume (last 28 days)</p>
         <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
             <defs>
@@ -32,7 +32,7 @@ export default function EventStatsCharts({ data }: { data: Day[] }) {
             <Tooltip
               contentStyle={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 10, fontSize: 12 }}
               labelStyle={{ color: "rgba(0,0,0,0.4)" }}
-              formatter={(v) => [formatPrice(Number(v)), "Ingresos"]}
+              formatter={(v) => [formatPrice(Number(v)), "Revenue"]}
               labelFormatter={(l) => shortDate(l)}
             />
             <Area type="monotone" dataKey="revenue" stroke="#0a0a0a" strokeWidth={2} fill="url(#ev-rev)" />
@@ -41,7 +41,7 @@ export default function EventStatsCharts({ data }: { data: Day[] }) {
       </div>
 
       <div className="rounded-2xl p-6" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-        <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Entradas vendidas (últimos 28 días)</p>
+        <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Tickets sold (last 28 days)</p>
         <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
             <defs>
@@ -56,7 +56,7 @@ export default function EventStatsCharts({ data }: { data: Day[] }) {
             <Tooltip
               contentStyle={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 10, fontSize: 12 }}
               labelStyle={{ color: "rgba(0,0,0,0.4)" }}
-              formatter={(v) => [Number(v), "Entradas"]}
+              formatter={(v) => [Number(v), "Tickets"]}
               labelFormatter={(l) => shortDate(l)}
             />
             <Area type="monotone" dataKey="tickets" stroke="#555" strokeWidth={2} fill="url(#ev-tix)" />

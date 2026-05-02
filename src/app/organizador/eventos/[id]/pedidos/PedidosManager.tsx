@@ -26,11 +26,11 @@ function isValidEmail(email: string) {
 }
 
 function formatPrice(n: number) {
-  return n === 0 ? "Gratis" : "₡" + n.toLocaleString("es-CR");
+  return n === 0 ? "Free" : "₡" + n.toLocaleString("en-US");
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function shortRef(id: string) {
@@ -38,7 +38,7 @@ function shortRef(id: string) {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  active: "Activo", used: "Ingresado", cancelled: "Cancelado", refunded: "Reembolsado",
+  active: "Active", used: "Checked in", cancelled: "Cancelled", refunded: "Refunded",
 };
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   active: { bg: "rgba(16,185,129,0.15)", text: "#10b981" },
@@ -113,7 +113,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
       setEditMode(false);
       router.refresh();
     } catch {
-      setEditError("Error de red");
+      setEditError("Network error");
     } finally {
       setEditLoading(false);
     }
@@ -149,11 +149,11 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
       <div className="flex items-center justify-between mb-5">
         <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
           {([
-            { key: "all", label: "Todos" },
-            { key: "active", label: "Activos" },
-            { key: "used", label: "Ingresados" },
-            { key: "cancelled", label: "Cancelados" },
-            { key: "refunded", label: "Reembolsados" },
+            { key: "all", label: "All" },
+            { key: "active", label: "Active" },
+            { key: "used", label: "Checked in" },
+            { key: "cancelled", label: "Cancelled" },
+            { key: "refunded", label: "Refunded" },
           ] as { key: FilterKey; label: string }[]).map((f) => (
             <button
               key={f.key}
@@ -178,14 +178,14 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
             </svg>
-            Cancelar {selected.length} seleccionados
+            Cancel {selected.length} selected
           </button>
         )}
       </div>
 
       {filtered.length === 0 ? (
         <div className="rounded-2xl py-16 text-center" style={{ border: "1px dashed rgba(0,0,0,0.08)" }}>
-          <p className="text-[#0a0a0a]/20 text-sm">Sin pedidos en este filtro</p>
+          <p className="text-[#0a0a0a]/20 text-sm">No orders in this filter</p>
         </div>
       ) : (
         <>
@@ -196,10 +196,10 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
               style={{ gridTemplateColumns: "32px 120px 1fr 1fr 120px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
             >
               <input type="checkbox" className="accent-purple-500" onChange={toggleAll} checked={pageTickets.every((t) => selected.includes(t.id)) && pageTickets.length > 0} />
-              <div>Referencia</div>
-              <div>Nombre</div>
-              <div>Contacto</div>
-              <div className="text-right">Importe</div>
+              <div>Reference</div>
+              <div>Name</div>
+              <div>Contact</div>
+              <div className="text-right">Amount</div>
             </div>
 
             {pageTickets.map((t, i) => {
@@ -218,7 +218,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
 
                   <div>
                     <p className="text-[#0a0a0a] text-xs font-mono font-semibold">{shortRef(t.id)}</p>
-                    <p className="text-[#0a0a0a]/25 text-[10px]">{new Date(t.created_at).toLocaleDateString("es-CR", { day: "2-digit", month: "2-digit" })}</p>
+                    <p className="text-[#0a0a0a]/25 text-[10px]">{new Date(t.created_at).toLocaleDateString("en-US", { day: "2-digit", month: "2-digit" })}</p>
                   </div>
 
                   <div>
@@ -250,7 +250,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2">
-              <span className="text-[#0a0a0a]/25 text-xs">Filas por página:</span>
+              <span className="text-[#0a0a0a]/25 text-xs">Rows per page:</span>
               <select
                 value={pageSize}
                 onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
@@ -259,7 +259,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
               >
                 {PAGE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              <span className="text-[#0a0a0a]/25 text-xs">Mostrando {Math.min((page - 1) * pageSize + 1, filtered.length)}–{Math.min(page * pageSize, filtered.length)} de {filtered.length}</span>
+              <span className="text-[#0a0a0a]/25 text-xs">Showing {Math.min((page - 1) * pageSize + 1, filtered.length)}–{Math.min(page * pageSize, filtered.length)} of {filtered.length}</span>
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 rounded-lg text-[#0a0a0a]/30 disabled:opacity-20 hover:text-[#0a0a0a]/60 transition-colors">
@@ -285,7 +285,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
           <div className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setDetailId(null)} />
           <div className="fixed right-0 top-0 h-full z-50 flex flex-col overflow-y-auto" style={{ width: 460, background: "#fff", borderLeft: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between px-6 py-5 sticky top-0" style={{ background: "#fff", borderBottom: "1px solid rgba(0,0,0,0.07)", zIndex: 1 }}>
-              <h3 className="text-[#0a0a0a] font-bold text-base">Detalles del Pedido</h3>
+              <h3 className="text-[#0a0a0a] font-bold text-base">Order Details</h3>
               <button onClick={() => setDetailId(null)} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
@@ -305,10 +305,10 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
               {/* Info grid */}
               <div className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
                 {[
-                  { label: "Nombre", value: detail.buyer_name ?? "—" },
-                  { label: "Referencia", value: shortRef(detail.id) },
-                  { label: "ID Transacción", value: detail.id.slice(0, 16).toUpperCase() },
-                  { label: "Fecha", value: formatDate(detail.created_at) },
+                  { label: "Name", value: detail.buyer_name ?? "—" },
+                  { label: "Reference", value: shortRef(detail.id) },
+                  { label: "Transaction ID", value: detail.id.slice(0, 16).toUpperCase() },
+                  { label: "Date", value: formatDate(detail.created_at) },
                 ].map((row) => (
                   <div key={row.label} className="flex items-center justify-between">
                     <span className="text-[#0a0a0a]/35 text-xs">{row.label}</span>
@@ -317,7 +317,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
                 ))}
                 {/* Email with validity */}
                 <div className="flex items-center justify-between">
-                  <span className="text-[#0a0a0a]/35 text-xs">Correo electrónico</span>
+                  <span className="text-[#0a0a0a]/35 text-xs">Email</span>
                   <div className="flex items-center gap-1.5">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={isValidEmail(detail.buyer_email) ? "#10b981" : "#ef4444"} strokeWidth="2">
                       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -328,13 +328,13 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
                 </div>
                 {detail.promo_code && (
                   <div className="flex items-center justify-between">
-                    <span className="text-[#0a0a0a]/35 text-xs">Código usado</span>
+                    <span className="text-[#0a0a0a]/35 text-xs">Promo code</span>
                     <span className="text-purple-400 text-xs font-mono">{detail.promo_code}</span>
                   </div>
                 )}
                 {detail.buyer_notes && (
                   <div>
-                    <span className="text-[#0a0a0a]/35 text-xs">Notas</span>
+                    <span className="text-[#0a0a0a]/35 text-xs">Notes</span>
                     <p className="text-[#0a0a0a]/70 text-xs mt-1">{detail.buyer_notes}</p>
                   </div>
                 )}
@@ -342,13 +342,13 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
 
               {/* Artículos del Pedido */}
               <div>
-                <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-3">Artículos del Pedido</p>
+                <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-3">Order items</p>
                 <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
                   <div className="grid text-[10px] uppercase tracking-wider px-4 py-2 font-semibold text-[#0a0a0a]/25"
                     style={{ gridTemplateColumns: "1fr 80px 80px 80px", background: "rgba(0,0,0,0.02)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-                    <div>Entrada</div>
-                    <div className="text-right">Precio</div>
-                    <div className="text-right">Cargo</div>
+                    <div>Ticket</div>
+                    <div className="text-right">Price</div>
+                    <div className="text-right">Fee</div>
                     <div className="text-right">Total</div>
                   </div>
                   <div className="grid items-center px-4 py-3" style={{ gridTemplateColumns: "1fr 80px 80px 80px" }}>
@@ -367,7 +367,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
                   className="py-2.5 rounded-xl text-xs font-semibold transition-colors hover:opacity-80"
                   style={{ background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.5)", border: "1px solid rgba(0,0,0,0.07)" }}
                 >
-                  Ver QR
+                  View QR
                 </button>
                 <button
                   onClick={handleResend}
@@ -379,7 +379,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
                     border: `1px solid ${resendState === "done" ? "rgba(16,185,129,0.2)" : "rgba(0,0,0,0.07)"}`,
                   }}
                 >
-                  {resendState === "loading" ? "..." : resendState === "done" ? "Enviado ✓" : resendState === "error" ? "Error" : "Reenviar"}
+                  {resendState === "loading" ? "..." : resendState === "done" ? "Sent ✓" : resendState === "error" ? "Error" : "Resend"}
                 </button>
                 <button
                   onClick={() => { setEditMode((v) => !v); setEditError(null); }}
@@ -390,18 +390,18 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
                     border: "1px solid rgba(0,0,0,0.07)",
                   }}
                 >
-                  {editMode ? "Cancelar" : "Editar"}
+                  {editMode ? "Cancel" : "Edit"}
                 </button>
               </div>
 
               {/* Edit form */}
               {editMode && (
                 <div className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                  <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider mb-1">Editar datos del comprador</p>
+                  <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider mb-1">Edit buyer details</p>
                   {[
-                    { label: "Nombre", value: editName, onChange: setEditName, type: "text" },
-                    { label: "Correo", value: editEmail, onChange: setEditEmail, type: "email" },
-                    { label: "Teléfono", value: editPhone, onChange: setEditPhone, type: "tel" },
+                    { label: "Name", value: editName, onChange: setEditName, type: "text" },
+                    { label: "Email", value: editEmail, onChange: setEditEmail, type: "email" },
+                    { label: "Phone", value: editPhone, onChange: setEditPhone, type: "tel" },
                   ].map((f) => (
                     <div key={f.label}>
                       <label className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider">{f.label}</label>
@@ -421,7 +421,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
                     className="w-full py-2.5 rounded-xl text-xs font-semibold transition-colors hover:opacity-90 disabled:opacity-50 mt-1"
                     style={{ background: "#0a0a0a", color: "#fff" }}
                   >
-                    {editLoading ? "Guardando..." : "Guardar cambios"}
+                    {editLoading ? "Saving..." : "Save changes"}
                   </button>
                 </div>
               )}
@@ -434,18 +434,18 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
       {showCancelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
           <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
-            <h3 className="text-[#0a0a0a] font-bold text-base mb-2">Cancelar Asistentes</h3>
-            <p className="text-[#0a0a0a]/40 text-sm mb-5">Vas a cancelar {selected.length} entrada{selected.length !== 1 ? "s" : ""}.</p>
+            <h3 className="text-[#0a0a0a] font-bold text-base mb-2">Cancel Attendees</h3>
+            <p className="text-[#0a0a0a]/40 text-sm mb-5">You are about to cancel {selected.length} ticket{selected.length !== 1 ? "s" : ""}.</p>
 
             <div className="flex flex-col gap-3 mb-6">
               <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
-                <span className="text-[#0a0a0a]/60 text-sm">Notificar al asistente</span>
+                <span className="text-[#0a0a0a]/60 text-sm">Notify attendee</span>
                 <button type="button" onClick={() => setNotifyToggle(!notifyToggle)} className="relative w-9 h-5 rounded-full transition-colors shrink-0" style={{ background: notifyToggle ? "#0a0a0a" : "rgba(0,0,0,0.08)" }}>
                   <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: notifyToggle ? "17px" : "2px" }} />
                 </button>
               </label>
               <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
-                <span className="text-[#0a0a0a]/60 text-sm">Reembolsar orden</span>
+                <span className="text-[#0a0a0a]/60 text-sm">Refund order</span>
                 <button type="button" onClick={() => setRefundToggle(!refundToggle)} className="relative w-9 h-5 rounded-full transition-colors shrink-0" style={{ background: refundToggle ? "#0a0a0a" : "rgba(0,0,0,0.08)" }}>
                   <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: refundToggle ? "17px" : "2px" }} />
                 </button>
@@ -458,14 +458,14 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
                 style={{ background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)" }}
               >
-                Cerrar
+                Close
               </button>
               <button
                 onClick={() => setShowCancelModal(false)}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
                 style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}
               >
-                Validar datos
+                Confirm
               </button>
             </div>
           </div>

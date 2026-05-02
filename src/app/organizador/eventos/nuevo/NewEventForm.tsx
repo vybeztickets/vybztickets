@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageUploadField from "@/app/components/ImageUploadField";
 
-const CATEGORIES = ["Festival", "Música", "Tecnología", "Entretenimiento", "Gastronomía", "Deportes", "Arte", "Otro"];
+const CATEGORIES = ["Festival", "Music", "Technology", "Entertainment", "Gastronomy", "Sports", "Art", "Other"];
 
 type TicketTypeInput = {
   name: string;
@@ -84,7 +84,7 @@ export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: {
 
     const data = await res.json();
     if (!res.ok) {
-      setError(data.error ?? "Error al crear el evento");
+      setError(data.error ?? "Error creating event");
       setLoading(false);
       return;
     }
@@ -104,32 +104,32 @@ export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: {
         className="rounded-2xl p-6 flex flex-col gap-5"
         style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}
       >
-        <h2 className="text-[#0a0a0a] font-semibold">Información del evento</h2>
+        <h2 className="text-[#0a0a0a] font-semibold">Event information</h2>
 
         <div>
-          <label className={labelClass}>Nombre del evento *</label>
-          <input type="text" className={inputClass} style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} required placeholder="Ej: Ultra Costa Rica 2025" />
+          <label className={labelClass}>Event name *</label>
+          <input type="text" className={inputClass} style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} required placeholder="E.g.: Ultra Costa Rica 2025" />
         </div>
 
         <div>
-          <label className={labelClass}>Descripción</label>
+          <label className={labelClass}>Description</label>
           <textarea
             className={inputClass}
             style={{ ...inputStyle, resize: "none" }}
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe el evento..."
+            placeholder="Describe the event..."
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Fecha *</label>
+            <label className={labelClass}>Date *</label>
             <input type="date" className={inputClass} style={inputStyle} value={date} onChange={(e) => setDate(e.target.value)} required />
           </div>
           <div>
-            <label className={labelClass}>Hora inicio *</label>
+            <label className={labelClass}>Start time *</label>
             <input type="time" className={inputClass} style={inputStyle} value={time} onChange={(e) => setTime(e.target.value)} required />
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: {
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Hora fin (opcional)</label>
+              <label className={labelClass}>End time (optional)</label>
               <input
                 type="time"
                 className={inputClass}
@@ -160,23 +160,23 @@ export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: {
                 style={{ left: tillLate ? "16px" : "2px" }}
               />
             </button>
-            <span className="text-[#0a0a0a]/50 text-xs">Mostrar &ldquo;Till late&rdquo; en lugar de la hora de fin</span>
+            <span className="text-[#0a0a0a]/50 text-xs">Show &ldquo;Till late&rdquo; instead of end time</span>
           </label>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Venue *</label>
-            <input type="text" className={inputClass} style={inputStyle} value={venue} onChange={(e) => setVenue(e.target.value)} required placeholder="Ej: La Sabana" />
+            <input type="text" className={inputClass} style={inputStyle} value={venue} onChange={(e) => setVenue(e.target.value)} required placeholder="E.g.: La Sabana" />
           </div>
           <div>
-            <label className={labelClass}>Ciudad *</label>
-            <input type="text" className={inputClass} style={inputStyle} value={city} onChange={(e) => setCity(e.target.value)} required placeholder="Ej: San José" />
+            <label className={labelClass}>City *</label>
+            <input type="text" className={inputClass} style={inputStyle} value={city} onChange={(e) => setCity(e.target.value)} required placeholder="E.g.: San José" />
           </div>
         </div>
 
         <div>
-          <label className={labelClass}>Categoría *</label>
+          <label className={labelClass}>Category *</label>
           <select
             className={inputClass}
             style={inputStyle}
@@ -190,12 +190,12 @@ export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: {
         <ImageUploadField
           value={imageUrl}
           onChange={setImageUrl}
-          label="Flyer del evento (opcional)"
-          hint="JPG, PNG o WebP · 1080×1080 recomendado · máx 10MB"
+          label="Event flyer (optional)"
+          hint="JPG, PNG or WebP · 1080×1080 recommended · max 10MB"
         />
 
         <div>
-          <label className={labelClass}>Fin de ventas (opcional)</label>
+          <label className={labelClass}>Sales end date (optional)</label>
           <input type="date" className={inputClass} style={inputStyle} value={salesEndDate} onChange={(e) => setSalesEndDate(e.target.value)} />
         </div>
       </section>
@@ -211,12 +211,12 @@ export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: {
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
             <p className="text-[11px] leading-relaxed" style={{ color: "#92400e" }}>
-              Este evento está en <strong>{currency}</strong>, diferente a tu moneda principal ({defaultCurrency}). Asegurate de tener una cuenta bancaria en {currency} configurada en Finanzas → Cuentas Bancarias.
+              This event is in <strong>{currency}</strong>, different from your primary currency ({defaultCurrency}). Make sure you have a bank account in {currency} configured under Finances → Bank Accounts.
             </p>
           </div>
         )}
         <div className="flex items-center justify-between">
-          <h2 className="text-[#0a0a0a] font-semibold">Tipos de ticket</h2>
+          <h2 className="text-[#0a0a0a] font-semibold">Ticket types</h2>
           <div className="flex items-center gap-2">
             <select
               value={currency}
@@ -233,7 +233,7 @@ export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: {
               className="text-xs font-semibold px-3 py-1.5 rounded-lg"
               style={{ background: "rgba(0,0,0,0.08)", color: "#0a0a0a" }}
             >
-              + Agregar
+              + Add
             </button>
           </div>
         </div>
@@ -248,28 +248,28 @@ export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: {
               <p className="text-[#0a0a0a]/40 text-xs font-semibold uppercase tracking-wider">Ticket {i + 1}</p>
               {ticketTypes.length > 1 && (
                 <button type="button" onClick={() => removeTicketType(i)} className="text-red-400/50 text-xs hover:text-red-400 transition-colors">
-                  Eliminar
+                  Remove
                 </button>
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>Nombre *</label>
-                <input type="text" className={inputClass} style={inputStyle} value={t.name} onChange={(e) => updateTicket(i, "name", e.target.value)} required placeholder="Ej: General" />
+                <label className={labelClass}>Name *</label>
+                <input type="text" className={inputClass} style={inputStyle} value={t.name} onChange={(e) => updateTicket(i, "name", e.target.value)} required placeholder="E.g.: General" />
               </div>
               <div>
-                <label className={labelClass}>Precio ({currency === "USD" ? "$" : "₡"}) *</label>
+                <label className={labelClass}>Price ({currency === "USD" ? "$" : "₡"}) *</label>
                 <input type="number" className={inputClass} style={inputStyle} value={t.price} onChange={(e) => updateTicket(i, "price", e.target.value)} required min="0" placeholder={currency === "USD" ? "25" : "15000"} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>Cantidad disponible *</label>
+                <label className={labelClass}>Available quantity *</label>
                 <input type="number" className={inputClass} style={inputStyle} value={t.total_available} onChange={(e) => updateTicket(i, "total_available", e.target.value)} required min="1" placeholder="100" />
               </div>
               <div>
-                <label className={labelClass}>Descripción</label>
-                <input type="text" className={inputClass} style={inputStyle} value={t.description} onChange={(e) => updateTicket(i, "description", e.target.value)} placeholder="Opcional" />
+                <label className={labelClass}>Description</label>
+                <input type="text" className={inputClass} style={inputStyle} value={t.description} onChange={(e) => updateTicket(i, "description", e.target.value)} placeholder="Optional" />
               </div>
             </div>
           </div>
@@ -284,7 +284,7 @@ export default function NewEventForm({ organizerId, defaultCurrency = "CRC" }: {
         className="w-full py-4 rounded-xl font-semibold disabled:opacity-50"
         style={{ background: "#0a0a0a", color: "#fff" }}
       >
-        {loading ? "Creando evento..." : "Crear evento"}
+        {loading ? "Creating event..." : "Create event"}
       </button>
     </form>
   );

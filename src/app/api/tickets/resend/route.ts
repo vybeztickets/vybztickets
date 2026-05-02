@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     .single();
 
   const d = new Date((event as any).date + "T00:00:00");
-  const formattedDate = d.toLocaleDateString("es-CR", {
+  const formattedDate = d.toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric",
   });
 

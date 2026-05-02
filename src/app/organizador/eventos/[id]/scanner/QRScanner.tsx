@@ -53,7 +53,7 @@ function CameraScanner({ eventId }: { eventId: string }) {
         .then(r => r.json())
         .then((data: ScanResult) => {
           setResult(data);
-          setRecentScans(prev => [{ ...data, time: new Date().toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" }) }, ...prev.slice(0, 4)]);
+          setRecentScans(prev => [{ ...data, time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) }, ...prev.slice(0, 4)]);
           setTimeout(() => {
             setResult(null);
             lastCodeRef.current = "";
@@ -88,7 +88,7 @@ function CameraScanner({ eventId }: { eventId: string }) {
           rafRef.current = requestAnimationFrame(processFrame);
         }
       })
-      .catch(() => setCameraError("No se pudo acceder a la cámara. Verificá los permisos del navegador."));
+      .catch(() => setCameraError("Could not access the camera. Check your browser permissions."));
   }
 
   useEffect(() => {
@@ -180,7 +180,7 @@ function CameraScanner({ eventId }: { eventId: string }) {
               className="px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider text-white"
               style={{ background: "rgba(0,0,0,0.5)" }}
             >
-              Escaneando...
+              Scanning...
             </span>
           </div>
         )}
@@ -194,14 +194,14 @@ function CameraScanner({ eventId }: { eventId: string }) {
           ? { background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }
           : { background: "#0a0a0a", color: "#fff" }}
       >
-        {active ? "⏹ Detener cámara" : "▶ Iniciar escáner"}
+        {active ? "⏹ Stop camera" : "▶ Start scanner"}
       </button>
 
       {/* Recent scans */}
       {recentScans.length > 0 && (
         <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
           <div className="px-4 py-2.5" style={{ background: "#f7f7f7", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-            <p className="text-[#0a0a0a]/40 text-[9px] uppercase tracking-widest font-semibold">Últimos escaneos</p>
+            <p className="text-[#0a0a0a]/40 text-[9px] uppercase tracking-widest font-semibold">Recent scans</p>
           </div>
           {recentScans.map((s, i) => (
             <div
@@ -268,9 +268,9 @@ function StaffManager({ eventId }: { eventId: string }) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
       <div className="px-5 py-4" style={{ background: "#f7f7f7", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-        <p className="text-[#0a0a0a] font-semibold text-sm">Staff de escaneo</p>
+        <p className="text-[#0a0a0a] font-semibold text-sm">Scanner staff</p>
         <p className="text-[#0a0a0a]/40 text-xs mt-0.5">
-          Estas personas podrán escanear entradas desde{" "}
+          These people can scan tickets at{" "}
           <span className="font-mono" style={{ color: "rgba(0,0,0,0.5)" }}>
             {typeof window !== "undefined" ? window.location.origin : ""}/escanear/{eventId}
           </span>
@@ -293,16 +293,16 @@ function StaffManager({ eventId }: { eventId: string }) {
             className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-40"
             style={{ background: "#0a0a0a" }}
           >
-            {loading ? "..." : "Agregar"}
+            {loading ? "..." : "Add"}
           </button>
         </form>
 
         {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
 
         {fetchingStaff ? (
-          <p className="text-[#0a0a0a]/30 text-sm">Cargando...</p>
+          <p className="text-[#0a0a0a]/30 text-sm">Loading...</p>
         ) : staff.length === 0 ? (
-          <p className="text-[#0a0a0a]/30 text-sm">Sin staff asignado aún.</p>
+          <p className="text-[#0a0a0a]/30 text-sm">No staff assigned yet.</p>
         ) : (
           <div className="space-y-2">
             {staff.map(s => (

@@ -91,9 +91,9 @@ export default async function OrganizerDashboard() {
   const avgPerSale = totalSold > 0 ? Math.round(primaryRevenue / totalSold) : 0;
 
   const miniStats = [
-    { label: "Entradas vendidas", value: totalSold },
-    { label: "Próximos eventos", value: upcoming.length },
-    { label: "Ticket promedio", value: formatPrice(avgPerSale, profileCurrency) },
+    { label: "Tickets sold", value: totalSold },
+    { label: "Upcoming events", value: upcoming.length },
+    { label: "Avg. ticket", value: formatPrice(avgPerSale, profileCurrency) },
   ];
 
   return (
@@ -102,19 +102,19 @@ export default async function OrganizerDashboard() {
       {/* ── Hero KPI row ── */}
       <div className="flex items-center gap-0 mb-10 pb-8" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
         <div className="flex-1 min-w-0 pr-10" style={{ borderRight: "1px solid rgba(0,0,0,0.07)" }}>
-          <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-[0.2em] mb-3">Ingresos acumulados</p>
+          <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-[0.2em] mb-3">Total revenue</p>
           <p className="font-[family-name:var(--font-bebas)] text-[72px] text-[#0a0a0a] leading-none mb-2">
             {formatPrice(primaryRevenue, profileCurrency)}
           </p>
           {hasMixedCurrencies && (
             <p className="text-[#0a0a0a]/25 text-xs mb-1">
-              Solo eventos en {profileCurrency} ·{" "}
+              Only {profileCurrency} events ·{" "}
               {currencies.filter((c) => c !== profileCurrency).map((c) =>
-                `${formatPrice(revenueByCurrency[c], c)} en ${c}`
-              ).join(", ")} en otras monedas
+                `${formatPrice(revenueByCurrency[c], c)} in ${c}`
+              ).join(", ")} in other currencies
             </p>
           )}
-          <p className="text-[#0a0a0a]/25 text-xs">Todos los eventos · acumulado</p>
+          <p className="text-[#0a0a0a]/25 text-xs">All events · cumulative</p>
         </div>
 
         <div className="flex items-center shrink-0">
@@ -132,7 +132,7 @@ export default async function OrganizerDashboard() {
       {bestCustomers.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="rounded-2xl p-6" style={{ border: "1px solid rgba(0,0,0,0.07)", background: "#fff" }}>
-            <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-5">Mejores compradores</p>
+            <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-5">Top buyers</p>
             <div className="flex flex-col gap-4">
               {bestCustomers.map((c, i) => (
                 <div key={c.email} className="flex items-center gap-3">
@@ -142,7 +142,7 @@ export default async function OrganizerDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[#0a0a0a] text-xs font-semibold truncate">{c.name ?? c.email}</p>
-                    <p className="text-[#0a0a0a]/30 text-[10px]">{c.tickets} ticket{c.tickets !== 1 ? "s" : ""}</p>
+                    <p className="text-[#0a0a0a]/30 text-[10px]">{c.tickets} ticket{c.tickets !== 1 ? "s" : ""} sold</p>
                   </div>
                   <span className="text-[#0a0a0a] text-sm font-bold shrink-0">
                     {formatPrice(c.spent, profileCurrency)}
@@ -153,7 +153,7 @@ export default async function OrganizerDashboard() {
           </div>
 
           <div className="rounded-2xl p-6" style={{ border: "1px solid rgba(0,0,0,0.07)", background: "#fff" }}>
-            <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-5">Ocupación por evento</p>
+            <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-5">Occupancy per event</p>
             <div className="flex flex-col gap-5">
               {eventsData.slice(0, 5).map((e) => {
                 const sold = e.ticket_types.reduce((s, t) => s + t.sold_count, 0);
@@ -175,7 +175,7 @@ export default async function OrganizerDashboard() {
                 );
               })}
               {eventsData.length === 0 && (
-                <p className="text-[#0a0a0a]/20 text-sm text-center py-4">Sin eventos aún</p>
+                <p className="text-[#0a0a0a]/20 text-sm text-center py-4">No events yet</p>
               )}
             </div>
           </div>
@@ -184,10 +184,10 @@ export default async function OrganizerDashboard() {
 
       {eventsData.length === 0 && (
         <div className="text-center py-24">
-          <p className="font-[family-name:var(--font-bebas)] text-5xl text-[#0a0a0a]/10 mb-4">SIN EVENTOS</p>
+          <p className="font-[family-name:var(--font-bebas)] text-5xl text-[#0a0a0a]/10 mb-4">NO EVENTS</p>
           <Link href="/organizador/eventos/nuevo"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold bg-[#0a0a0a] text-white hover:bg-[#222] transition-colors">
-            + Crear tu primer evento
+            + Create your first event
           </Link>
         </div>
       )}

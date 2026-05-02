@@ -5,7 +5,7 @@ import PedidosManager from "@/app/organizador/eventos/[id]/pedidos/PedidosManage
 
 function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
@@ -61,7 +61,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
     <div className="p-8">
       <div className="mb-2">
         <Link href="/admin/eventos" className="text-[#0a0a0a]/35 text-xs hover:text-[#0a0a0a] transition-colors">
-          ← Eventos
+          ← Events
         </Link>
       </div>
 
@@ -73,7 +73,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
           </h1>
           <p className="text-[#0a0a0a]/40 text-sm mt-1">{event.city} · {event.category} · {fmtDate(event.date)}</p>
           <p className="text-[#0a0a0a]/25 text-xs mt-0.5">
-            Organizador: <Link href={`/admin/organizadores/${event.organizer_id}`} className="hover:text-[#0a0a0a] transition-colors">{org?.full_name ?? org?.email ?? "—"}</Link>
+            Organizer: <Link href={`/admin/organizadores/${event.organizer_id}`} className="hover:text-[#0a0a0a] transition-colors">{org?.full_name ?? org?.email ?? "—"}</Link>
           </p>
         </div>
         <span className="text-[9px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-full" style={sc}>
@@ -84,10 +84,10 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Tickets vendidos", value: sold },
+          { label: "Tickets Sold", value: sold },
           { label: "Revenue", value: fmt(revenue) },
-          { label: "Reembolsados", value: refunded },
-          { label: "Tipos de ticket", value: (ticketTypes ?? []).length },
+          { label: "Refunded", value: refunded },
+          { label: "Ticket Types", value: (ticketTypes ?? []).length },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl p-5" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
             <p className="text-[#0a0a0a]/35 text-[10px] uppercase tracking-wider mb-1">{s.label}</p>
@@ -100,12 +100,12 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
       {(ticketTypes ?? []).length > 0 && (
         <div className="rounded-2xl overflow-hidden mb-6" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
           <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-            <p className="text-[#0a0a0a] font-semibold text-sm">Tipos de ticket</p>
+            <p className="text-[#0a0a0a] font-semibold text-sm">Ticket Types</p>
           </div>
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-                {["Nombre", "Precio", "Capacidad", "Vendidos", "Disponibles"].map((h) => (
+                {["Name", "Price", "Capacity", "Sold", "Available"].map((h) => (
                   <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
                 ))}
               </tr>
@@ -130,7 +130,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
       {/* Attendees */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
         <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-          <p className="text-[#0a0a0a] font-semibold text-sm">Compradores ({tickets.length})</p>
+          <p className="text-[#0a0a0a] font-semibold text-sm">Buyers ({tickets.length})</p>
         </div>
         <div className="p-6">
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}

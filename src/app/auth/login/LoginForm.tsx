@@ -68,7 +68,7 @@ export default function LoginForm({
         });
       }
 
-      setSuccess("Revisá tu email para confirmar tu cuenta.");
+      setSuccess("Check your email to confirm your account.");
     }
     setLoading(false);
   }
@@ -94,7 +94,7 @@ export default function LoginForm({
                 : { color: "rgba(0,0,0,0.35)" }
             }
           >
-            {t === "login" ? "Iniciar sesión" : "Crear cuenta"}
+            {t === "login" ? "Sign in" : "Create account"}
           </button>
         ))}
       </div>
@@ -103,8 +103,8 @@ export default function LoginForm({
       {tab === "signup" && (
         <div className="flex rounded-xl overflow-hidden mb-6" style={{ border: "1.5px solid rgba(0,0,0,0.1)" }}>
           {([
-            { value: "attendee", label: "Attendee", sub: "Compra entradas" },
-            { value: "organizer", label: "Organizador", sub: "Vende entradas" },
+            { value: "attendee", label: "Attendee", sub: "Buy tickets" },
+            { value: "organizer", label: "Organizer", sub: "Sell tickets" },
           ] as const).map(({ value, label, sub }) => (
             <button
               key={value}
@@ -140,7 +140,7 @@ export default function LoginForm({
           <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332Z" fill="#FBBC05"/>
           <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58Z" fill="#EA4335"/>
         </svg>
-        Continuar con Google
+        Continue with Google
       </button>
 
       <div className="flex items-center gap-3 mb-6">
@@ -154,7 +154,7 @@ export default function LoginForm({
         {tab === "signup" && (
           <input
             type="text"
-            placeholder="Nombre completo"
+            placeholder="Full name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
@@ -178,7 +178,7 @@ export default function LoginForm({
         <div>
           <input
             type="password"
-            placeholder="Contraseña"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -194,7 +194,7 @@ export default function LoginForm({
                 href="/auth/reset-password"
                 className="text-xs text-[#0a0a0a]/35 hover:text-[#0a0a0a] transition-colors"
               >
-                ¿Olvidaste tu contraseña?
+                Forgot your password?
               </a>
             </div>
           )}
@@ -209,7 +209,7 @@ export default function LoginForm({
           className="w-full py-3 rounded-xl text-sm font-semibold mt-1 transition-colors disabled:opacity-40"
           style={{ background: "#0a0a0a", color: "#fff" }}
         >
-          {loading ? "Cargando…" : tab === "login" ? "Iniciar sesión" : "Crear cuenta"}
+          {loading ? "Loading…" : tab === "login" ? "Sign in" : "Create account"}
         </button>
       </form>
     </div>

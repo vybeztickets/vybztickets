@@ -42,7 +42,7 @@ export default function Hero() {
             >
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: "rgba(0,0,0,0.4)" }}>
-                Tiquetera de eventos
+                Event ticketing platform
               </span>
             </span>
           </div>
@@ -58,9 +58,9 @@ export default function Hero() {
               transition: "opacity .95s cubic-bezier(0.22,1,0.36,1) .2s,transform .95s cubic-bezier(0.22,1,0.36,1) .2s",
             }}
           >
-            Vende más.<br />
-            <span style={{ color: "rgba(0,0,0,0.13)" }}>Controla</span><br />
-            <span style={{ color: "rgba(0,0,0,0.13)" }}>todo.</span>
+            Sell more.<br />
+            <span style={{ color: "rgba(0,0,0,0.13)" }}>Control</span><br />
+            <span style={{ color: "rgba(0,0,0,0.13)" }}>everything.</span>
           </h1>
 
           {/* Sub */}
@@ -73,7 +73,7 @@ export default function Hero() {
               transition: "opacity .8s ease .38s,transform .8s ease .38s",
             }}
           >
-            La plataforma completa para organizadores. Venta online, Point of Sale, emails masivos, datos en tiempo real y reventa segura — todo en uno.
+            The complete platform for organizers. Online sales, Point of Sale, mass emails, real-time data and secure resale — all in one.
           </p>
 
           {/* CTAs */}
@@ -89,7 +89,7 @@ export default function Hero() {
               href="/eventos"
               dark
             >
-              Ver eventos
+              Browse events
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M2 10L10 2M10 2H4M10 2V8"/>
               </svg>
@@ -104,7 +104,7 @@ export default function Hero() {
               transition: "opacity .8s ease .68s",
             }}
           >
-            {["Sin cuota mensual", "ONVO Pay · CRC & USD"].map((text, i) => (
+            {["No monthly fee", "ONVO Pay · CRC & USD"].map((text, i) => (
               <div key={text} className="flex items-center gap-5">
                 {i > 0 && <div style={{ width: 1, height: 11, background: "rgba(0,0,0,0.12)" }} />}
                 <div className="flex items-center gap-1.5">
@@ -132,7 +132,7 @@ export default function Hero() {
               className="text-center mt-5 text-[11px] font-semibold tracking-[0.22em] uppercase"
               style={{ color: "rgba(0,0,0,0.22)" }}
             >
-              Eventos por todo el mundo
+              Events around the world
             </p>
           </div>
         </div>

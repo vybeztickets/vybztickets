@@ -49,9 +49,9 @@ export default async function AdminOrganizadoresPage() {
       <div className="mb-8">
         <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-black/30 mb-1">✦ B2B</p>
         <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide" style={{ fontSize: "clamp(28px,3vw,40px)" }}>
-          Organizadores
+          Organizers
         </h1>
-        <p className="text-[#0a0a0a]/35 text-sm mt-1">{orgsWithEvents.length} organizadores con eventos</p>
+        <p className="text-[#0a0a0a]/35 text-sm mt-1">{orgsWithEvents.length} organizers with events</p>
       </div>
       <OrganizadoresTable orgs={orgsWithEvents} total={orgsWithEvents.length} pendingCount={pendingCount} />
     </div>

@@ -13,13 +13,13 @@ function fmt12(t: string) {
 }
 
 function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("es-CR", {
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", {
     weekday: "short", day: "numeric", month: "short", year: "numeric",
   });
 }
 
 function fmtPrice(n: number) {
-  return "₡" + n.toLocaleString("es-CR");
+  return "₡" + n.toLocaleString("en-US");
 }
 
 function InfoRow({ label, value, accent, text }: { label: string; value: string; accent: string; text: string }) {
@@ -43,7 +43,7 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
   const qrCode = ticket.qr_code as string;
   const shortRef = "#" + qrCode.slice(0, 8).toUpperCase();
   const isTable = ticketType?.category === "table" || ticketType?.category === "seat";
-  const typeLabel = isTable ? "MESA VIP" : "GENERAL";
+  const typeLabel = isTable ? "VIP TABLE" : "GENERAL";
 
   const startTime = event?.time ? fmt12(event.time as string) : null;
   const endTime = event?.end_time ? fmt12(event.end_time as string) : null;
@@ -63,13 +63,13 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
             <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
             <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
           </svg>
-          Descargar / Imprimir
+          Download / Print
         </button>
         <button
           onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = "/")}
           className="text-white/30 text-sm hover:text-white/60 transition-colors"
         >
-          ← Volver
+          ← Back
         </button>
       </div>
 
@@ -150,19 +150,19 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
           <div className="flex gap-4">
             {/* Left */}
             <div className="flex flex-col gap-3 flex-1">
-              <InfoRow label="Evento" value={event?.name as string} accent={accent} text={textColor} />
-              <InfoRow label="Organizador" value={organizerName} accent={accent} text={textColor} />
-              <InfoRow label="Lugar" value={`${event?.venue as string}, ${event?.city as string}`} accent={accent} text={textColor} />
-              <InfoRow label="Fecha" value={event?.date ? fmtDate(event.date as string) : "—"} accent={accent} text={textColor} />
-              {timeStr && <InfoRow label="Hora" value={timeStr} accent={accent} text={textColor} />}
+              <InfoRow label="Event" value={event?.name as string} accent={accent} text={textColor} />
+              <InfoRow label="Organizer" value={organizerName} accent={accent} text={textColor} />
+              <InfoRow label="Venue" value={`${event?.venue as string}, ${event?.city as string}`} accent={accent} text={textColor} />
+              <InfoRow label="Date" value={event?.date ? fmtDate(event.date as string) : "—"} accent={accent} text={textColor} />
+              {timeStr && <InfoRow label="Time" value={timeStr} accent={accent} text={textColor} />}
             </div>
 
             {/* Right */}
             <div className="flex flex-col gap-3 flex-1">
-              <InfoRow label="Nombre" value={(ticket.buyer_name as string) || "—"} accent={accent} text={textColor} />
-              <InfoRow label="Tipo de entrada" value={ticketType?.name as string} accent={accent} text={textColor} />
-              <InfoRow label="Ref. pedido" value={shortRef} accent={accent} text={textColor} />
-              <InfoRow label="Precio pagado" value={fmtPrice(ticket.purchase_price as number)} accent={accent} text={textColor} />
+              <InfoRow label="Name" value={(ticket.buyer_name as string) || "—"} accent={accent} text={textColor} />
+              <InfoRow label="Ticket type" value={ticketType?.name as string} accent={accent} text={textColor} />
+              <InfoRow label="Order ref." value={shortRef} accent={accent} text={textColor} />
+              <InfoRow label="Price paid" value={fmtPrice(ticket.purchase_price as number)} accent={accent} text={textColor} />
             </div>
 
             {/* Flyer */}
@@ -184,7 +184,7 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
           {/* Footer */}
           <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${border}22` }}>
             <p className="text-center text-[8px] leading-relaxed" style={{ color: `${textColor}30` }}>
-              Prohibida la reventa no autorizada. La entrada pierde validez una vez ingresada al recinto.
+              Unauthorized resale is prohibited. This ticket becomes void once used to enter the venue.
               <br /><span style={{ color: accent + "60" }}>Powered by Vybz Tickets</span>
             </p>
           </div>

@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const MAIN_NAV = [
-  { label: "Inicio", href: "/organizador" },
-  { label: "Eventos", href: "/organizador/eventos" },
+  { label: "Dashboard", href: "/organizador" },
+  { label: "Events", href: "/organizador/eventos" },
   { label: "Marketing", href: "/organizador/marketing" },
-  { label: "Finanzas", href: "/organizador/finanzas" },
-  { label: "Config", href: "/organizador/configuracion" },
+  { label: "Finances", href: "/organizador/finanzas" },
+  { label: "Settings", href: "/organizador/configuracion" },
 ];
 
 export default function OrgSidebar({
@@ -73,7 +73,7 @@ export default function OrgSidebar({
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          Evento
+          Event
         </Link>
 
         {userEmail === "nicozecchinato1@gmail.com" && (

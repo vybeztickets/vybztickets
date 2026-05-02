@@ -24,7 +24,7 @@ type Banner = {
 type Tab = "pending_review" | "activos" | "approved" | "rejected";
 
 function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function daysDiff(from: string, to: string) {
@@ -34,9 +34,9 @@ function daysDiff(from: string, to: string) {
 }
 
 const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
-  pending_review: { bg: "rgba(245,158,11,0.12)", color: "#b45309", label: "Por revisar" },
-  approved: { bg: "rgba(16,185,129,0.12)", color: "#059669", label: "Historial" },
-  rejected: { bg: "rgba(239,68,68,0.1)", color: "#dc2626", label: "Rechazado" },
+  pending_review: { bg: "rgba(245,158,11,0.12)", color: "#b45309", label: "Pending review" },
+  approved: { bg: "rgba(16,185,129,0.12)", color: "#059669", label: "History" },
+  rejected: { bg: "rgba(239,68,68,0.1)", color: "#dc2626", label: "Rejected" },
 };
 
 export default function AdminBannersPage() {
@@ -86,10 +86,10 @@ export default function AdminBannersPage() {
     : banners.filter(b => b.banner_status === "rejected");
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
-    { key: "pending_review", label: "Por revisar", count: pendingCount },
-    { key: "activos", label: "Activos ahora", count: activosBanners.length },
-    { key: "approved", label: "Aprobado" },
-    { key: "rejected", label: "Rechazado" },
+    { key: "pending_review", label: "Pending review", count: pendingCount },
+    { key: "activos", label: "Active now", count: activosBanners.length },
+    { key: "approved", label: "Approved" },
+    { key: "rejected", label: "Rejected" },
   ];
 
   return (
@@ -97,9 +97,9 @@ export default function AdminBannersPage() {
       <div className="mb-8">
         <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-black/30 mb-1">✦ CAROUSEL</p>
         <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide" style={{ fontSize: "clamp(28px,3vw,40px)" }}>
-          Banners del homepage
+          Homepage banners
         </h1>
-        <p className="text-[#0a0a0a]/40 text-sm mt-1">Revisá y aprobá los banners antes de que aparezcan en el carousel.</p>
+        <p className="text-[#0a0a0a]/40 text-sm mt-1">Review and approve banners before they appear in the carousel.</p>
       </div>
 
       {/* Tabs */}
@@ -119,10 +119,10 @@ export default function AdminBannersPage() {
       </div>
 
       {loading ? (
-        <div className="py-20 text-center text-[#0a0a0a]/20 text-sm">Cargando…</div>
+        <div className="py-20 text-center text-[#0a0a0a]/20 text-sm">Loading…</div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl py-20 text-center" style={{ border: "1px dashed rgba(0,0,0,0.08)" }}>
-          <p className="text-[#0a0a0a]/20 text-sm">Sin banners en esta categoría</p>
+          <p className="text-[#0a0a0a]/20 text-sm">No banners in this category</p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -140,7 +140,7 @@ export default function AdminBannersPage() {
                     <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5"
                       style={{ background: "rgba(16,185,129,0.9)", color: "#fff" }}>
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                      En vivo
+                      Live
                     </span>
                   )}
                 </div>
@@ -153,16 +153,16 @@ export default function AdminBannersPage() {
                       {b.organizerName ?? "—"} · {b.organizerEmail ?? ""}
                     </p>
                     <p className="text-[#0a0a0a]/30 text-xs mt-1">
-                      {fmtDate(b.start_date)} → {fmtDate(b.end_date)} · {b.days} días · ${b.total_cost.toFixed(2)} USD
+                      {fmtDate(b.start_date)} → {fmtDate(b.end_date)} · {b.days} days · ${b.total_cost.toFixed(2)} USD
                     </p>
 
                     {isLive && (
                       <div className="flex gap-4 mt-2">
                         <span className="text-[10px] font-medium px-2 py-0.5 rounded-md" style={{ background: "rgba(16,185,129,0.08)", color: "#059669" }}>
-                          {daysActive <= 0 ? "Empezó hoy" : `Lleva ${daysActive} día${daysActive !== 1 ? "s" : ""} activo`}
+                          {daysActive <= 0 ? "Started today" : `Active for ${daysActive} day${daysActive !== 1 ? "s" : ""}`}
                         </span>
                         <span className="text-[10px] font-medium px-2 py-0.5 rounded-md" style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.45)" }}>
-                          {daysRemaining <= 0 ? "Termina hoy" : `Quedan ${daysRemaining} día${daysRemaining !== 1 ? "s" : ""}`}
+                          {daysRemaining <= 0 ? "Ends today" : `${daysRemaining} day${daysRemaining !== 1 ? "s" : ""} remaining`}
                         </span>
                       </div>
                     )}
@@ -174,12 +174,12 @@ export default function AdminBannersPage() {
                         <button onClick={() => handleAction(b.id, "reject")} disabled={acting === b.id}
                           className="px-4 py-2 rounded-xl text-xs font-semibold transition-colors disabled:opacity-40"
                           style={{ background: "rgba(239,68,68,0.08)", color: "#dc2626", border: "1px solid rgba(239,68,68,0.2)" }}>
-                          Rechazar
+                          Reject
                         </button>
                         <button onClick={() => handleAction(b.id, "approve")} disabled={acting === b.id}
                           className="px-4 py-2 rounded-xl text-xs font-semibold transition-colors disabled:opacity-40"
                           style={{ background: "rgba(16,185,129,0.1)", color: "#059669", border: "1px solid rgba(16,185,129,0.2)" }}>
-                          {acting === b.id ? "…" : "Aprobar"}
+                          {acting === b.id ? "…" : "Approve"}
                         </button>
                       </>
                     )}
@@ -187,7 +187,7 @@ export default function AdminBannersPage() {
                       <button onClick={() => handleAction(b.id, "deactivate")} disabled={acting === b.id}
                         className="px-4 py-2 rounded-xl text-xs font-semibold transition-colors disabled:opacity-40"
                         style={{ background: "rgba(239,68,68,0.08)", color: "#dc2626", border: "1px solid rgba(239,68,68,0.2)" }}>
-                        {acting === b.id ? "…" : "Desactivar"}
+                        {acting === b.id ? "…" : "Deactivate"}
                       </button>
                     )}
                   </div>

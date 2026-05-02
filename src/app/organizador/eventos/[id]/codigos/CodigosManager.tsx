@@ -17,7 +17,7 @@ type PromoCode = {
 };
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 const PAGE_SIZES = [10, 25, 50];
@@ -60,7 +60,7 @@ export default function CodigosManager({
   }
 
   async function handleCreate() {
-    if (!fCode || !fDiscount) { setError("Código y descuento son requeridos"); return; }
+    if (!fCode || !fDiscount) { setError("Code and discount are required"); return; }
     setSaving(true); setError("");
     try {
       const res = await fetch("/api/organizador/codigos", {
@@ -80,7 +80,7 @@ export default function CodigosManager({
       setCodes((prev) => [data, ...prev]);
       setShowCreate(false); resetForm();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Error inesperado");
+      setError(e instanceof Error ? e.message : "Unexpected error");
     } finally { setSaving(false); }
   }
 
@@ -111,7 +111,7 @@ export default function CodigosManager({
       } : c));
       setEditId(null); resetForm();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Error inesperado");
+      setError(e instanceof Error ? e.message : "Unexpected error");
     } finally { setSaving(false); }
   }
 
@@ -125,7 +125,7 @@ export default function CodigosManager({
   }
 
   async function handleDelete(c: PromoCode) {
-    if (!confirm(`¿Eliminar el código "${c.code}"?`)) return;
+    if (!confirm(`Delete the code "${c.code}"?`)) return;
     await fetch(`/api/organizador/codigos/${c.id}`, { method: "DELETE" });
     setCodes((prev) => prev.filter((x) => x.id !== c.id));
   }
@@ -148,26 +148,26 @@ export default function CodigosManager({
   const formFields = (
     <>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Código *</label>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Code *</label>
         <input
           type="text"
-          placeholder="Ej: VYBZ20"
+          placeholder="E.g.: VYBZ20"
           value={fCode}
           onChange={(e) => setFCode(e.target.value.toUpperCase())}
           className={inputClass}
           style={inputStyle}
           disabled={!!editId}
         />
-        <p className="text-[#0a0a0a]/20 text-[10px] mt-1">El comprador lo ingresa al momento de comprar</p>
+        <p className="text-[#0a0a0a]/20 text-[10px] mt-1">The buyer enters it at the time of purchase</p>
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Nombre / Alias</label>
-        <input type="text" placeholder="Ej: Embajador Nicola" value={fName} onChange={(e) => setFName(e.target.value)} className={inputClass} style={inputStyle} />
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Name / Alias</label>
+        <input type="text" placeholder="E.g.: Ambassador Nicola" value={fName} onChange={(e) => setFName(e.target.value)} className={inputClass} style={inputStyle} />
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Entrada aplicable</label>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Applicable ticket</label>
         <select value={fTicketType} onChange={(e) => setFTicketType(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "light" }}>
-          <option value="">Todas las entradas</option>
+          <option value="">All tickets</option>
           {ticketTypes.map((tt) => (
             <option key={tt.id} value={tt.id}>{tt.name}</option>
           ))}
@@ -175,15 +175,15 @@ export default function CodigosManager({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Descuento % *</label>
-          <input type="number" min="0" max="100" placeholder="Ej: 20" value={fDiscount} onChange={(e) => setFDiscount(e.target.value)} className={inputClass} style={inputStyle} />
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Discount % *</label>
+          <input type="number" min="0" max="100" placeholder="E.g.: 20" value={fDiscount} onChange={(e) => setFDiscount(e.target.value)} className={inputClass} style={inputStyle} />
           {fDiscount === "100" && (
-            <p className="text-purple-400 text-[10px] mt-1">100% = guestlist (no descuenta stock)</p>
+            <p className="text-purple-400 text-[10px] mt-1">100% = guestlist (does not deduct stock)</p>
           )}
         </div>
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Límite de usos</label>
-          <input type="number" min="1" placeholder="Sin límite" value={fMaxUses} onChange={(e) => setFMaxUses(e.target.value)} className={inputClass} style={inputStyle} />
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Usage limit</label>
+          <input type="number" min="1" placeholder="No limit" value={fMaxUses} onChange={(e) => setFMaxUses(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
       </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
@@ -194,7 +194,7 @@ export default function CodigosManager({
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <p className="text-[#0a0a0a]/40 text-xs">{codes.length} código{codes.length !== 1 ? "s" : ""}</p>
+        <p className="text-[#0a0a0a]/40 text-xs">{codes.length} code{codes.length !== 1 ? "s" : ""}</p>
         <button
           onClick={() => { resetForm(); setShowCreate(true); }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
@@ -206,8 +206,8 @@ export default function CodigosManager({
 
       {codes.length === 0 ? (
         <div className="rounded-2xl py-16 text-center" style={{ border: "1px dashed rgba(0,0,0,0.08)" }}>
-          <p className="text-[#0a0a0a]/20 text-sm mb-1">Sin códigos de descuento</p>
-          <p className="text-[#0a0a0a]/10 text-xs">Crea códigos para embajadores o descuentos especiales</p>
+          <p className="text-[#0a0a0a]/20 text-sm mb-1">No promo codes yet</p>
+          <p className="text-[#0a0a0a]/10 text-xs">Create codes for ambassadors or special discounts</p>
         </div>
       ) : (
         <>
@@ -218,12 +218,12 @@ export default function CodigosManager({
               style={{ gridTemplateColumns: "36px 1fr 80px 1fr 130px 60px 80px 70px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
             >
               <div />
-              <div>Código</div>
-              <div className="text-center">Estado</div>
-              <div>Entrada</div>
-              <div>Creado el</div>
-              <div className="text-center">Usos</div>
-              <div className="text-center">Activo</div>
+              <div>Code</div>
+              <div className="text-center">Status</div>
+              <div>Ticket</div>
+              <div>Created</div>
+              <div className="text-center">Uses</div>
+              <div className="text-center">Active</div>
               <div />
             </div>
 
@@ -255,13 +255,13 @@ export default function CodigosManager({
                   <div className="flex items-center justify-center gap-1.5">
                     <div className="w-2 h-2 rounded-full" style={{ background: c.is_active ? "#10b981" : "rgba(0,0,0,0.15)" }} />
                     <span className="text-xs" style={{ color: c.is_active ? "#10b981" : "rgba(0,0,0,0.3)" }}>
-                      {c.is_active ? "Activo" : "Inactivo"}
+                      {c.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>
 
                   {/* Ticket type */}
                   <div>
-                    <span className="text-[#0a0a0a]/50 text-xs">{ttName ?? "Todas"}</span>
+                    <span className="text-[#0a0a0a]/50 text-xs">{ttName ?? "All tickets"}</span>
                     {!c.is_guestlist && <span className="text-[#0a0a0a]/30 text-xs ml-2">–{c.discount_percent}%</span>}
                   </div>
 
@@ -306,7 +306,7 @@ export default function CodigosManager({
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2">
-              <span className="text-[#0a0a0a]/25 text-xs">Filas por página:</span>
+              <span className="text-[#0a0a0a]/25 text-xs">Rows per page:</span>
               <select
                 value={pageSize}
                 onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
@@ -315,7 +315,7 @@ export default function CodigosManager({
               >
                 {PAGE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              <span className="text-[#0a0a0a]/25 text-xs">Mostrando {Math.min((page - 1) * pageSize + 1, codes.length)}–{Math.min(page * pageSize, codes.length)} de {codes.length}</span>
+              <span className="text-[#0a0a0a]/25 text-xs">Showing {Math.min((page - 1) * pageSize + 1, codes.length)}–{Math.min(page * pageSize, codes.length)} of {codes.length}</span>
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 rounded-lg text-[#0a0a0a]/30 disabled:opacity-20 hover:text-[#0a0a0a]/60 transition-colors">
@@ -348,7 +348,7 @@ export default function CodigosManager({
         >
           <div className="w-full max-w-md rounded-2xl p-6" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-[#0a0a0a] font-bold text-lg">Nuevo código</h3>
+              <h3 className="text-[#0a0a0a] font-bold text-lg">New code</h3>
               <button onClick={() => { setShowCreate(false); resetForm(); }} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
@@ -361,7 +361,7 @@ export default function CodigosManager({
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-60 mt-1"
                 style={{ background: "#0a0a0a", color: "#fff" }}
               >
-                {saving ? "Creando..." : "Crear código"}
+                {saving ? "Creating..." : "Create code"}
               </button>
             </div>
           </div>
@@ -374,7 +374,7 @@ export default function CodigosManager({
           <div className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => { setEditId(null); resetForm(); }} />
           <div className="fixed right-0 top-0 h-full z-50 flex flex-col" style={{ width: 400, background: "#fff", borderLeft: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-              <h3 className="text-[#0a0a0a] font-bold text-base">Editar código</h3>
+              <h3 className="text-[#0a0a0a] font-bold text-base">Edit code</h3>
               <button onClick={() => { setEditId(null); resetForm(); }} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
@@ -389,7 +389,7 @@ export default function CodigosManager({
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-60"
                 style={{ background: "#0a0a0a", color: "#fff" }}
               >
-                {saving ? "Guardando..." : "Actualizar código"}
+                {saving ? "Saving..." : "Update code"}
               </button>
             </div>
           </div>

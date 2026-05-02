@@ -36,8 +36,8 @@ export default function Countdown({ date, time }: { date: string; time: string |
   const secs = Math.floor((diff % 60000)    / 1000);
 
   const units = days > 0
-    ? [{ v: days, l: "días" }, { v: hrs, l: "hrs" }, { v: mins, l: "min" }, { v: secs, l: "seg" }]
-    : [{ v: hrs, l: "hrs" }, { v: mins, l: "min" }, { v: secs, l: "seg" }];
+    ? [{ v: days, l: "days" }, { v: hrs, l: "hrs" }, { v: mins, l: "min" }, { v: secs, l: "sec" }]
+    : [{ v: hrs, l: "hrs" }, { v: mins, l: "min" }, { v: secs, l: "sec" }];
 
   return (
     <div className="flex items-center gap-2 mb-5">

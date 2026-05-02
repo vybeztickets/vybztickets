@@ -9,14 +9,14 @@ export default function TicketLookup() {
           <polyline points="22,6 12,13 2,6"/>
         </svg>
       </div>
-      <h2 className="font-semibold text-lg mb-3" style={{ color: "#0a0a0a" }}>Revisa tu correo</h2>
+      <h2 className="font-semibold text-lg mb-3" style={{ color: "#0a0a0a" }}>Check your email</h2>
       <p className="text-sm max-w-sm mx-auto leading-relaxed" style={{ color: "rgba(0,0,0,0.5)" }}>
-        Tu entrada con código QR fue enviada al email que ingresaste al momento de comprar.
+        Your ticket with QR code was sent to the email you provided at checkout.
       </p>
       <p className="text-xs mt-4" style={{ color: "rgba(0,0,0,0.35)" }}>
-        ¿No la encuentras? Búscala en tu carpeta de spam o{" "}
+        Can't find it? Check your spam folder or{" "}
         <a href="/eventos" className="underline hover:opacity-70 transition-opacity" style={{ color: "rgba(0,0,0,0.55)" }}>
-          ve al evento para reenviarla
+          go to the event page to resend it
         </a>.
       </p>
     </div>

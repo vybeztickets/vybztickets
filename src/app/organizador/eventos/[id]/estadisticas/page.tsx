@@ -4,7 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import EventStatsCharts from "./EventStatsCharts";
 import CopyUrl from "./CopyUrl";
 
-function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
 export default async function EventEstadisticas({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -60,10 +60,10 @@ export default async function EventEstadisticas({ params }: { params: Promise<{ 
   const eventUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://vybztickets.com"}/eventos/${id}`;
 
   const stats = [
-    { label: "Ingresos totales", value: formatPrice(totalRevenue) },
-    { label: "Entradas vendidas", value: totalSold },
-    { label: "Cortesías", value: courtesies },
-    { label: "Asistentes", value: attendees },
+    { label: "Total revenue", value: formatPrice(totalRevenue) },
+    { label: "Tickets sold", value: totalSold },
+    { label: "Complimentary", value: courtesies },
+    { label: "Attendees", value: attendees },
   ];
 
   return (
@@ -87,7 +87,7 @@ export default async function EventEstadisticas({ params }: { params: Promise<{ 
       <div className="grid grid-cols-2 gap-6">
         {(promoLinks ?? []).length > 0 && (
           <div className="rounded-2xl p-6" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-            <h3 className="text-[#0a0a0a] font-semibold text-sm mb-4">Top embajadores</h3>
+            <h3 className="text-[#0a0a0a] font-semibold text-sm mb-4">Top ambassadors</h3>
             <div className="flex flex-col gap-3">
               {(promoLinks ?? []).map((p, i) => (
                 <div key={p.code} className="flex items-center gap-3">
@@ -99,7 +99,7 @@ export default async function EventEstadisticas({ params }: { params: Promise<{ 
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[#0a0a0a] text-xs font-medium truncate">{p.promoter_name ?? p.code}</p>
-                    <p className="text-[#0a0a0a]/30 text-[10px]">Código: {p.code}</p>
+                    <p className="text-[#0a0a0a]/30 text-[10px]">Code: {p.code}</p>
                   </div>
                   <span className="text-purple-400 text-xs font-semibold shrink-0">{p.tickets_sold} tickets</span>
                 </div>
@@ -109,7 +109,7 @@ export default async function EventEstadisticas({ params }: { params: Promise<{ 
         )}
 
         <div className="rounded-2xl p-6" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-          <h3 className="text-[#0a0a0a] font-semibold text-sm mb-4">URL del evento</h3>
+          <h3 className="text-[#0a0a0a] font-semibold text-sm mb-4">Event URL</h3>
           <CopyUrl url={eventUrl} />
         </div>
       </div>

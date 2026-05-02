@@ -5,7 +5,7 @@ const SERVICE_FEE = 0.15;
 
 function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default async function AdminOverview() {
@@ -58,9 +58,9 @@ export default async function AdminOverview() {
 
   const roleLabels: Record<string, string> = {
     admin: "Admin",
-    organizer: "Organizador",
-    pending_activation: "Pendiente",
-    suspended: "Suspendido",
+    organizer: "Organizer",
+    pending_activation: "Pending",
+    suspended: "Suspended",
     user: "Attendee",
   };
   const roleColors: Record<string, { bg: string; color: string }> = {
@@ -83,7 +83,7 @@ export default async function AdminOverview() {
           </h1>
         </div>
         <p className="text-[#0a0a0a]/30 text-xs pb-1">
-          {new Date().toLocaleDateString("es-CR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+          {new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
       </div>
 
@@ -97,8 +97,8 @@ export default async function AdminOverview() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
             <div>
-              <p className="text-white font-semibold text-sm">{pendingActivation} solicitud{(pendingActivation ?? 0) > 1 ? "es" : ""} de activación</p>
-              <p className="text-white/60 text-xs">Organizadores esperando aprobación → Revisar</p>
+              <p className="text-white font-semibold text-sm">{pendingActivation} activation request{(pendingActivation ?? 0) > 1 ? "s" : ""}</p>
+              <p className="text-white/60 text-xs">Organizers waiting for approval → Review</p>
             </div>
           </Link>
         </div>
@@ -109,14 +109,14 @@ export default async function AdminOverview() {
         <Link href="/admin/finanzas"
           className="rounded-2xl p-5 hover:opacity-90 transition-opacity"
           style={{ background: "#0a0a0a" }}>
-          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-white/35">Volumen B2B</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-white/35">B2B Volume</p>
           <p className="font-[family-name:var(--font-bebas)] text-2xl leading-none mb-1 text-white">{fmt(totalB2BRevenue)}</p>
-          <p className="text-[10px] text-white/25">{(totalTicketCount ?? 0).toLocaleString()} tickets vendidos</p>
+          <p className="text-[10px] text-white/25">{(totalTicketCount ?? 0).toLocaleString()} tickets sold</p>
         </Link>
         <Link href="/admin/finanzas"
           className="rounded-2xl p-5 hover:opacity-90 transition-opacity"
           style={{ background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.2)" }}>
-          <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#047857" }}>Ingresos Vybz B2B</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#047857" }}>Vybz Revenue B2B</p>
           <p className="font-[family-name:var(--font-bebas)] text-2xl leading-none mb-1" style={{ color: "#065f46" }}>{fmt(totalB2BFee)}</p>
           <p className="text-[10px]" style={{ color: "rgba(4,120,87,0.55)" }}>service fee 15%</p>
         </Link>
@@ -126,7 +126,7 @@ export default async function AdminOverview() {
       <div className="grid grid-cols-2 gap-4 mb-8">
         {[
           { label: "Attendees", value: (totalAttendees ?? 0).toLocaleString(), href: "/admin/usuarios", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg> },
-          { label: "Eventos activos", value: (activeEvents ?? []).length.toLocaleString(), href: "/admin/eventos", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+          { label: "Active Events", value: (activeEvents ?? []).length.toLocaleString(), href: "/admin/eventos", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
         ].map((s) => (
           <Link key={s.label} href={s.href}
             className="rounded-2xl p-4 flex items-center gap-3 hover:bg-black/[0.02] transition-colors"
@@ -149,12 +149,12 @@ export default async function AdminOverview() {
           <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
             <div className="flex items-center gap-2.5">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <p className="text-[#0a0a0a] font-semibold text-sm">Eventos activos</p>
+              <p className="text-[#0a0a0a] font-semibold text-sm">Active Events</p>
             </div>
-            <Link href="/admin/eventos" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">Ver todos →</Link>
+            <Link href="/admin/eventos" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">View all →</Link>
           </div>
           {(activeEvents ?? []).length === 0 ? (
-            <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">Sin eventos activos</p>
+            <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">No active events</p>
           ) : (
             <div>
               {(activeEvents ?? []).map((e) => {
@@ -169,7 +169,7 @@ export default async function AdminOverview() {
                     </div>
                     <span className="ml-3 shrink-0 text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
                       style={{ background: "rgba(0,140,0,0.1)", color: "#166534" }}>
-                      Activo
+                      Active
                     </span>
                   </Link>
                 );
@@ -182,12 +182,12 @@ export default async function AdminOverview() {
           <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
             <div className="flex items-center gap-2.5">
               <span className="w-2 h-2 rounded-full" style={{ background: "rgba(0,0,0,0.2)" }} />
-              <p className="text-[#0a0a0a] font-semibold text-sm">Eventos finalizados</p>
+              <p className="text-[#0a0a0a] font-semibold text-sm">Ended Events</p>
             </div>
-            <Link href="/admin/eventos" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">Ver todos →</Link>
+            <Link href="/admin/eventos" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">View all →</Link>
           </div>
           {(finalizedEvents ?? []).length === 0 ? (
-            <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">Sin eventos finalizados</p>
+            <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">No ended events</p>
           ) : (
             <div>
               {(finalizedEvents ?? []).map((e) => {
@@ -202,7 +202,7 @@ export default async function AdminOverview() {
                     </div>
                     <span className="ml-3 shrink-0 text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
                       style={{ background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.4)" }}>
-                      Finalizado
+                      Ended
                     </span>
                   </Link>
                 );
@@ -216,8 +216,8 @@ export default async function AdminOverview() {
       <div className="grid grid-cols-3 gap-5">
         <div className="col-span-2 rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
           <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-            <p className="text-[#0a0a0a] font-semibold text-sm">Usuarios recientes</p>
-            <Link href="/admin/usuarios" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">Ver todos →</Link>
+            <p className="text-[#0a0a0a] font-semibold text-sm">Recent Users</p>
+            <Link href="/admin/usuarios" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">View all →</Link>
           </div>
           <div>
             {(recentUsers ?? []).map((u) => {
@@ -231,7 +231,7 @@ export default async function AdminOverview() {
                       {(u.full_name ?? u.email ?? "?").charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[#0a0a0a] text-sm font-medium truncate">{u.full_name ?? "Sin nombre"}</p>
+                      <p className="text-[#0a0a0a] text-sm font-medium truncate">{u.full_name ?? "No name"}</p>
                       <p className="text-[#0a0a0a]/35 text-xs truncate">{u.email}</p>
                     </div>
                   </div>
@@ -246,11 +246,11 @@ export default async function AdminOverview() {
 
         {/* Quick access */}
         <div className="flex flex-col gap-3">
-          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a]/30 px-1">Acceso rápido</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a]/30 px-1">Quick Access</p>
           {[
-            { label: "Finanzas B2B", sub: "Revenue y fees", href: "/admin/finanzas", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>, color: "#10b981" },
-            { label: "Organizadores", sub: "Gestionar cuentas", href: "/admin/organizadores", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>, color: "#6366f1", badge: pendingActivation ?? 0 },
-            { label: "Reporte PDF", sub: "Descargar informe mensual", href: "/admin/finanzas", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>, color: "#0a0a0a" },
+            { label: "Finances B2B", sub: "Revenue and fees", href: "/admin/finanzas", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>, color: "#10b981" },
+            { label: "Organizers", sub: "Manage accounts", href: "/admin/organizadores", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>, color: "#6366f1", badge: pendingActivation ?? 0 },
+            { label: "PDF Report", sub: "Download monthly report", href: "/admin/finanzas", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>, color: "#0a0a0a" },
           ].map((item) => (
             <Link key={item.href + item.label} href={item.href}
               className="flex items-center gap-3 p-4 rounded-2xl hover:opacity-90 transition-opacity"

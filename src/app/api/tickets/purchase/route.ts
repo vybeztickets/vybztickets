@@ -79,7 +79,7 @@ export async function POST(request: Request) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://vybztickets.vercel.app";
 
-    const formattedDate = new Date((event.date as string) + "T00:00:00").toLocaleDateString("es-CR", {
+    const formattedDate = new Date((event.date as string) + "T00:00:00").toLocaleDateString("en-US", {
       weekday: "long", month: "long", day: "numeric", year: "numeric",
     });
 

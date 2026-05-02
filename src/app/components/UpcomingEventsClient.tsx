@@ -21,8 +21,8 @@ export type UpcomingEvent = {
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr + "T00:00:00");
-  const months = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
-  const days = ["DOM","LUN","MAR","MIÉ","JUE","VIE","SÁB"];
+  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  const days = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
   return {
     day: String(d.getDate()),
     month: months[d.getMonth()],
@@ -37,13 +37,13 @@ function minPrice(ticket_types: TicketType[], currency: string | null) {
   const symbol = currency === "USD" ? "$" : "₡";
   return currency === "USD"
     ? `${symbol}${min.toFixed(2)}`
-    : `${symbol}${min.toLocaleString("es-CR")}`;
+    : `${symbol}${min.toLocaleString("en-US")}`;
 }
 
 export default function UpcomingEventsClient({ events }: { events: UpcomingEvent[] }) {
-  const categories = ["Todo", ...Array.from(new Set(events.map(e => e.category).filter(Boolean) as string[]))];
-  const [active, setActive] = useState("Todo");
-  const filtered = active === "Todo" ? events : events.filter(e => e.category === active);
+  const categories = ["All", ...Array.from(new Set(events.map(e => e.category).filter(Boolean) as string[]))];
+  const [active, setActive] = useState("All");
+  const filtered = active === "All" ? events : events.filter(e => e.category === active);
 
   if (events.length === 0) return null;
 
@@ -56,7 +56,7 @@ export default function UpcomingEventsClient({ events }: { events: UpcomingEvent
               className="inline-flex items-center gap-2 mb-4 px-3.5 py-1.5 rounded-full"
               style={{ background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.08)" }}
             >
-              <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-black/40">✦ PRÓXIMOS EVENTOS</span>
+              <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-black/40">✦ UPCOMING EVENTS</span>
             </div>
             <h2
               className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide"
@@ -69,7 +69,7 @@ export default function UpcomingEventsClient({ events }: { events: UpcomingEvent
             href="/eventos"
             className="hidden md:inline-flex items-center gap-2 text-[#0a0a0a]/40 hover:text-[#0a0a0a] text-sm font-medium transition-colors group shrink-0"
           >
-            Ver todos
+            See all
             <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
           </Link>
         </Reveal>
@@ -153,11 +153,11 @@ export default function UpcomingEventsClient({ events }: { events: UpcomingEvent
                       <div>
                         {price ? (
                           <>
-                            <p className="text-[#0a0a0a]/25 text-[9px] uppercase tracking-[0.12em] mb-0.5">Desde</p>
+                            <p className="text-[#0a0a0a]/25 text-[9px] uppercase tracking-[0.12em] mb-0.5">From</p>
                             <p className="text-[#0a0a0a] font-bold text-base">{price}</p>
                           </>
                         ) : (
-                          <p className="text-[#0a0a0a]/40 text-sm font-medium">Agotado</p>
+                          <p className="text-[#0a0a0a]/40 text-sm font-medium">Sold out</p>
                         )}
                       </div>
                       {sold > 0 && (
@@ -184,7 +184,7 @@ export default function UpcomingEventsClient({ events }: { events: UpcomingEvent
             className="inline-flex items-center gap-2 text-[#0a0a0a]/60 hover:text-[#0a0a0a] text-sm font-semibold px-8 py-3 rounded-full transition-all"
             style={{ border: "1.5px solid rgba(0,0,0,0.12)" }}
           >
-            Ver todos los eventos
+            Browse all events
             <span>→</span>
           </Link>
         </Reveal>

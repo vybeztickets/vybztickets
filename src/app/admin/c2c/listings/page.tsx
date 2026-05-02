@@ -48,7 +48,7 @@ export default async function AdminListingsPage() {
       <div className="mb-8">
         <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-black/30 mb-1">✦ REVENTA C2C</p>
         <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide" style={{ fontSize: "clamp(28px,3vw,40px)" }}>
-          Listings activos
+          Active listings
         </h1>
       </div>
       <ListingsTable listings={rows} stats={stats} />

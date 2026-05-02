@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import ConfigTabs from "./ConfigTabs";
 
-export const metadata = { title: "Configuración — Dashboard Vybz" };
+export const metadata = { title: "Settings — Dashboard Vybz" };
 
 export default async function ConfiguracionPage() {
   const supabase = await createClient();
@@ -18,7 +18,7 @@ export default async function ConfiguracionPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-[#0a0a0a] mb-8">Configuración del organizador</h1>
+      <h1 className="text-3xl font-bold text-[#0a0a0a] mb-8">Organizer settings</h1>
       <ConfigTabs
         profile={profile}
         userId={user.id}

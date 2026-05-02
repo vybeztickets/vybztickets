@@ -1,20 +1,20 @@
 import Link from "next/link";
 
 const LINKS: Record<string, { label: string; href: string }[]> = {
-  Eventos: [
-    { label: "Esta semana", href: "/eventos?filter=semana" },
-    { label: "Este mes", href: "/eventos?filter=mes" },
+  Events: [
+    { label: "All events", href: "/eventos" },
+    { label: "This week", href: "/eventos?filter=week" },
+    { label: "This month", href: "/eventos?filter=month" },
   ],
-  Organizadores: [
-    { label: "Crear evento", href: "/organizador/eventos/nuevo" },
-    { label: "Panel de control", href: "/organizador" },
-    { label: "Todos los eventos", href: "/eventos" },
+  Organizers: [
+    { label: "Create event", href: "/organizador/eventos/nuevo" },
+    { label: "Dashboard", href: "/organizador" },
   ],
-  "Mi cuenta": [
-    { label: "Mis tickets", href: "/mis-tickets" },
-    { label: "Iniciar sesión", href: "/auth/login" },
-    { label: "Términos de uso", href: "/terminos" },
-    { label: "Privacidad", href: "/privacidad" },
+  "My account": [
+    { label: "Sign in", href: "/auth/login" },
+    { label: "My tickets", href: "/mis-tickets" },
+    { label: "Terms of use", href: "/terminos" },
+    { label: "Privacy", href: "/privacidad" },
   ],
 };
 
@@ -27,10 +27,10 @@ const SOCIALS = [
 
 export default function Footer() {
   const cta = {
-    title: "¿Organizas un evento?",
-    desc: "Vende entradas con la plataforma más completa en eventos.",
-    primary: { href: "/auth/login?redirectTo=/organizador/eventos/nuevo", label: "Comenzar gratis →" },
-    secondary: { href: "mailto:hola@vybztickets.com", label: "Hablar con ventas" },
+    title: "Hosting an event?",
+    desc: "Sell tickets with the most complete event platform.",
+    primary: { href: "/auth/login?redirectTo=/organizador/eventos/nuevo", label: "Start for free →" },
+    secondary: { href: "mailto:hola@vybztickets.com", label: "Talk to sales" },
   };
 
   return (
@@ -74,7 +74,7 @@ export default function Footer() {
               VYBZ
             </Link>
             <p className="text-white/20 text-xs leading-relaxed mb-5">
-              Costa Rica&apos;s premier ticket platform. Buy, sell and discover events across Latin America.
+              The easiest way to buy and sell tickets for live events.
             </p>
             <div className="flex gap-2.5">
               {SOCIALS.map((s) => (
@@ -114,11 +114,11 @@ export default function Footer() {
       <div className="px-6 py-5" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
           <p className="text-white/15 text-xs">
-            © {new Date().getFullYear()} Vybz Tickets. Todos los derechos reservados.
+            © {new Date().getFullYear()} Vybz Tickets. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/terminos" className="text-white/15 hover:text-white/35 text-xs transition-colors">Términos</Link>
-            <Link href="/privacidad" className="text-white/15 hover:text-white/35 text-xs transition-colors">Privacidad</Link>
+            <Link href="/terminos" className="text-white/15 hover:text-white/35 text-xs transition-colors">Terms</Link>
+            <Link href="/privacidad" className="text-white/15 hover:text-white/35 text-xs transition-colors">Privacy</Link>
             <Link href="/privacidad" className="text-white/15 hover:text-white/35 text-xs transition-colors">Cookies</Link>
           </div>
         </div>

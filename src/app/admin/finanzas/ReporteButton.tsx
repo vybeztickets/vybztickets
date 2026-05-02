@@ -8,8 +8,8 @@ export default function ReporteButton() {
   const [open, setOpen] = useState(false);
 
   const months = [
-    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December",
   ];
 
   function generate() {
@@ -31,17 +31,17 @@ export default function ReporteButton() {
           <line x1="16" y1="17" x2="8" y2="17"/>
           <polyline points="10 9 9 9 8 9"/>
         </svg>
-        Generar Reporte PDF
+        Generate PDF Report
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }} onClick={() => setOpen(false)}>
           <div className="rounded-2xl p-6 w-72" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }} onClick={e => e.stopPropagation()}>
-            <h3 className="text-[#0a0a0a] font-bold text-base mb-4">Generar Reporte Mensual</h3>
+            <h3 className="text-[#0a0a0a] font-bold text-base mb-4">Generate Monthly Report</h3>
 
             <div className="flex flex-col gap-3 mb-5">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/35 block mb-1">Mes</label>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/35 block mb-1">Month</label>
                 <select
                   value={month}
                   onChange={e => setMonth(Number(e.target.value))}
@@ -52,7 +52,7 @@ export default function ReporteButton() {
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/35 block mb-1">Año</label>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/35 block mb-1">Year</label>
                 <select
                   value={year}
                   onChange={e => setYear(Number(e.target.value))}
@@ -66,10 +66,10 @@ export default function ReporteButton() {
 
             <div className="flex gap-2">
               <button onClick={() => setOpen(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.4)" }}>
-                Cancelar
+                Cancel
               </button>
               <button onClick={generate} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "#0a0a0a", color: "#fff" }}>
-                Generar PDF
+                Generate PDF
               </button>
             </div>
           </div>

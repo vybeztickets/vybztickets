@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import DestacarForm from "./DestacarForm";
 
-export const metadata = { title: "Destacar evento — Vybz" };
+export const metadata = { title: "Feature event — Vybz" };
 
 export default async function DestacarPage({
   params,
@@ -53,9 +53,9 @@ export default async function DestacarPage({
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#0a0a0a] mb-1">Destacar en portada</h1>
+        <h1 className="text-2xl font-bold text-[#0a0a0a] mb-1">Feature on Homepage</h1>
         <p className="text-[#0a0a0a]/40 text-sm">
-          Tu evento aparece en el carousel principal del homepage durante el período seleccionado.
+          Your event appears in the main homepage carousel for the selected period.
         </p>
       </div>
 

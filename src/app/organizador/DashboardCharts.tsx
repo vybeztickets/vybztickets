@@ -8,7 +8,7 @@ type DayData = { date: string; revenue: number; tickets: number };
 
 function shortDate(d: string) {
   const date = new Date(d + "T00:00:00");
-  return date.toLocaleDateString("es-CR", { day: "2-digit", month: "short" });
+  return date.toLocaleDateString("en-US", { day: "2-digit", month: "short" });
 }
 
 const tickStyle = { fill: "rgba(0,0,0,0.25)", fontSize: 11 };
@@ -29,7 +29,7 @@ export default function DashboardCharts({ chartData, currency = "CRC" }: { chart
   const [now, setNow] = useState("");
 
   useEffect(() => {
-    setNow(new Date().toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" }));
+    setNow(new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }));
   }, []);
 
   const isRevenue = tab === "revenue";
@@ -42,7 +42,7 @@ export default function DashboardCharts({ chartData, currency = "CRC" }: { chart
       <div className="flex items-start justify-between mb-6">
         <div>
           <p className="text-[#0a0a0a]/35 text-[10px] uppercase tracking-[0.18em] mb-1">
-            {isRevenue ? "Volumen bruto" : "Entradas vendidas"} · Últimos 28 días
+            {isRevenue ? "Gross volume" : "Tickets sold"} · Last 28 days
           </p>
           <p className="font-[family-name:var(--font-bebas)] text-4xl text-[#0a0a0a] leading-none">
             {isRevenue ? formatAmt(totalRevenue) : totalTickets}
@@ -60,7 +60,7 @@ export default function DashboardCharts({ chartData, currency = "CRC" }: { chart
                   : { color: "rgba(0,0,0,0.38)" }
               }
             >
-              {t === "revenue" ? "Ingresos" : "Entradas"}
+              {t === "revenue" ? "Revenue" : "Tickets"}
             </button>
           ))}
         </div>
@@ -93,7 +93,7 @@ export default function DashboardCharts({ chartData, currency = "CRC" }: { chart
           <Tooltip
             contentStyle={tooltipStyle}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter={((v: number) => [isRevenue ? formatAmt(v) : v, isRevenue ? "Ingresos" : "Entradas"]) as any}
+            formatter={((v: number) => [isRevenue ? formatAmt(v) : v, isRevenue ? "Revenue" : "Tickets"]) as any}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             labelFormatter={shortDate as any}
           />
@@ -107,7 +107,7 @@ export default function DashboardCharts({ chartData, currency = "CRC" }: { chart
         </AreaChart>
       </ResponsiveContainer>
 
-      <p className="text-[#0a0a0a]/18 text-[10px] mt-3">Actualizado {now}</p>
+      <p className="text-[#0a0a0a]/18 text-[10px] mt-3">Updated {now}</p>
     </div>
   );
 }

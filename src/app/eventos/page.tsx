@@ -6,7 +6,7 @@ import EventsGrid from "./EventsGrid";
 import FeaturedEvents from "@/app/components/FeaturedEvents";
 import MeshBackground from "@/app/components/MeshBackground";
 
-export const metadata = { title: "Eventos — Vybz Tickets" };
+export const metadata = { title: "Events — Vybz Tickets" };
 
 const getPublishedEvents = unstable_cache(
   async () => {
@@ -35,9 +35,9 @@ const getPublishedEvents = unstable_cache(
 export default async function EventosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; filter?: string }>;
 }) {
-  const [{ category }, events] = await Promise.all([
+  const [{ category, filter }, events] = await Promise.all([
     searchParams,
     getPublishedEvents(),
   ]);
@@ -55,10 +55,10 @@ export default async function EventosPage({
             className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide"
             style={{ fontSize: "clamp(48px,7vw,88px)" }}
           >
-            Próximos Eventos
+            Upcoming Events
           </h1>
         </div>
-        <EventsGrid events={events} initialCategory={category} />
+        <EventsGrid key={filter ?? "all"} events={events} initialCategory={category} initialFilter={filter} />
       </main>
       <Footer />
     </div>

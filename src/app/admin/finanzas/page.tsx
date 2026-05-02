@@ -60,7 +60,7 @@ export default async function AdminFinanzasPage() {
 
     const s = orgStats.get(oid) ?? {
       organizer_id: oid, revenue: 0, vybzFee: 0, tickets: 0, eventCount: 0,
-      name: prof?.full_name ?? "Sin nombre", email: prof?.email ?? "",
+      name: prof?.full_name ?? "No name", email: prof?.email ?? "",
     };
     s.revenue += price; s.vybzFee += fee; s.tickets++;
     const counted = countedEventPerOrg.get(oid) ?? new Set<string>();
@@ -70,7 +70,7 @@ export default async function AdminFinanzasPage() {
 
     const es = eventStats.get(t.event_id) ?? {
       event_id: t.event_id, event_name: ev.name,
-      organizer_name: prof?.full_name ?? "Sin nombre", organizer_id: oid,
+      organizer_name: prof?.full_name ?? "No name", organizer_id: oid,
       tickets: 0, revenue: 0, vybzFee: 0,
     };
     es.tickets++; es.revenue += price; es.vybzFee += fee;
@@ -91,7 +91,7 @@ export default async function AdminFinanzasPage() {
     if (t.status === "refunded") continue;
     const d = new Date(t.created_at);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleDateString("es-CR", { month: "short" });
+    const label = d.toLocaleDateString("en-US", { month: "short" });
     const m = monthMap.get(key) ?? { label, revenue: 0, fee: 0 };
     const price = t.purchase_price ?? 0;
     m.revenue += price; m.fee += Math.round(price * SERVICE_FEE);
@@ -102,7 +102,7 @@ export default async function AdminFinanzasPage() {
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleDateString("es-CR", { month: "short" });
+    const label = d.toLocaleDateString("en-US", { month: "short" });
     months.push(monthMap.get(key) ?? { label, revenue: 0, fee: 0 });
   }
   const maxMonth = Math.max(...months.map(m => m.revenue), 1);
@@ -113,9 +113,9 @@ export default async function AdminFinanzasPage() {
         <div>
           <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-black/30 mb-1">✦ B2B · Organizadores</p>
           <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide" style={{ fontSize: "clamp(28px,3vw,40px)" }}>
-            Finanzas B2B
+            Finances B2B
           </h1>
-          <p className="text-[#0a0a0a]/35 text-sm mt-1">Service fee {(SERVICE_FEE * 100).toFixed(0)}% · pagado por el comprador · ONVO Pay</p>
+          <p className="text-[#0a0a0a]/35 text-sm mt-1">Service fee {(SERVICE_FEE * 100).toFixed(0)}% · paid by buyer · ONVO Pay</p>
         </div>
         <ReporteButton />
       </div>
@@ -123,27 +123,27 @@ export default async function AdminFinanzasPage() {
       {/* KPIs */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="rounded-2xl p-5" style={{ background: "#0a0a0a" }}>
-          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-white/35">Volumen total B2B</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-white/35">Total B2B Volume</p>
           <p className="font-[family-name:var(--font-bebas)] text-3xl leading-none mb-1 text-white">{fmt(totalRevenue)}</p>
-          <p className="text-[10px] text-white/25">{sortedOrgs.reduce((s, o) => s + o.tickets, 0)} tickets vendidos</p>
+          <p className="text-[10px] text-white/25">{sortedOrgs.reduce((s, o) => s + o.tickets, 0)} tickets sold</p>
         </div>
         <div className="rounded-2xl p-5" style={{ background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.2)" }}>
-          <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#047857" }}>Ingresos Vybz (15%)</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#047857" }}>Vybz Revenue (15%)</p>
           <p className="font-[family-name:var(--font-bebas)] text-3xl leading-none mb-1" style={{ color: "#065f46" }}>{fmt(totalVybzFee)}</p>
-          <p className="text-[10px]" style={{ color: "rgba(4,120,87,0.6)" }}>service fee acumulado</p>
+          <p className="text-[10px]" style={{ color: "rgba(4,120,87,0.6)" }}>accumulated service fee</p>
         </div>
         <div className="rounded-2xl p-5" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
-          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#0a0a0a]/35">Reembolsos</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#0a0a0a]/35">Refunds</p>
           <p className="font-[family-name:var(--font-bebas)] text-3xl leading-none mb-1 text-[#0a0a0a]">{fmt(totalRefunded)}</p>
-          <p className="text-[10px] text-[#0a0a0a]/30">capital devuelto</p>
+          <p className="text-[10px] text-[#0a0a0a]/30">capital returned</p>
         </div>
       </div>
 
       {/* Monthly chart */}
       <div className="rounded-2xl p-6 mb-8" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
-        <p className="text-[#0a0a0a] font-semibold text-sm mb-1">Revenue mensual</p>
+        <p className="text-[#0a0a0a] font-semibold text-sm mb-1">Monthly Revenue</p>
         <p className="text-[#0a0a0a]/35 text-xs mb-5">
-          <span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{ background: "#0a0a0a", opacity: 0.85 }} />neto organizador
+          <span className="inline-block w-2 h-2 rounded-sm mr-1 align-middle" style={{ background: "#0a0a0a", opacity: 0.85 }} />organizer net
           <span className="inline-block w-2 h-2 rounded-sm mx-1 ml-3 align-middle" style={{ background: "#10b981", opacity: 0.8 }} />Vybz fee
         </p>
         <div className="flex items-end gap-3 h-32">
@@ -163,16 +163,16 @@ export default async function AdminFinanzasPage() {
       {/* Per-event breakdown */}
       <div className="rounded-2xl overflow-hidden mb-6" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
         <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-          <p className="text-[#0a0a0a] font-semibold text-sm">Ingresos por evento</p>
-          <p className="text-[#0a0a0a]/35 text-xs">{sortedEvents.length} eventos con ventas</p>
+          <p className="text-[#0a0a0a] font-semibold text-sm">Revenue by Event</p>
+          <p className="text-[#0a0a0a]/35 text-xs">{sortedEvents.length} events with sales</p>
         </div>
         {sortedEvents.length === 0 ? (
-          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">Sin datos</p>
+          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">No data</p>
         ) : (
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-                {["Evento", "Organizador", "Tickets", "Volumen base", "Vybz (15%)", "Neto organizador", ""].map((h) => (
+                {["Event", "Organizer", "Tickets", "Base Volume", "Vybz (15%)", "Organizer Net", ""].map((h) => (
                   <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
                 ))}
               </tr>
@@ -208,16 +208,16 @@ export default async function AdminFinanzasPage() {
       {/* Per-organizer breakdown */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
         <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-          <p className="text-[#0a0a0a] font-semibold text-sm">Ingresos por organizador</p>
-          <p className="text-[#0a0a0a]/35 text-xs">{sortedOrgs.length} organizadores</p>
+          <p className="text-[#0a0a0a] font-semibold text-sm">Revenue by Organizer</p>
+          <p className="text-[#0a0a0a]/35 text-xs">{sortedOrgs.length} organizers</p>
         </div>
         {sortedOrgs.length === 0 ? (
-          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">Sin datos</p>
+          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">No data</p>
         ) : (
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-                {["Organizador", "Eventos", "Tickets", "Volumen base", "Vybz (15%)", "Neto org.", "% del total", ""].map((h) => (
+                {["Organizer", "Events", "Tickets", "Base Volume", "Vybz (15%)", "Org. Net", "% of Total", ""].map((h) => (
                   <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
                 ))}
               </tr>

@@ -62,14 +62,14 @@ function ChooseRoleContent() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#fafafa" }}>
       <div className="w-full max-w-sm rounded-2xl p-8" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
         <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-[#0a0a0a] mb-1">
-          ¿Qué tipo de cuenta?
+          What type of account?
         </h1>
-        <p className="text-sm text-[#0a0a0a]/40 mb-8">Elige cómo vas a usar Vybz.</p>
+        <p className="text-sm text-[#0a0a0a]/40 mb-8">Choose how you want to use Vybz.</p>
 
         <div className="flex rounded-xl overflow-hidden mb-6" style={{ border: "1.5px solid rgba(0,0,0,0.1)" }}>
           {([
-            { value: "attendee", label: "Attendee", sub: "Compra entradas" },
-            { value: "organizer", label: "Organizador", sub: "Vende entradas" },
+            { value: "attendee", label: "Attendee", sub: "Buy tickets" },
+            { value: "organizer", label: "Organizer", sub: "Sell tickets" },
           ] as const).map(({ value, label, sub }) => (
             <button
               key={value}
@@ -93,7 +93,7 @@ function ChooseRoleContent() {
           className="w-full py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40"
           style={{ background: "#0a0a0a", color: "#fff" }}
         >
-          {saving ? "Guardando…" : "Continuar"}
+          {saving ? "Saving…" : "Continue"}
         </button>
       </div>
     </div>

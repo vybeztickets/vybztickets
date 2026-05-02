@@ -4,7 +4,7 @@ import { useState } from "react";
 import { formatPrice } from "@/lib/currency";
 
 function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
 }
 
 type FeaturedItem = {
@@ -33,10 +33,10 @@ const CR_BANKS = [
 ];
 
 const ACCOUNT_TYPES = [
-  { value: "sinpe", label: "SINPE Móvil" },
-  { value: "iban", label: "Cuenta IBAN" },
-  { value: "corriente", label: "Cuenta Corriente" },
-  { value: "ahorros", label: "Cuenta de Ahorros" },
+  { value: "sinpe", label: "SINPE Mobile" },
+  { value: "iban", label: "IBAN Account" },
+  { value: "corriente", label: "Checking Account" },
+  { value: "ahorros", label: "Savings Account" },
 ];
 
 const inputClass = "w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none";
@@ -107,7 +107,7 @@ export default function FinanzasTabs({
     <div>
       {/* Tabs */}
       <div className="flex items-center gap-1 mb-8" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-        {[{ key: "balances", label: "Balances" }, { key: "transacciones", label: "Transacciones" }, { key: "cuentas", label: "Cuentas Bancarias" }].map((t) => (
+        {[{ key: "balances", label: "Balances" }, { key: "transacciones", label: "Transactions" }, { key: "cuentas", label: "Bank Accounts" }].map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className="px-4 py-3 text-sm font-medium transition-colors"
             style={tab === t.key ? { color: "#0a0a0a", borderBottom: "2px solid #0a0a0a" } : { color: "rgba(0,0,0,0.3)" }}>
@@ -125,9 +125,9 @@ export default function FinanzasTabs({
                 <h3 className="text-[#0a0a0a] font-semibold mb-1">Balances ({currency})</h3>
               </div>
               {[
-                { label: "Ingresos brutos", value: totalRevenue, color: "rgba(0,0,0,0.7)" },
-                { label: "Fee de plataforma (15%)", value: -platformFee, color: "rgba(0,0,0,0.4)" },
-                { label: "Disponible para retirar", value: available, color: "#10b981", bold: true },
+                { label: "Gross revenue", value: totalRevenue, color: "rgba(0,0,0,0.7)" },
+                { label: "Platform fee (15%)", value: -platformFee, color: "rgba(0,0,0,0.4)" },
+                { label: "Available for withdrawal", value: available, color: "#10b981", bold: true },
               ].map((row) => (
                 <div key={row.label} className="flex justify-between items-center px-6 py-4"
                   style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
@@ -145,16 +145,16 @@ export default function FinanzasTabs({
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b6fd4" strokeWidth="2">
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                   </svg>
-                  <p className="text-xs font-semibold" style={{ color: "#3b6fd4" }}>Eventos en otras monedas (no incluidos arriba)</p>
+                  <p className="text-xs font-semibold" style={{ color: "#3b6fd4" }}>Events in other currencies (not included above)</p>
                 </div>
                 {otherCurrencies.map(([cur, rev]) => (
                   <div key={cur} className="flex justify-between items-center px-6 py-3" style={{ borderTop: "1px solid rgba(59,111,212,0.08)" }}>
-                    <span className="text-[#0a0a0a]/50 text-sm">Ingresos en {cur}</span>
+                    <span className="text-[#0a0a0a]/50 text-sm">Revenue in {cur}</span>
                     <span className="text-[#0a0a0a] font-semibold text-sm">{formatPrice(rev, cur)}</span>
                   </div>
                 ))}
                 <div className="px-6 py-3" style={{ borderTop: "1px solid rgba(59,111,212,0.08)", background: "rgba(59,111,212,0.03)" }}>
-                  <p className="text-[10px] text-[#0a0a0a]/35">Estos montos se liquidan en su moneda original. Configurá tu moneda principal en Config → Perfil.</p>
+                  <p className="text-[10px] text-[#0a0a0a]/35">These amounts are settled in their original currency. Set your primary currency in Config → Profile.</p>
                 </div>
               </div>
             )}
@@ -163,23 +163,23 @@ export default function FinanzasTabs({
               <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(245,158,11,0.2)" }}>
                 <div className="px-6 py-4 flex items-center gap-2" style={{ borderBottom: "1px solid rgba(245,158,11,0.15)", background: "rgba(245,158,11,0.04)" }}>
                   <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-                  <h3 className="text-[#0a0a0a] font-semibold text-sm">Gastos de destacado (USD)</h3>
+                  <h3 className="text-[#0a0a0a] font-semibold text-sm">Featuring costs (USD)</h3>
                 </div>
                 {featuredItems.map((f, i) => (
                   <div key={i} className="flex justify-between items-center px-6 py-3.5"
                     style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
                     <div>
                       <p className="text-[#0a0a0a]/60 text-sm">{fmtDate(f.start_date)} → {fmtDate(f.end_date)}</p>
-                      <p className="text-[#0a0a0a]/30 text-xs">{f.days} días · ${f.total_cost.toFixed(2)} USD</p>
+                      <p className="text-[#0a0a0a]/30 text-xs">{f.days} days · ${f.total_cost.toFixed(2)} USD</p>
                     </div>
                     <span className="text-xs px-2 py-0.5 rounded-md"
                       style={{ background: f.status === "active" ? "rgba(245,158,11,0.1)" : "rgba(0,0,0,0.05)", color: f.status === "active" ? "#f59e0b" : "rgba(0,0,0,0.35)" }}>
-                      {f.status === "active" ? "Activo" : "Completado"}
+                      {f.status === "active" ? "Active" : "Completed"}
                     </span>
                   </div>
                 ))}
                 <div className="flex justify-between items-center px-6 py-4" style={{ background: "rgba(0,0,0,0.02)" }}>
-                  <span className="text-[#0a0a0a]/50 text-sm">Total a descontar del retiro</span>
+                  <span className="text-[#0a0a0a]/50 text-sm">Total to deduct from payout</span>
                   <span className="text-[#0a0a0a] font-bold text-sm">${featuredCostsUSD.toFixed(2)} USD</span>
                 </div>
               </div>
@@ -188,12 +188,12 @@ export default function FinanzasTabs({
             {transactions.length > 0 && (
               <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
                 <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-                  <h3 className="text-[#0a0a0a] font-semibold">Completadas recientemente</h3>
+                  <h3 className="text-[#0a0a0a] font-semibold">Recently completed</h3>
                 </div>
                 {transactions.slice(0, 5).map((tx) => (
                   <div key={tx.date} className="flex justify-between items-center px-6 py-3"
                     style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
-                    <span className="text-[#0a0a0a]/50 text-sm">Ventas del {fmtDate(tx.date)}</span>
+                    <span className="text-[#0a0a0a]/50 text-sm">Sales on {fmtDate(tx.date)}</span>
                     <span className="text-[#0a0a0a] font-medium text-sm">{fmt(tx.amount)}</span>
                   </div>
                 ))}
@@ -205,13 +205,13 @@ export default function FinanzasTabs({
             <div className="rounded-2xl p-5" style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)" }}>
               <h4 className="text-[#0a0a0a] font-semibold mb-2 text-sm">Balance</h4>
               <p className="text-[#0a0a0a]/40 text-xs leading-relaxed">
-                Resumen del balance de tu cuenta: fondos disponibles, en tránsito y próximos.
+                Summary of your account balance: available, in-transit, and upcoming funds.
               </p>
             </div>
             <div className="rounded-2xl p-5" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-              <h4 className="text-[#0a0a0a] font-semibold mb-2 text-sm">Próximos pagos</h4>
+              <h4 className="text-[#0a0a0a] font-semibold mb-2 text-sm">Upcoming payouts</h4>
               <p className="text-[#0a0a0a]/40 text-xs">
-                Los pagos se liquidan según el calendario de ONVO Pay (diario, semanal, quincenal o mensual).
+                Payouts are settled according to the ONVO Pay schedule (daily, weekly, biweekly, or monthly).
               </p>
             </div>
           </div>
@@ -222,18 +222,18 @@ export default function FinanzasTabs({
       {tab === "transacciones" && (
         <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
           <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-            <h3 className="text-[#0a0a0a] font-semibold">Todas las transacciones</h3>
-            <span className="text-[#0a0a0a]/30 text-xs">{transactions.length} días con ventas</span>
+            <h3 className="text-[#0a0a0a] font-semibold">All transactions</h3>
+            <span className="text-[#0a0a0a]/30 text-xs">{transactions.length} days with sales</span>
           </div>
           {transactions.length === 0 ? (
-            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">Sin transacciones aún</div>
+            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">No transactions yet</div>
           ) : (
             transactions.map((tx, i) => (
               <div key={tx.date} className="flex justify-between items-center px-6 py-4 hover:bg-black/[0.01] transition-colors"
                 style={{ borderBottom: i < transactions.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}>
                 <div>
                   <p className="text-[#0a0a0a] text-sm font-medium">{fmtDate(tx.date)}</p>
-                  <p className="text-[#0a0a0a]/30 text-xs">Ventas del día</p>
+                  <p className="text-[#0a0a0a]/30 text-xs">Daily sales</p>
                 </div>
                 <span className="text-green-500 font-semibold">{fmt(tx.amount)}</span>
               </div>
@@ -247,15 +247,15 @@ export default function FinanzasTabs({
         <div className="max-w-2xl flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-[#0a0a0a] font-semibold">Cuentas Bancarias</h3>
-              <p className="text-[#0a0a0a]/30 text-xs mt-1">Cuenta de destino para recibir las liquidaciones de tus eventos.</p>
+              <h3 className="text-[#0a0a0a] font-semibold">Bank Accounts</h3>
+              <p className="text-[#0a0a0a]/30 text-xs mt-1">Destination account to receive your event payouts.</p>
             </div>
             <button
               onClick={() => { setAdding((v) => !v); setAccountError(""); resetForm(); }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
               style={{ background: adding ? "rgba(0,0,0,0.06)" : "#0a0a0a", color: adding ? "#0a0a0a" : "#fff" }}
             >
-              {adding ? "Cancelar" : "+ Agregar"}
+              {adding ? "Cancel" : "+ Add"}
             </button>
           </div>
 
@@ -285,7 +285,7 @@ export default function FinanzasTabs({
                       {acc.is_primary && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold"
                           style={{ background: "rgba(16,185,129,0.12)", color: "#10b981" }}>
-                          Principal
+                          Primary
                         </span>
                       )}
                       <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold"
@@ -295,7 +295,7 @@ export default function FinanzasTabs({
                       {acc.currency !== currency && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded-md font-semibold"
                           style={{ background: "rgba(245,158,11,0.1)", color: "#b45309" }}>
-                          ≠ moneda principal
+                          ≠ primary currency
                         </span>
                       )}
                     </div>
@@ -308,7 +308,7 @@ export default function FinanzasTabs({
                       <button onClick={() => handleSetPrimary(acc.id)}
                         className="text-xs text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors px-2 py-1 rounded-lg"
                         style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
-                        Usar
+                        Use
                       </button>
                     )}
                     <button onClick={() => handleDelete(acc.id)}
@@ -327,24 +327,24 @@ export default function FinanzasTabs({
           {adding && (
             <form onSubmit={handleAddAccount} className="rounded-2xl p-5 flex flex-col gap-4"
               style={{ border: "1px solid rgba(0,0,0,0.08)", background: "rgba(0,0,0,0.01)" }}>
-              <p className="text-[#0a0a0a] font-semibold text-sm">Nueva cuenta</p>
+              <p className="text-[#0a0a0a] font-semibold text-sm">New account</p>
 
               <div>
-                <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Titular de la cuenta</label>
+                <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Account holder</label>
                 <input type="text" required className={inputClass} style={inputStyle}
-                  value={holder} onChange={(e) => setHolder(e.target.value)} placeholder="Nombre completo o empresa" />
+                  value={holder} onChange={(e) => setHolder(e.target.value)} placeholder="Full name or company" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Banco</label>
+                  <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Bank</label>
                   <select required className={inputClass} style={inputStyle}
                     value={bank} onChange={(e) => setBank(e.target.value)}>
                     {CR_BANKS.map((b) => <option key={b} value={b}>{b}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Tipo</label>
+                  <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Type</label>
                   <select required className={inputClass} style={inputStyle}
                     value={accountType} onChange={(e) => setAccountType(e.target.value)}>
                     {ACCOUNT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
@@ -354,7 +354,7 @@ export default function FinanzasTabs({
 
               <div>
                 <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">
-                  {accountType === "sinpe" ? "Número de teléfono" : accountType === "iban" ? "Número IBAN" : "Número de cuenta"}
+                  {accountType === "sinpe" ? "Phone number" : accountType === "iban" ? "IBAN number" : "Account number"}
                 </label>
                 <input type="text" required className={inputClass} style={inputStyle}
                   value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)}
@@ -362,13 +362,13 @@ export default function FinanzasTabs({
               </div>
 
               <div>
-                <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Moneda</label>
+                <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Currency</label>
                 <div className="flex gap-2">
                   {["CRC", "USD"].map((c) => (
                     <button key={c} type="button" onClick={() => setNewAccountCurrency(c)}
                       className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors"
                       style={{ background: newAccountCurrency === c ? "#0a0a0a" : "rgba(0,0,0,0.04)", color: newAccountCurrency === c ? "#fff" : "rgba(0,0,0,0.4)", border: "1px solid rgba(0,0,0,0.08)" }}>
-                      {c === "CRC" ? "₡ Colones" : "$ Dólares"}
+                      {c === "CRC" ? "₡ Colones" : "$ Dollars"}
                     </button>
                   ))}
                 </div>
@@ -379,15 +379,15 @@ export default function FinanzasTabs({
               <button type="submit" disabled={saving}
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-40"
                 style={{ background: "#0a0a0a", color: "#fff" }}>
-                {saving ? "Guardando..." : "Agregar cuenta"}
+                {saving ? "Saving..." : "Add account"}
               </button>
             </form>
           )}
 
           {accounts.length === 0 && !adding && (
             <div className="rounded-2xl p-8 text-center" style={{ background: "rgba(0,0,0,0.02)", border: "1px dashed rgba(0,0,0,0.1)" }}>
-              <p className="text-[#0a0a0a]/25 text-sm">No hay cuentas bancarias configuradas</p>
-              <p className="text-[#0a0a0a]/15 text-xs mt-1">Agrega una cuenta para recibir las liquidaciones de tus eventos</p>
+              <p className="text-[#0a0a0a]/25 text-sm">No bank accounts configured</p>
+              <p className="text-[#0a0a0a]/15 text-xs mt-1">Add an account to receive your event payouts</p>
             </div>
           )}
 
@@ -396,7 +396,7 @@ export default function FinanzasTabs({
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
             <p className="text-xs leading-relaxed" style={{ color: "#92400e" }}>
-              <strong>La moneda de tu cuenta bancaria debe coincidir con la moneda de tus eventos.</strong> Si vendés en ₡ colones, necesitás una cuenta CRC. Si vendés en $ dólares, necesitás una cuenta en USD. Podés tener una cuenta de cada moneda. Las liquidaciones se procesan a través de ONVO Pay ($3 por depósito).
+              <strong>Your bank account currency must match your event currency.</strong> If you sell in ₡ colones, you need a CRC account. If you sell in $ dollars, you need a USD account. You can have one account per currency. Payouts are processed through ONVO Pay ($3 per deposit).
             </p>
           </div>
         </div>

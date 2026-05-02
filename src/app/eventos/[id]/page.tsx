@@ -45,7 +45,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   };
 
   const d = new Date(event.date + "T00:00:00");
-  const formattedDate = d.toLocaleDateString("es-CR", {
+  const formattedDate = d.toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric",
   });
 
@@ -78,7 +78,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
                   <div>
-                    <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider font-semibold leading-none mb-0.5">Organizado por</p>
+                    <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider font-semibold leading-none mb-0.5">Organized by</p>
                     <p className="text-[#0a0a0a] text-sm font-bold leading-none">{organizer.full_name}</p>
                   </div>
                 </Link>
@@ -104,7 +104,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               )}
 
               <div>
-                <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Ubicación</p>
+                <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Location</p>
                 <EventMap
                   lat={event.location_lat}
                   lng={event.location_lng}

@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 export default function ImageUploadField({
   value,
   onChange,
-  label = "Flyer del evento",
-  hint = "JPG, PNG o WebP · máx 10MB",
+  label = "Event flyer",
+  hint = "JPG, PNG or WebP · max 10MB",
   aspectRatio = "1:1",
 }: {
   value: string;
@@ -69,7 +69,7 @@ export default function ImageUploadField({
               className="px-4 py-2 rounded-xl text-sm font-semibold text-white"
               style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
             >
-              {uploading ? "Subiendo..." : "Cambiar imagen"}
+              {uploading ? "Uploading..." : "Change image"}
             </button>
           </div>
         </div>
@@ -95,7 +95,7 @@ export default function ImageUploadField({
             </svg>
           )}
           <div className="text-center">
-            <p className="text-[#0a0a0a]/50 text-sm font-medium">{uploading ? "Subiendo imagen..." : "Subir imagen"}</p>
+            <p className="text-[#0a0a0a]/50 text-sm font-medium">{uploading ? "Uploading image..." : "Upload image"}</p>
             <p className="text-[#0a0a0a]/25 text-xs mt-0.5">{hint}</p>
           </div>
         </div>

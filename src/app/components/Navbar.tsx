@@ -31,7 +31,7 @@ export default function Navbar() {
         {/* Nav links — absolutely centered */}
         <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           {[
-            { label: "Eventos", href: "/eventos" },
+            { label: "Events", href: "/eventos" },
           ].map(({ label, href }) => (
             <Link
               key={label}
@@ -50,7 +50,7 @@ export default function Navbar() {
             dark
             className="hidden md:inline-flex py-2.5 px-5 text-sm"
           >
-            Crear evento
+            Create event
           </StarButton>
           <button
             className="md:hidden text-[#0a0a0a]/50 hover:text-[#0a0a0a] transition-colors"
@@ -80,8 +80,8 @@ export default function Navbar() {
           style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(20px)", borderColor: "rgba(0,0,0,0.06)" }}
         >
           {[
-            { label: "Eventos", href: "/eventos" },
-            { label: "Crear evento", href: "/auth/login?redirectTo=/organizador/eventos/nuevo" },
+            { label: "Events", href: "/eventos" },
+            { label: "Create event", href: "/auth/login?redirectTo=/organizador/eventos/nuevo" },
           ].map(({ label, href }) => (
             <Link
               key={label}
@@ -97,7 +97,7 @@ export default function Navbar() {
             className="bg-[#0a0a0a] text-white text-sm font-semibold px-5 py-3 rounded-full text-center mt-1"
             onClick={() => setMenuOpen(false)}
           >
-            Ver eventos →
+            Browse events →
           </Link>
         </div>
       )}
