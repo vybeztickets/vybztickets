@@ -2,22 +2,12 @@ import Link from "next/link";
 
 const LINKS: Record<string, { label: string; href: string }[]> = {
   Eventos: [
-    { label: "Festival", href: "/eventos?category=Festival" },
-    { label: "Música", href: "/eventos?category=Música" },
-    { label: "Tecnología", href: "/eventos?category=Tecnología" },
-    { label: "Deportes", href: "/eventos?category=Deportes" },
-    { label: "Entretenimiento", href: "/eventos?category=Entretenimiento" },
-  ],
-  Reventa: [
-    { label: "Comprar tickets", href: "/reventa" },
-    { label: "Vender tickets", href: "/auth/login?redirectTo=/revendedor/nueva-venta" },
-    { label: "Cómo funciona", href: "/reventa" },
-    { label: "Verificación KYC", href: "/auth/login?redirectTo=/revendedor/verificacion" },
+    { label: "Esta semana", href: "/eventos?filter=semana" },
+    { label: "Este mes", href: "/eventos?filter=mes" },
   ],
   Organizadores: [
     { label: "Crear evento", href: "/organizador/eventos/nuevo" },
     { label: "Panel de control", href: "/organizador" },
-    { label: "Ver plataforma", href: "/organizadores" },
     { label: "Todos los eventos", href: "/eventos" },
   ],
   "Mi cuenta": [
@@ -35,20 +25,13 @@ const SOCIALS = [
   { label: "YT", href: "https://youtube.com/@vybztickets" },
 ];
 
-export default function Footer({ variant = "default" }: { variant?: "default" | "reventa" }) {
-  const cta = variant === "reventa"
-    ? {
-        title: "¿Tenés entradas que no vas a usar?",
-        desc: "Vendelas de forma segura con escrow. El comprador paga al instante.",
-        primary: { href: "/auth/login?redirectTo=/revendedor/nueva-venta", label: "Vender mis entradas →" },
-        secondary: { href: "/reventa", label: "Ver mercado" },
-      }
-    : {
-        title: "¿Organizas un evento?",
-        desc: "Vende entradas con la plataforma más completa en eventos.",
-        primary: { href: "/organizadores", label: "Comenzar gratis →" },
-        secondary: { href: "/organizadores", label: "Hablar con ventas" },
-      };
+export default function Footer() {
+  const cta = {
+    title: "¿Organizas un evento?",
+    desc: "Vende entradas con la plataforma más completa en eventos.",
+    primary: { href: "/auth/login?redirectTo=/organizador/eventos/nuevo", label: "Comenzar gratis →" },
+    secondary: { href: "mailto:hola@vybztickets.com", label: "Hablar con ventas" },
+  };
 
   return (
     <footer style={{ background: "#0a0a0a" }}>

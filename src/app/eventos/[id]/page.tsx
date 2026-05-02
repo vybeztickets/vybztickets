@@ -61,7 +61,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           <div className="flex flex-col lg:flex-row gap-10">
 
             {/* ── LEFT: flyer + info + location ── */}
-            <div className="lg:w-[420px] shrink-0 lg:sticky lg:top-20 lg:self-start" style={{ maxHeight: "calc(100vh - 5rem)", overflowY: "auto" }}>
+            <div className="lg:w-[420px] shrink-0">
               {showOrgChip && (
                 <Link
                   href={`/o/${orgSlug}`}

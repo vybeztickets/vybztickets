@@ -18,15 +18,11 @@ const SECTIONS = [
     body: "Vybz Tickets cobra un fee del 15% sobre el precio del ticket, pagado por el comprador en el momento de la compra. Este fee cubre el procesamiento del pago, la emisión del ticket digital y el soporte al cliente.",
   },
   {
-    title: "4. Reventa C2C",
-    body: "Los usuarios pueden revender tickets a través del mercado C2C de Vybz Tickets. Para operar como revendedor es obligatorio completar el proceso de verificación KYC. Los fondos se liberan al vendedor una vez que el comprador valida la entrada en el evento (sistema de escrow).",
-  },
-  {
-    title: "5. Organizadores",
+    title: "4. Organizadores",
     body: "Los organizadores que usen la plataforma para vender entradas aceptan las condiciones del plan contratado. Vybz Tickets se reserva el derecho de suspender cuentas que violen los términos o realicen prácticas fraudulentas.",
   },
   {
-    title: "6. Modificaciones",
+    title: "5. Modificaciones",
     body: "Vybz Tickets puede modificar estos términos en cualquier momento. Los cambios se notificarán con al menos 7 días de anticipación. El uso continuado de la plataforma implica aceptación de los nuevos términos.",
   },
 ];

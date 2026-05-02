@@ -2,15 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { StarButton } from "./ui/star-button";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const isEventos = pathname.startsWith("/eventos");
-
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
@@ -49,37 +45,13 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="flex items-center gap-3">
-          {isEventos ? (
-            <StarButton
-              href="/auth/login?redirectTo=/organizador/eventos/nuevo"
-              dark
-              className="hidden md:inline-flex py-2.5 px-5 text-sm"
-            >
-              Crear evento
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M2 10L10 2M10 2H4M10 2V8" />
-              </svg>
-            </StarButton>
-          ) : (
-            <>
-              <StarButton
-                href="/auth/login?redirectTo=/organizador/eventos/nuevo"
-                dark
-                className="hidden md:inline-flex py-2.5 px-5 text-sm"
-              >
-                Crear evento
-              </StarButton>
-              <Link
-                href="/eventos"
-                className="hidden md:flex items-center gap-1.5 text-sm font-semibold bg-[#0a0a0a] text-white px-5 py-2.5 rounded-full hover:bg-[#222] transition-colors"
-              >
-                Ver eventos
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M2 10L10 2M10 2H4M10 2V8" />
-                </svg>
-              </Link>
-            </>
-          )}
+          <StarButton
+            href="/auth/login?redirectTo=/organizador/eventos/nuevo"
+            dark
+            className="hidden md:inline-flex py-2.5 px-5 text-sm"
+          >
+            Crear evento
+          </StarButton>
           <button
             className="md:hidden text-[#0a0a0a]/50 hover:text-[#0a0a0a] transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}

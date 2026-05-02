@@ -86,21 +86,14 @@ export default function Hero() {
             }}
           >
             <StarButton
-              href="/auth/login?redirectTo=/organizador/eventos/nuevo"
+              href="/eventos"
               dark
             >
-              Crear evento gratis
+              Ver eventos
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M2 10L10 2M10 2H4M10 2V8"/>
               </svg>
             </StarButton>
-            <Link
-              href="/organizadores"
-              className="flex items-center gap-2 text-sm font-semibold px-7 py-3.5 rounded-full transition-colors"
-              style={{ border: "1px solid rgba(0,0,0,0.12)", color: "rgba(0,0,0,0.5)" }}
-            >
-              Ver demo
-            </Link>
           </div>
 
           {/* Trust strip */}
