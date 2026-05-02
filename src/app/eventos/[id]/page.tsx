@@ -65,20 +65,22 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               {showOrgChip && (
                 <Link
                   href={`/o/${orgSlug}`}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-3 transition-opacity hover:opacity-70"
-                  style={{ background: "rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.09)" }}
+                  className="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl mb-4 transition-opacity hover:opacity-70"
+                  style={{ background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.09)" }}
                 >
-                  <div className="w-5 h-5 rounded-full overflow-hidden shrink-0" style={{ background: "rgba(0,0,0,0.15)" }}>
+                  <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0" style={{ background: "rgba(0,0,0,0.12)" }}>
                     {organizer.avatar_url ? (
-                      <Image src={organizer.avatar_url} alt="" width={20} height={20} className="w-full h-full object-cover" />
+                      <Image src={organizer.avatar_url} alt="" width={36} height={36} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-white text-[8px] font-bold">{(organizer.full_name ?? "?")[0]}</span>
+                        <span className="text-white text-xs font-bold">{(organizer.full_name ?? "?")[0]}</span>
                       </div>
                     )}
                   </div>
-                  <span className="text-[#0a0a0a]/55 text-xs">by</span>
-                  <span className="text-[#0a0a0a] text-xs font-semibold">{organizer.full_name}</span>
+                  <div>
+                    <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider font-semibold leading-none mb-0.5">Organizado por</p>
+                    <p className="text-[#0a0a0a] text-sm font-bold leading-none">{organizer.full_name}</p>
+                  </div>
                 </Link>
               )}
               <div className="rounded-2xl overflow-hidden mb-6" style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" }}>

@@ -6,7 +6,7 @@ import ImageUploadField from "@/app/components/ImageUploadField";
 type TeamMember = { id: string; member_email: string; role: string; created_at: string };
 type CustomLink = { name: string; url: string };
 
-const TABS = ["Estado", "Perfil", "Imagen de marca", "Seguridad", "Detalles de la empresa", "Impuestos", "Notificaciones", "Integraciones"];
+const TABS = ["Estado", "Perfil", "Imagen de marca", "Seguridad", "Detalles de la empresa", "Impuestos", "Notificaciones"];
 
 type Profile = {
   id: string;
@@ -143,6 +143,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
   const [accountType, setAccountType] = useState("Personal");
   const [firstName, setFirstName] = useState(profile?.full_name?.split(" ")[0] ?? "");
   const [lastName, setLastName] = useState(profile?.full_name?.split(" ")[1] ?? "");
+  const [businessEmail, setBusinessEmail] = useState(userEmail);
   const [idNumber, setIdNumber] = useState("");
   const [phoneCode, setPhoneCode] = useState("+506");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -303,16 +304,115 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
             <Toggle checked={publicProfile} onChange={setPublicProfile} />
           </div>
 
-          {/* Profile picture + Cover */}
-          <div className="flex flex-col gap-4">
+          <div>
+            <label className={labelClass}>Nombre del organizador *</label>
+            <input type="text" className={inputClass} style={inputStyle} value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Foto de perfil</label>
-              <ImageUploadField value={avatarUrl} onChange={setAvatarUrl} label="" hint="JPG, PNG · recomendado 400×400px" aspectRatio="1:1" />
+              <label className={labelClass}>Correo electrónico *</label>
+              <input type="email" className={inputClass} style={inputStyle} value={orgEmail} onChange={(e) => setOrgEmail(e.target.value)} required />
             </div>
             <div>
-              <label className={labelClass}>Imagen de portada (banner)</label>
-              <ImageUploadField value={coverUrl} onChange={setCoverUrl} label="" hint="JPG, PNG · recomendado 1200×300px" aspectRatio="16:9" />
+              <label className={labelClass}>WhatsApp</label>
+              <input type="text" className={inputClass} style={inputStyle} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+506 8888-8888" />
             </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>País</label>
+            <select className={inputClass} style={inputStyle} value={country} onChange={(e) => setCountry(e.target.value)}>
+              <option value="">Seleccioná un país</option>
+              <option value="Costa Rica">Costa Rica</option>
+              <option value="Guatemala">Guatemala</option>
+              <option value="Honduras">Honduras</option>
+              <option value="El Salvador">El Salvador</option>
+              <option value="Nicaragua">Nicaragua</option>
+              <option value="Panamá">Panamá</option>
+              <option value="México">México</option>
+              <option value="Colombia">Colombia</option>
+              <option value="Venezuela">Venezuela</option>
+              <option value="Perú">Perú</option>
+              <option value="Chile">Chile</option>
+              <option value="Argentina">Argentina</option>
+              <option value="Uruguay">Uruguay</option>
+              <option value="España">España</option>
+              <option value="Estados Unidos">Estados Unidos</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          {/* Moneda principal */}
+          <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "rgba(0,0,0,0.02)" }}>
+              <p className="text-[#0a0a0a] font-semibold text-sm">Moneda principal</p>
+              <p className="text-[#0a0a0a]/40 text-xs mt-0.5 leading-relaxed">
+                Define la moneda en que vendés tus entradas. <strong>Todos tus eventos y el panel financiero usarán esta moneda.</strong>
+              </p>
+            </div>
+            <div className="px-5 py-4 flex gap-3">
+              {(["CRC", "USD"] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setProfileCurrency(c)}
+                  className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: profileCurrency === c ? "#0a0a0a" : "rgba(0,0,0,0.04)",
+                    color: profileCurrency === c ? "#fff" : "rgba(0,0,0,0.45)",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  {c === "CRC" ? "₡ Colón costarricense (CRC)" : "$ Dólar estadounidense (USD)"}
+                </button>
+              ))}
+            </div>
+            <div className="px-5 py-3 flex gap-2 items-start" style={{ borderTop: "1px solid rgba(0,0,0,0.05)", background: "rgba(245,158,11,0.03)" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" className="shrink-0 mt-0.5">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <p className="text-[10px] leading-relaxed" style={{ color: "#92400e" }}>
+                Tu cuenta bancaria de cobro debe estar en la misma moneda que elegís aquí. Si vendés en <strong>₡ colones</strong>, necesitás una cuenta CRC. Si vendés en <strong>$ dólares</strong>, necesitás una cuenta en USD. Cambiar esto no convierte precios existentes.
+              </p>
+            </div>
+          </div>
+
+          {saved && <p className="text-green-400 text-sm">Guardado correctamente</p>}
+          <button type="submit" disabled={saving} className="w-full py-3 rounded-xl font-semibold disabled:opacity-50" style={{ background: "#0a0a0a", color: "#fff" }}>
+            {saving ? "Guardando..." : "Guardar"}
+          </button>
+        </form>
+      )}
+
+      {/* Imagen de marca */}
+      {tab === "Imagen de marca" && (
+        <form onSubmit={handleSavePerfil} className="max-w-2xl flex flex-col gap-6">
+          <div>
+            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Imagen de marca</h2>
+            <p className="text-[#0a0a0a]/35 text-sm">Configurá cómo aparece tu perfil público de organizador.</p>
+          </div>
+
+          <div>
+            <label className={labelClass}>Foto de perfil</label>
+            <ImageUploadField value={avatarUrl} onChange={setAvatarUrl} label="" hint="JPG, PNG · recomendado 400×400px" aspectRatio="1:1" />
+          </div>
+
+          <div>
+            <label className={labelClass}>Imagen de portada (banner)</label>
+            <ImageUploadField value={coverUrl} onChange={setCoverUrl} label="" hint="JPG, PNG · recomendado 1200×300px" aspectRatio="16:9" />
+          </div>
+
+          <div>
+            <label className={labelClass}>Descripción del organizador</label>
+            <textarea
+              rows={4}
+              className={inputClass}
+              style={{ ...inputStyle, resize: "none" }}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe tu organización..."
+            />
           </div>
 
           <div>
@@ -367,113 +467,14 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
           </div>
 
           <div>
-            <label className={labelClass}>URL del Organizador</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                readOnly
-                value={`https://vybztickets.com/o/${fullName.toLowerCase().replace(/\s+/g, "-") || "tu-organizacion"}`}
-                className={inputClass}
-                style={{ ...inputStyle, color: "rgba(0,0,0,0.4)", flex: 1 }}
-              />
-              <button type="button" className="px-3 py-3 rounded-xl" style={inputStyle}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#0a0a0a]/40">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>Nombre del organizador *</label>
-            <input type="text" className={inputClass} style={inputStyle} value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Correo electrónico *</label>
-              <input type="email" className={inputClass} style={inputStyle} value={orgEmail} onChange={(e) => setOrgEmail(e.target.value)} required />
-            </div>
-            <div>
-              <label className={labelClass}>WhatsApp</label>
-              <input type="text" className={inputClass} style={inputStyle} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+506 8888-8888" />
-            </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>País</label>
-            <select
+            <label className={labelClass}>URL pública del organizador</label>
+            <input
+              type="text"
+              readOnly
+              value={`https://vybztickets.com/o/${fullName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || "tu-organizacion"}`}
               className={inputClass}
-              style={inputStyle}
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-            >
-              <option value="">Seleccioná un país</option>
-              <option value="Costa Rica">Costa Rica</option>
-              <option value="Guatemala">Guatemala</option>
-              <option value="Honduras">Honduras</option>
-              <option value="El Salvador">El Salvador</option>
-              <option value="Nicaragua">Nicaragua</option>
-              <option value="Panamá">Panamá</option>
-              <option value="México">México</option>
-              <option value="Colombia">Colombia</option>
-              <option value="Venezuela">Venezuela</option>
-              <option value="Perú">Perú</option>
-              <option value="Chile">Chile</option>
-              <option value="Argentina">Argentina</option>
-              <option value="Uruguay">Uruguay</option>
-              <option value="España">España</option>
-              <option value="Estados Unidos">Estados Unidos</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-
-          <div>
-            <label className={labelClass}>Descripción del organizador</label>
-            <textarea
-              rows={4}
-              className={inputClass}
-              style={{ ...inputStyle, resize: "none" }}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe tu organización..."
+              style={{ ...inputStyle, color: "rgba(0,0,0,0.35)" }}
             />
-          </div>
-
-          {/* Moneda principal */}
-          <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
-            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "rgba(0,0,0,0.02)" }}>
-              <p className="text-[#0a0a0a] font-semibold text-sm">Moneda principal</p>
-              <p className="text-[#0a0a0a]/40 text-xs mt-0.5 leading-relaxed">
-                Define la moneda en que vendés tus entradas. <strong>Todos tus eventos y el panel financiero usarán esta moneda.</strong>
-              </p>
-            </div>
-            <div className="px-5 py-4 flex gap-3">
-              {(["CRC", "USD"] as const).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setProfileCurrency(c)}
-                  className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: profileCurrency === c ? "#0a0a0a" : "rgba(0,0,0,0.04)",
-                    color: profileCurrency === c ? "#fff" : "rgba(0,0,0,0.45)",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                  }}
-                >
-                  {c === "CRC" ? "₡ Colón costarricense (CRC)" : "$ Dólar estadounidense (USD)"}
-                </button>
-              ))}
-            </div>
-            <div className="px-5 py-3 flex gap-2 items-start" style={{ borderTop: "1px solid rgba(0,0,0,0.05)", background: "rgba(245,158,11,0.03)" }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" className="shrink-0 mt-0.5">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-              <p className="text-[10px] leading-relaxed" style={{ color: "#92400e" }}>
-                Tu cuenta bancaria de cobro debe estar en la misma moneda que elegís aquí. Si vendés en <strong>₡ colones</strong>, necesitás una cuenta CRC. Si vendés en <strong>$ dólares</strong>, necesitás una cuenta en USD. Cambiar esto no convierte precios existentes.
-              </p>
-            </div>
           </div>
 
           {saved && <p className="text-green-400 text-sm">Guardado correctamente</p>}
@@ -481,55 +482,6 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
             {saving ? "Guardando..." : "Guardar"}
           </button>
         </form>
-      )}
-
-      {/* Imagen de marca */}
-      {tab === "Imagen de marca" && (
-        <div className="max-w-2xl flex flex-col gap-6">
-          <div>
-            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Imagen de marca</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Configura tus elementos de marca para definir cómo tus clientes ven los eventos.</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            {[{ label: "Logo", hint: "PNG, JPG · 200x200px" }, { label: "Fondo", hint: "PNG, JPG · 1200x400px" }].map((item) => (
-              <div key={item.label}>
-                <label className={labelClass}>{item.label}</label>
-                <div
-                  className="h-32 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-white/5"
-                  style={{ border: "2px dashed rgba(0,0,0,0.08)" }}
-                >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#0a0a0a]/20 mb-2">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                  </svg>
-                  <p className="text-[#0a0a0a]/20 text-xs">{item.hint}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: "Color de fondo del encabezado", value: "#0a0a0a" },
-              { label: "Color del texto", value: "#ffffff" },
-              { label: "Color de acento", value: "#0a0a0a" },
-              { label: "Color del borde", value: "#1a1a1a" },
-            ].map((c) => (
-              <div key={c.label}>
-                <label className={labelClass}>{c.label}</label>
-                <div className="flex gap-2 items-center">
-                  <input type="color" defaultValue={c.value} className="w-10 h-10 rounded-lg cursor-pointer border-0 bg-transparent" />
-                  <input type="text" defaultValue={c.value} className={inputClass} style={{ ...inputStyle, flex: 1 }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button className="w-full py-3 rounded-xl font-semibold" style={{ background: "#0a0a0a", color: "#fff" }}>
-            Guardar
-          </button>
-        </div>
       )}
 
       {/* Seguridad */}
@@ -701,8 +653,8 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
               <input type="text" className={inputClass} style={inputStyle} value={idNumber} onChange={(e) => setIdNumber(e.target.value)} placeholder="1-2345-6789" />
             </div>
             <div>
-              <label className={labelClass}>Correo electrónico</label>
-              <input type="email" className={inputClass} style={{ ...inputStyle, color: "rgba(0,0,0,0.4)" }} value={userEmail} readOnly />
+              <label className={labelClass}>Correo electrónico (legal)</label>
+              <input type="email" className={inputClass} style={inputStyle} value={businessEmail} onChange={(e) => setBusinessEmail(e.target.value)} placeholder="correo@empresa.com" />
             </div>
           </div>
 
@@ -967,32 +919,6 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
         </div>
       )}
 
-      {/* Integraciones */}
-      {tab === "Integraciones" && (
-        <div className="max-w-2xl flex flex-col gap-4">
-          <div>
-            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Integraciones</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Conecta herramientas externas con tu cuenta de Vybz.</p>
-          </div>
-          {[
-            { name: "Stripe", desc: "Procesamiento de pagos con tarjeta de crédito", status: "soon" },
-            { name: "SINPE Móvil", desc: "Pagos locales de Costa Rica vía SINPE", status: "soon" },
-            { name: "Mailchimp", desc: "Sincroniza tu lista de compradores con Mailchimp", status: "soon" },
-            { name: "Google Analytics", desc: "Seguimiento de visitas y conversiones", status: "soon" },
-            { name: "WhatsApp Business", desc: "Envía confirmaciones por WhatsApp", status: "soon" },
-          ].map((item) => (
-            <div key={item.name} className="flex items-center justify-between p-5 rounded-2xl" style={sectionStyle}>
-              <div>
-                <p className="text-[#0a0a0a] font-medium text-sm">{item.name}</p>
-                <p className="text-[#0a0a0a]/35 text-xs mt-0.5">{item.desc}</p>
-              </div>
-              <span className="px-3 py-1 rounded-full text-xs" style={{ background: "rgba(0,0,0,0.07)", color: "rgba(0,0,0,0.3)" }}>
-                Próximamente
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

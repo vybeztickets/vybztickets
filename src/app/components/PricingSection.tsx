@@ -120,39 +120,6 @@ export default function PricingSection() {
               ))}
             </div>
 
-            {/* Comparison strip */}
-            <div
-              className="rounded-2xl overflow-hidden"
-              style={{ border: "1px solid rgba(0,0,0,0.07)" }}
-            >
-              <div
-                className="px-5 py-3"
-                style={{ background: "#f7f7f7", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
-              >
-                <p className="text-[#0a0a0a]/40 text-[9px] uppercase tracking-widest font-semibold">
-                  Comparación
-                </p>
-              </div>
-              <div className="divide-y" style={{ borderColor: "rgba(0,0,0,0.06)" }}>
-                {[
-                  { label: "Cuota mensual", vybz: "₡0", others: "₡30K–₡150K/mes" },
-                  { label: "Fee por ticket", vybz: "Lo paga el comprador", others: "Compartido o mixto" },
-                  { label: "Pago en CRC", vybz: "Sí (ONVO Pay)", others: "No (solo USD)" },
-                  { label: "Scanner incluido", vybz: "Sí, sin app", others: "App de pago" },
-                ].map(({ label, vybz, others }) => (
-                  <div key={label} className="grid grid-cols-3 px-5 py-3.5 items-center">
-                    <p className="text-[#0a0a0a]/50 text-xs">{label}</p>
-                    <p className="text-xs font-semibold text-[#0a0a0a]">{vybz}</p>
-                    <p className="text-[#0a0a0a]/25 text-xs">{others}</p>
-                  </div>
-                ))}
-                <div className="grid grid-cols-3 px-5 py-2" style={{ background: "#f7f7f7" }}>
-                  <p className="text-[9px] text-[#0a0a0a]/25 uppercase tracking-wider" />
-                  <p className="text-[9px] font-bold text-[#0a0a0a]/50 uppercase tracking-wider">Vybz</p>
-                  <p className="text-[9px] text-[#0a0a0a]/25 uppercase tracking-wider">Otras plataformas</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
