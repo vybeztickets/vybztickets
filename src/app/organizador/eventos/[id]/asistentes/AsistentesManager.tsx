@@ -12,6 +12,8 @@ type TicketRow = {
   created_at: string;
   qr_code: string;
   ticket_types: { id: string; name: string; price: number } | null;
+  transferred_from: string | null;
+  transferred_to: string | null;
 };
 
 function formatPrice(n: number) {
@@ -113,23 +115,71 @@ export default function AsistentesManager({ tickets }: { tickets: TicketRow[] })
               <div
                 key={t.id}
                 className="grid items-center px-5 py-3.5 transition-colors hover:bg-white/[0.02]"
-                style={{ gridTemplateColumns: "1fr 200px 120px 80px 36px", borderBottom: i < pageTickets.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}
+                style={{
+                  gridTemplateColumns: "1fr 200px 120px 80px 36px",
+                  borderBottom: i < pageTickets.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none",
+                  opacity: t.status === "transferred" ? 0.5 : 1,
+                }}
               >
                 <div className="flex items-center gap-2.5">
                   {/* QR badge */}
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: t.status === "used" ? "rgba(16,185,129,0.15)" : "rgba(0,0,0,0.04)" }}
-                    title={t.status === "used" ? "Checked in" : "Not checked in"}
+                    style={{
+                      background:
+                        t.status === "used"
+                          ? "rgba(16,185,129,0.15)"
+                          : t.status === "transferred"
+                          ? "rgba(217,119,6,0.12)"
+                          : "rgba(0,0,0,0.04)",
+                    }}
+                    title={
+                      t.status === "used"
+                        ? "Checked in"
+                        : t.status === "transferred"
+                        ? "Transferred"
+                        : "Not checked in"
+                    }
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={t.status === "used" ? "#10b981" : "rgba(0,0,0,0.15)"} strokeWidth="2">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={
+                        t.status === "used"
+                          ? "#10b981"
+                          : t.status === "transferred"
+                          ? "#d97706"
+                          : "rgba(0,0,0,0.15)"
+                      }
+                      strokeWidth="2"
+                    >
                       <rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/>
                       <rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/>
                       <path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/>
                     </svg>
                   </div>
                   <div>
-                    <p className="text-[#0a0a0a] text-sm font-medium">{t.buyer_name ?? "—"}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[#0a0a0a] text-sm font-medium">{t.buyer_name ?? "—"}</p>
+                      {t.transferred_from !== null && (
+                        <span
+                          className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                          style={{ background: "rgba(59,130,246,0.1)", color: "#2563eb" }}
+                        >
+                          Transferred in
+                        </span>
+                      )}
+                      {t.status === "transferred" && (
+                        <span
+                          className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                          style={{ background: "rgba(217,119,6,0.12)", color: "#d97706" }}
+                        >
+                          Transferred
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[#0a0a0a]/25 text-[10px]">{formatDate(t.created_at)}</p>
                   </div>
                 </div>

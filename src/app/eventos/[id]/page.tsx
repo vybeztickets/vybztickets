@@ -114,6 +114,14 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                   mapsUrl={mapsUrl}
                 />
                 <ResendTicket eventId={event.id} />
+                <div className="mt-2">
+                  <a
+                    href="/transfer"
+                    className="text-xs transition-colors text-black/25 hover:text-black/45"
+                  >
+                    Transfer my ticket →
+                  </a>
+                </div>
               </div>
             </div>
 
