@@ -3,8 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect, notFound } from "next/navigation";
 import EventStatsCharts from "./EventStatsCharts";
 import CopyUrl from "./CopyUrl";
-
-function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
+import { formatPrice } from "@/lib/currency";
 
 function normalizeReferrer(ref: string | null): string {
   if (!ref) return "Direct";
@@ -32,11 +31,13 @@ export default async function EventEstadisticas({ params }: { params: Promise<{ 
   const admin = createAdminClient();
   const { data: event } = await admin
     .from("events")
-    .select("id, name")
+    .select("id, name, currency")
     .eq("id", id)
     .eq("organizer_id", user.id)
     .single();
   if (!event) notFound();
+
+  const currency: string = (event as any).currency ?? "CRC";
 
   const [ticketsRes, viewsRes] = await Promise.all([
     admin.from("tickets").select("purchase_price, status, promo_code, created_at").eq("event_id", id),
@@ -94,7 +95,7 @@ export default async function EventEstadisticas({ params }: { params: Promise<{ 
   const eventUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? "https://vybztickets.com"}/eventos/${id}`;
 
   const stats = [
-    { label: "Total revenue", value: formatPrice(totalRevenue) },
+    { label: "Total revenue", value: formatPrice(totalRevenue, currency) },
     { label: "Tickets sold", value: totalSold },
     { label: "Guestlists", value: guestlists },
     { label: "Attendees", value: attendees },
@@ -115,7 +116,7 @@ export default async function EventEstadisticas({ params }: { params: Promise<{ 
 
       {/* Charts */}
       <div className="mb-8">
-        <EventStatsCharts data={chartData} />
+        <EventStatsCharts data={chartData} currency={currency} />
       </div>
 
       {/* Bottom row */}

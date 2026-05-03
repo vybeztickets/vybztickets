@@ -1,10 +1,9 @@
 "use client";
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { formatPrice } from "@/lib/currency";
 
 type Day = { date: string; revenue: number; tickets: number; views: number };
-
-function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
 function shortDate(d: string) {
   if (typeof window === "undefined") return d;
@@ -16,7 +15,8 @@ const axisStyle = { fill: "rgba(0,0,0,0.2)", fontSize: 10 };
 const tooltipStyle = { background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 10, fontSize: 12 };
 const cardStyle = { background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" };
 
-export default function EventStatsCharts({ data }: { data: Day[] }) {
+export default function EventStatsCharts({ data, currency = "CRC" }: { data: Day[]; currency?: string }) {
+  const fmt = (n: number) => formatPrice(n, currency);
   return (
     <div className="grid grid-cols-1 gap-6">
       {/* Revenue */}
@@ -32,9 +32,9 @@ export default function EventStatsCharts({ data }: { data: Day[] }) {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
             <XAxis dataKey="date" tickFormatter={shortDate} tick={axisStyle} axisLine={false} tickLine={false} />
-            <YAxis tickFormatter={(v) => "₡" + (v / 1000) + "k"} tick={axisStyle} axisLine={false} tickLine={false} width={50} />
+            <YAxis tickFormatter={(v) => fmt(v)} tick={axisStyle} axisLine={false} tickLine={false} width={56} />
             <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "rgba(0,0,0,0.4)" }}
-              formatter={(v) => [formatPrice(Number(v)), "Revenue"]} labelFormatter={(l) => shortDate(l)} />
+              formatter={(v) => [fmt(Number(v)), "Revenue"]} labelFormatter={(l) => shortDate(l)} />
             <Area type="monotone" dataKey="revenue" stroke="#0a0a0a" strokeWidth={2} fill="url(#ev-rev)" />
           </AreaChart>
         </ResponsiveContainer>
