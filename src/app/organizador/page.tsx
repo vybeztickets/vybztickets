@@ -46,6 +46,12 @@ export default async function OrganizerDashboard() {
   const hasMixedCurrencies = currencies.length > 1;
 
   const allEventIds = eventsData.map((e) => e.id);
+  // Total page visits across all events
+  const { count: totalViews } = await (admin as any)
+    .from("event_views")
+    .select("id", { count: "exact", head: true })
+    .in("event_id", allEventIds.length > 0 ? allEventIds : ["none"]);
+
   const { data: recentTickets } = await admin
     .from("tickets")
     .select("purchase_price, created_at, event_id")
@@ -94,6 +100,7 @@ export default async function OrganizerDashboard() {
     { label: "Tickets sold", value: totalSold },
     { label: "Upcoming events", value: upcoming.length },
     { label: "Avg. ticket", value: formatPrice(avgPerSale, profileCurrency) },
+    { label: "Page visits", value: (totalViews ?? 0).toLocaleString("en-US") },
   ];
 
   return (

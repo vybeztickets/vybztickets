@@ -166,6 +166,11 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
   const [taxSaved, setTaxSaved] = useState(false);
   const [taxError, setTaxError] = useState("");
 
+  // Business details
+  const [bizSaving, setBizSaving] = useState(false);
+  const [bizSaved, setBizSaved] = useState(false);
+  const [bizError, setBizError] = useState("");
+
   // Equipo
   const [team, setTeam] = useState<TeamMember[]>(initialTeam);
   const [addingMember, setAddingMember] = useState(false);
@@ -237,6 +242,34 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
   function removeLink(i: number) { setCustomLinks(l => l.filter((_, idx) => idx !== i)); }
   function updateLink(i: number, field: "name" | "url", val: string) {
     setCustomLinks(l => l.map((link, idx) => idx === i ? { ...link, [field]: val } : link));
+  }
+
+  async function handleSaveBusiness() {
+    setBizSaving(true); setBizError(""); setBizSaved(false);
+    try {
+      const res = await fetch("/api/organizador/business-details", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          account_type: accountType,
+          first_name: firstName,
+          last_name: lastName,
+          email: businessEmail,
+          id_number: idNumber,
+          phone_code: phoneCode,
+          phone_number: phoneNumber,
+          company_name: companyName,
+          company_id: companyId,
+        }),
+      });
+      if (!res.ok) { const d = await res.json(); setBizError(d.error ?? "Error saving"); return; }
+      setBizSaved(true);
+      setTimeout(() => setBizSaved(false), 2500);
+    } catch {
+      setBizError("Network error");
+    } finally {
+      setBizSaving(false);
+    }
   }
 
   async function handleSaveTax() {
@@ -734,11 +767,21 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
             </>
           )}
 
+          {bizError && <p className="text-red-500 text-xs">{bizError}</p>}
           <div className="flex flex-col gap-2 pt-2">
-            <button className="w-full py-3 rounded-xl font-semibold" style={{ background: "#0a0a0a", color: "#fff" }}>
-              Save
+            <button
+              onClick={handleSaveBusiness}
+              disabled={bizSaving}
+              className="w-full py-3 rounded-xl font-semibold disabled:opacity-60 transition-colors"
+              style={{ background: bizSaved ? "rgba(16,185,129,0.15)" : "#0a0a0a", color: bizSaved ? "#10b981" : "#fff", border: bizSaved ? "1px solid rgba(16,185,129,0.3)" : "none" }}
+            >
+              {bizSaving ? "Saving..." : bizSaved ? "Saved!" : "Save"}
             </button>
-            <button className="w-full py-3 rounded-xl font-semibold" style={{ background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)" }}>
+            <button
+              onClick={() => { setFirstName(""); setLastName(""); setBusinessEmail(userEmail); setIdNumber(""); setPhoneCode("+506"); setPhoneNumber(""); setCompanyName(""); setCompanyId(""); }}
+              className="w-full py-3 rounded-xl font-semibold"
+              style={{ background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)" }}
+            >
               Cancel
             </button>
           </div>

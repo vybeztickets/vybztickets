@@ -8,6 +8,7 @@ import Link from "next/link";
 import CheckoutPanel from "./CheckoutPanel";
 import ResendTicket from "./ResendTicket";
 import EventMap from "./EventMap";
+import EventViewTracker from "./EventViewTracker";
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -55,6 +56,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#ffffff" }}>
       <Navbar />
+      <EventViewTracker eventId={event.id} />
       <main className="flex-1 pt-16 pb-20">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-10">
           <div className="flex flex-col lg:flex-row gap-10">
