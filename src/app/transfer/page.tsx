@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
+import MeshBackground from "@/app/components/MeshBackground";
 import TransferClient from "./TransferClient";
 
 export const metadata = { title: "Transfer a ticket — Vybz Tickets" };
@@ -43,7 +44,8 @@ export default async function TransferPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="min-h-screen" style={{ background: "#ffffff" }}>
+    <div className="min-h-screen">
+      <MeshBackground />
       <Navbar />
       <TransferClient tickets={tickets ?? []} userEmail={userEmail} />
     </div>
