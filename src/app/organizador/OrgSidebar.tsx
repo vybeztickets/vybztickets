@@ -89,7 +89,7 @@ export default function OrgSidebar({
         )}
 
         <Link
-          href="/auth/login"
+          href="/auth/login?redirectTo=/organizador"
           className="w-7 h-7 rounded-full overflow-hidden shrink-0 flex items-center justify-center hover:opacity-70 transition-opacity"
           style={{ background: "rgba(255,255,255,0.12)" }}
           title="Switch account"
