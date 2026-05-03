@@ -12,8 +12,6 @@ type TicketRow = {
   created_at: string;
   qr_code: string;
   ticket_types: { id: string; name: string; price: number } | null;
-  transferred_from: string | null;
-  transferred_to: string | null;
 };
 
 function formatPrice(n: number) {
@@ -163,14 +161,6 @@ export default function AsistentesManager({ tickets }: { tickets: TicketRow[] })
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-[#0a0a0a] text-sm font-medium">{t.buyer_name ?? "—"}</p>
-                      {t.transferred_from !== null && (
-                        <span
-                          className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                          style={{ background: "rgba(59,130,246,0.1)", color: "#2563eb" }}
-                        >
-                          Transferred in
-                        </span>
-                      )}
                       {t.status === "transferred" && (
                         <span
                           className="text-[10px] font-semibold px-1.5 py-0.5 rounded"

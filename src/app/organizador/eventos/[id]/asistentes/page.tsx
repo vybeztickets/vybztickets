@@ -15,7 +15,7 @@ export default async function AsistentesPage({ params }: { params: Promise<{ id:
 
   const { data: tickets } = await admin
     .from("tickets")
-    .select("id, buyer_name, buyer_email, buyer_phone, purchase_price, status, created_at, qr_code, transferred_from, transferred_to, ticket_types(id, name, price)")
+    .select("id, buyer_name, buyer_email, buyer_phone, purchase_price, status, created_at, qr_code, ticket_types(id, name, price)")
     .eq("event_id", id)
     .order("created_at", { ascending: false });
 
