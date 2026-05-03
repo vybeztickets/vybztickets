@@ -310,26 +310,42 @@ export default function TransferClient({ tickets, userEmail }: Props) {
                       )}
                     </div>
 
-                    {/* Resend row — only for active tickets */}
+                    {/* Actions row — only for active tickets */}
                     {ticket.status === "active" && (
-                      <div className="mt-3 pt-3 flex items-center justify-between" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
-                        <p className="text-xs" style={{ color: "rgba(0,0,0,0.3)" }}>
-                          {resentIds.has(ticket.id)
-                            ? "Ticket has already been resent — check your email."
-                            : "Can only be resent once."}
-                        </p>
-                        {resentIds.has(ticket.id) ? (
-                          <span className="text-xs font-medium" style={{ color: "#16a34a" }}>Sent ✓</span>
-                        ) : (
-                          <button
-                            onClick={() => handleResend(ticket.id)}
-                            disabled={resending === ticket.id}
-                            className="text-xs font-semibold transition-opacity hover:opacity-70 disabled:opacity-40"
-                            style={{ color: "rgba(0,0,0,0.5)" }}
-                          >
-                            {resending === ticket.id ? "Sending…" : "Resend ticket →"}
-                          </button>
-                        )}
+                      <div className="mt-3 pt-3 flex items-center justify-between gap-3" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+                        {/* Resend */}
+                        <div className="flex items-center gap-3">
+                          {resentIds.has(ticket.id) ? (
+                            <span className="text-xs font-medium" style={{ color: "#16a34a" }}>Resent ✓</span>
+                          ) : (
+                            <button
+                              onClick={() => handleResend(ticket.id)}
+                              disabled={resending === ticket.id}
+                              className="text-xs font-semibold transition-opacity hover:opacity-70 disabled:opacity-40"
+                              style={{ color: "rgba(0,0,0,0.45)" }}
+                            >
+                              {resending === ticket.id ? "Sending…" : "Resend to email →"}
+                            </button>
+                          )}
+                          {!resentIds.has(ticket.id) && (
+                            <span className="text-[10px]" style={{ color: "rgba(0,0,0,0.2)" }}>once only</span>
+                          )}
+                        </div>
+
+                        {/* Download */}
+                        <a
+                          href={`/ticket/${ticket.qr_code}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-75"
+                          style={{ background: "#0a0a0a", color: "#fff" }}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
+                            <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+                          </svg>
+                          Download ticket
+                        </a>
                       </div>
                     )}
                   </div>
