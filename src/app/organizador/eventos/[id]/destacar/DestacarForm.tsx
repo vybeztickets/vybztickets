@@ -205,22 +205,36 @@ export default function DestacarForm({
   // ── CONFIG STATE ──
   return (
     <div className="flex flex-col gap-6">
-      {/* Active featuring banner */}
+      {/* Active featuring — mini invoice */}
       {isActive && active && (
-        <div className="rounded-2xl p-5 flex items-start justify-between gap-4" style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)" }}>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
+        <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(245,158,11,0.25)" }}>
+          <div className="flex items-center justify-between px-5 py-3.5" style={{ background: "rgba(245,158,11,0.07)", borderBottom: "1px solid rgba(245,158,11,0.15)" }}>
+            <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
               <p className="text-[#0a0a0a] font-semibold text-sm">Live on homepage</p>
             </div>
-            <p className="text-[#0a0a0a]/50 text-xs">
-              {fmtDate(active.start_date)} → {fmtDate(active.end_date)} · {active.days} días · ${active.total_cost.toFixed(2)} USD
-            </p>
+            <button onClick={handleCancel} disabled={cancelling}
+              className="text-xs text-[#0a0a0a]/30 hover:text-red-400 transition-colors disabled:opacity-40">
+              {cancelling ? "..." : "Cancel"}
+            </button>
           </div>
-          <button onClick={handleCancel} disabled={cancelling}
-            className="text-xs text-[#0a0a0a]/30 hover:text-red-400 transition-colors shrink-0 disabled:opacity-40">
-            {cancelling ? "..." : "Cancel"}
-          </button>
+          {[
+            { label: "Period", value: `${fmtDate(active.start_date)} → ${fmtDate(active.end_date)}` },
+            { label: "Duration", value: `${active.days} day${active.days !== 1 ? "s" : ""}` },
+            { label: "Rate", value: "$1.00 USD / day" },
+          ].map((row) => (
+            <div key={row.label} className="flex justify-between px-5 py-3" style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+              <span className="text-[#0a0a0a]/40 text-xs">{row.label}</span>
+              <span className="text-[#0a0a0a] text-xs font-medium">{row.value}</span>
+            </div>
+          ))}
+          <div className="flex justify-between px-5 py-3.5" style={{ background: "rgba(0,0,0,0.02)" }}>
+            <span className="text-[#0a0a0a] text-xs font-semibold">Total</span>
+            <span className="text-[#0a0a0a] text-sm font-bold">${active.total_cost.toFixed(2)} USD</span>
+          </div>
+          <div className="px-5 py-2.5" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+            <p className="text-[#0a0a0a]/25 text-[10px]">Deducted from your next payout</p>
+          </div>
         </div>
       )}
 

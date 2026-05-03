@@ -238,6 +238,9 @@ function StaffManager({ eventId }: { eventId: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fetchingStaff, setFetchingStaff] = useState(true);
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => { setOrigin(window.location.origin); }, []);
 
   useEffect(() => {
     fetch(`/api/organizador/scanner-access?event_id=${eventId}`)
@@ -272,7 +275,7 @@ function StaffManager({ eventId }: { eventId: string }) {
         <p className="text-[#0a0a0a]/40 text-xs mt-0.5">
           These people can scan tickets at{" "}
           <span className="font-mono" style={{ color: "rgba(0,0,0,0.5)" }}>
-            {typeof window !== "undefined" ? window.location.origin : ""}/escanear/{eventId}
+            {origin}/escanear/{eventId}
           </span>
         </p>
       </div>

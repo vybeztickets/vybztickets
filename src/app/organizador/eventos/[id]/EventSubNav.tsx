@@ -13,9 +13,9 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Promo codes", path: "codigos" },
   { label: "Orders", path: "pedidos" },
   { label: "Attendees", path: "asistentes" },
-  { label: "Ambassadors", path: "embajadores" },
-  { label: "Revenue", path: "ingreso" },
-  { label: "★ Feature", path: "destacar", highlight: true },
+  { label: "Traffic source", path: "embajadores" },
+  { label: "QR Scan", path: "ingreso" },
+  { label: "Feature", path: "destacar", highlight: true },
 ];
 
 export default function EventSubNav({ eventId }: { eventId: string }) {

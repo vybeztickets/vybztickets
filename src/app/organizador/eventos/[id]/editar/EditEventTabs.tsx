@@ -59,7 +59,6 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
 
   // Design fields
   const [imageUrl, setImageUrl] = useState(str(event.image_url));
-  const [bannerUrl, setBannerUrl] = useState(str(event.banner_url));
   const [venueMapUrl, setVenueMapUrl] = useState(str(event.venue_map_url));
 
   // Form fields
@@ -82,7 +81,7 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
       const body: Record<string, unknown> = {};
       if (tab === "info") Object.assign(body, { name, category, description, date, time, end_time: endTime || null, till_late: tillLate, currency, instagram_url: instagramUrl, facebook_pixel: facebookPixel, google_analytics: googleAnalytics, google_tag_manager: googleTagManager, status });
       if (tab === "location") Object.assign(body, { venue, city, country, location_lat: locationLat ? parseFloat(locationLat) : null, location_lng: locationLng ? parseFloat(locationLng) : null, location_secret: locationSecret });
-      if (tab === "design") Object.assign(body, { image_url: imageUrl, banner_url: bannerUrl, venue_map_url: venueMapUrl });
+      if (tab === "design") Object.assign(body, { image_url: imageUrl, venue_map_url: venueMapUrl });
       if (tab === "form") Object.assign(body, { pre_purchase_message: prePurchaseMessage, post_purchase_message: postPurchaseMessage, terms_conditions: termsConditions, collect_id: collectId });
       if (tab === "ticket") Object.assign(body, { ticket_border_color: borderColor, ticket_text_color: textColor, ticket_bg_color: bgColor, ticket_accent_color: accentColor });
 
@@ -260,20 +259,6 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
             hint="JPG or PNG · shows table positions on the portal"
             aspectRatio="16:9"
           />
-          <div>
-            <label className="block text-[#0a0a0a]/50 text-xs mb-1.5">
-              Homepage banner
-              <span className="ml-2 px-2 py-0.5 rounded-full text-[10px]" style={{ background: "rgba(0,0,0,0.07)", color: "rgba(0,0,0,0.5)" }}>$1/day</span>
-            </label>
-            <ImageUploadField
-              value={bannerUrl}
-              onChange={setBannerUrl}
-              label=""
-              hint="Appears in the main carousel · 1200×400 recommended"
-              aspectRatio="16:9"
-            />
-            <p className="text-[#0a0a0a]/30 text-[10px] mt-1.5">Paid banners are shown in the main homepage carousel.</p>
-          </div>
         </div>
       )}
 
