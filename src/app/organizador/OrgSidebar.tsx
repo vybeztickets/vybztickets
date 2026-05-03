@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 const MAIN_NAV = [
@@ -14,6 +15,7 @@ const MAIN_NAV = [
 export default function OrgSidebar({
   userName,
   userEmail,
+  avatarUrl,
 }: {
   userName: string;
   userEmail: string;
@@ -86,11 +88,14 @@ export default function OrgSidebar({
           </Link>
         )}
 
-        <div
-          className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-          style={{ background: "rgba(255,255,255,0.12)", color: "#fff" }}
+        <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
+          style={{ background: "rgba(255,255,255,0.12)" }}
         >
-          {userName.charAt(0).toUpperCase()}
+          {avatarUrl ? (
+            <Image src={avatarUrl} alt="" width={28} height={28} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xs font-bold text-white">{userName.charAt(0).toUpperCase()}</span>
+          )}
         </div>
       </div>
     </header>
