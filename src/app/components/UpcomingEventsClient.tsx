@@ -40,10 +40,28 @@ function minPrice(ticket_types: TicketType[], currency: string | null) {
     : `${symbol}${min.toLocaleString("en-US")}`;
 }
 
+type TimeFilter = "All" | "This week" | "This month";
+
 export default function UpcomingEventsClient({ events }: { events: UpcomingEvent[] }) {
   const categories = ["All", ...Array.from(new Set(events.map(e => e.category).filter(Boolean) as string[]))];
   const [active, setActive] = useState("All");
-  const filtered = active === "All" ? events : events.filter(e => e.category === active);
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("All");
+
+  const timeFiltered = events.filter((e) => {
+    if (timeFilter === "All") return true;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const eventDate = new Date(e.date + "T00:00:00");
+    if (timeFilter === "This week") {
+      const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7);
+      return eventDate >= today && eventDate <= weekEnd;
+    }
+    if (timeFilter === "This month") {
+      return eventDate.getMonth() === today.getMonth() && eventDate.getFullYear() === today.getFullYear();
+    }
+    return true;
+  });
+
+  const filtered = active === "All" ? timeFiltered : timeFiltered.filter(e => e.category === active);
 
   if (events.length === 0) return null;
 
@@ -73,6 +91,25 @@ export default function UpcomingEventsClient({ events }: { events: UpcomingEvent
             <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
           </Link>
         </Reveal>
+
+        <div className="overflow-x-auto mb-3 -mx-1 px-1">
+          <div className="flex gap-2 w-max">
+            {(["All", "This week", "This month"] as TimeFilter[]).map((tf) => (
+              <button
+                key={tf}
+                onClick={() => setTimeFilter(tf)}
+                className="shrink-0 text-[11px] font-semibold tracking-[0.08em] uppercase px-4 py-2 rounded-full transition-all duration-200"
+                style={
+                  timeFilter === tf
+                    ? { background: "#0a0a0a", color: "#fff" }
+                    : { background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.4)", border: "1px solid rgba(0,0,0,0.07)" }
+                }
+              >
+                {tf}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {categories.length > 1 && (
           <div className="overflow-x-auto mb-8 -mx-1 px-1">
