@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import OrgSidebar from "./OrgSidebar";
 import SuspendedBanner from "./SuspendedBanner";
 
@@ -10,9 +11,16 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, email, avatar_url, role")
+    .select("full_name, email, avatar_url, role, business_details")
     .eq("id", user.id)
     .single();
+
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") ?? "";
+  const organizerType = (profile?.business_details as Record<string, unknown> | null)?.organizer_type;
+  if (!organizerType && !pathname.startsWith("/organizador/configuracion")) {
+    redirect("/organizador/configuracion");
+  }
 
   const role = profile?.role as string | undefined;
   const isSuspended = role === "suspended";

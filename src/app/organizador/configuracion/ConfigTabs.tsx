@@ -44,10 +44,36 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   );
 }
 
-function StatusTab({ role }: { role: string }) {
+type OrgType = "discoteca" | "organizador" | "festival";
+
+const ORG_TYPE_OPTIONS: { value: OrgType; label: string; description: string }[] = [
+  { value: "discoteca", label: "Discoteca / Venue", description: "Tienes un espacio físico con eventos recurrentes" },
+  { value: "organizador", label: "Organizador", description: "Produces eventos en distintos lugares" },
+  { value: "festival", label: "Festival", description: "Eventos multi-artista o multi-jornada" },
+];
+
+function StatusTab({ role, organizerType: initialType }: { role: string; organizerType?: string }) {
   const [requesting, setRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
   const [error, setError] = useState("");
+  const [selectedType, setSelectedType] = useState<OrgType | null>((initialType as OrgType) ?? null);
+  const [typeSaving, setTypeSaving] = useState(false);
+  const [typeSaved, setTypeSaved] = useState(false);
+
+  async function handleSaveType() {
+    if (!selectedType) return;
+    setTypeSaving(true);
+    const res = await fetch("/api/organizador/set-organizer-type", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ organizer_type: selectedType }),
+    });
+    setTypeSaving(false);
+    if (res.ok) {
+      setTypeSaved(true);
+      setTimeout(() => setTypeSaved(false), 2000);
+    }
+  }
 
   async function handleRequest() {
     setRequesting(true); setError("");
@@ -63,7 +89,69 @@ function StatusTab({ role }: { role: string }) {
   const isPending = role === "pending_activation";
 
   return (
-    <div className="max-w-2xl flex flex-col gap-4">
+    <div className="max-w-2xl flex flex-col gap-6">
+
+      {/* Organizer type — always visible, required */}
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <h2 className="text-[#0a0a0a] font-semibold text-lg">Organizer type</h2>
+          {!initialType && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>
+              Required
+            </span>
+          )}
+        </div>
+        <p className="text-[#0a0a0a]/35 text-sm mb-4">Personaliza tu dashboard según cómo usas Vybz.</p>
+
+        <div className="flex flex-col gap-2 mb-4">
+          {ORG_TYPE_OPTIONS.map((opt) => {
+            const isSelected = selectedType === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setSelectedType(opt.value)}
+                className="flex items-center gap-4 px-5 py-4 rounded-2xl text-left transition-all"
+                style={{
+                  background: isSelected ? "#0a0a0a" : "rgba(0,0,0,0.02)",
+                  border: isSelected ? "1px solid #0a0a0a" : "1px solid rgba(0,0,0,0.08)",
+                }}
+              >
+                <div
+                  className="w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center"
+                  style={{ borderColor: isSelected ? "#fff" : "rgba(0,0,0,0.2)" }}
+                >
+                  {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: isSelected ? "#fff" : "#0a0a0a" }}>
+                    {opt.label}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: isSelected ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.35)" }}>
+                    {opt.description}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={handleSaveType}
+          disabled={!selectedType || typeSaving || selectedType === initialType}
+          className="px-6 py-2.5 rounded-full text-sm font-semibold transition-all disabled:opacity-30"
+          style={{
+            background: typeSaved ? "rgba(16,185,129,0.12)" : "#0a0a0a",
+            color: typeSaved ? "#10b981" : "#fff",
+            border: typeSaved ? "1px solid rgba(16,185,129,0.3)" : "none",
+          }}
+        >
+          {typeSaving ? "Guardando…" : typeSaved ? "Guardado" : "Guardar tipo"}
+        </button>
+      </div>
+
+      <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }} />
+
       <div>
         <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Account status</h2>
         <p className="text-[#0a0a0a]/35 text-sm">Your account status is managed by the Vybz team.</p>
@@ -118,7 +206,7 @@ function StatusTab({ role }: { role: string }) {
   );
 }
 
-export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: { profile: Profile | null; userId: string; userEmail: string; initialTeam: TeamMember[] }) {
+export default function ConfigTabs({ profile, userId, userEmail, initialTeam, organizerType }: { profile: Profile | null; userId: string; userEmail: string; initialTeam: TeamMember[]; organizerType?: string }) {
   const [tab, setTab] = useState("Status");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -320,7 +408,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam }: 
 
       {/* Status */}
       {tab === "Status" && (
-        <StatusTab role={profile?.role ?? "organizer"} />
+        <StatusTab role={profile?.role ?? "organizer"} organizerType={organizerType} />
       )}
 
       {/* Profile */}
