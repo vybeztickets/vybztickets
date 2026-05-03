@@ -27,8 +27,8 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Protected routes
-  const protectedPaths = ["/dashboard", "/organizador"];
+  // Protected routes — require authentication
+  const protectedPaths = ["/dashboard", "/organizador", "/transfer", "/mis-tickets"];
   const isProtected = protectedPaths.some((p) =>
     request.nextUrl.pathname.startsWith(p)
   );
@@ -39,6 +39,19 @@ export async function middleware(request: NextRequest) {
     url.searchParams.set("redirectTo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
+
+  // Security headers on every response
+  supabaseResponse.headers.set("X-Frame-Options", "DENY");
+  supabaseResponse.headers.set("X-Content-Type-Options", "nosniff");
+  supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  supabaseResponse.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=()"
+  );
+  supabaseResponse.headers.set(
+    "Strict-Transport-Security",
+    "max-age=63072000; includeSubDomains; preload"
+  );
 
   return supabaseResponse;
 }

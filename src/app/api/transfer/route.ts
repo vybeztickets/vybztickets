@@ -12,6 +12,7 @@ import { randomUUID } from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTicketEmail } from "@/lib/send-ticket-email";
+import { isValidEmail, isValidUUID, isNonEmptyString } from "@/lib/validate";
 
 export async function POST(req: NextRequest) {
   // 1. Auth check
@@ -38,11 +39,14 @@ export async function POST(req: NextRequest) {
 
   const { ticketId, recipientName, recipientEmail, recipientPhone } = body;
 
-  if (!ticketId || !recipientName || !recipientEmail) {
-    return NextResponse.json(
-      { error: "ticketId, recipientName, and recipientEmail are required" },
-      { status: 400 }
-    );
+  if (!isValidUUID(ticketId)) {
+    return NextResponse.json({ error: "Invalid ticket ID" }, { status: 400 });
+  }
+  if (!isNonEmptyString(recipientName)) {
+    return NextResponse.json({ error: "Recipient name is required" }, { status: 400 });
+  }
+  if (!isValidEmail(recipientEmail)) {
+    return NextResponse.json({ error: "Invalid recipient email address" }, { status: 400 });
   }
 
   const admin = createAdminClient();

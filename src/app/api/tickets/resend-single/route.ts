@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTicketEmail } from "@/lib/send-ticket-email";
 import { NextResponse } from "next/server";
+import { isValidUUID } from "@/lib/validate";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { ticketId } = await request.json();
-  if (!ticketId) return NextResponse.json({ error: "Missing ticketId" }, { status: 400 });
+  if (!isValidUUID(ticketId)) return NextResponse.json({ error: "Invalid ticket ID" }, { status: 400 });
 
   const admin = createAdminClient();
 
