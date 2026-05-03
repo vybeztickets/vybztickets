@@ -43,8 +43,6 @@ function minPrice(ticket_types: TicketType[], currency: string | null) {
 type TimeFilter = "All" | "This week" | "This month";
 
 export default function UpcomingEventsClient({ events }: { events: UpcomingEvent[] }) {
-  const categories = ["All", ...Array.from(new Set(events.map(e => e.category).filter(Boolean) as string[]))];
-  const [active, setActive] = useState("All");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("All");
 
   const timeFiltered = events.filter((e) => {
@@ -61,7 +59,7 @@ export default function UpcomingEventsClient({ events }: { events: UpcomingEvent
     return true;
   });
 
-  const filtered = active === "All" ? timeFiltered : timeFiltered.filter(e => e.category === active);
+  const filtered = timeFiltered;
 
   if (events.length === 0) return null;
 
@@ -111,26 +109,6 @@ export default function UpcomingEventsClient({ events }: { events: UpcomingEvent
           </div>
         </div>
 
-        {categories.length > 1 && (
-          <div className="overflow-x-auto mb-8 -mx-1 px-1">
-            <div className="flex gap-2 w-max">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActive(cat)}
-                  className="shrink-0 text-[11px] font-semibold tracking-[0.08em] uppercase px-4 py-2 rounded-full transition-all duration-200"
-                  style={
-                    active === cat
-                      ? { background: "#0a0a0a", color: "#fff" }
-                      : { background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.4)", border: "1px solid rgba(0,0,0,0.07)" }
-                  }
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((event, i) => {
