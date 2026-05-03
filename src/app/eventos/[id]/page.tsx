@@ -7,7 +7,6 @@ import Image from "next/image";
 import Link from "next/link";
 import CheckoutPanel from "./CheckoutPanel";
 import ResendTicket from "./ResendTicket";
-import Countdown from "./Countdown";
 import EventMap from "./EventMap";
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
@@ -131,8 +130,6 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                 {formattedDate}
                 {event.time && <span> · {event.time}{event.till_late ? " – Till late" :event.end_time ? ` – ${event.end_time}` : ""}</span>}
               </p>
-
-              <Countdown date={event.date} time={event.time} />
 
               <h1 className="font-[family-name:var(--font-bebas)] text-4xl md:text-5xl tracking-wide text-[#0a0a0a] mb-3 leading-none">
                 {event.name}

@@ -92,6 +92,7 @@ export default function TransferClient({ tickets, userEmail }: Props) {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [recipientName, setRecipientName] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
+  const [recipientEmailConfirm, setRecipientEmailConfirm] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [dialCode, setDialCode] = useState("+506");
   const [check1, setCheck1] = useState(false);
@@ -109,6 +110,7 @@ export default function TransferClient({ tickets, userEmail }: Props) {
     setSelectedTicket(ticket);
     setRecipientName("");
     setRecipientEmail("");
+    setRecipientEmailConfirm("");
     setRecipientPhone("");
     setDialCode("+506");
     setCheck1(false);
@@ -163,11 +165,13 @@ export default function TransferClient({ tickets, userEmail }: Props) {
     }
   }
 
+  const emailsMatch = recipientEmail.trim().length > 0 && recipientEmail.trim() === recipientEmailConfirm.trim();
+
   const canSubmit =
     check1 &&
     check2 &&
     recipientName.trim().length > 0 &&
-    recipientEmail.trim().length > 0 &&
+    emailsMatch &&
     recipientPhone.trim().length > 0 &&
     !transferring;
 
@@ -401,6 +405,30 @@ export default function TransferClient({ tickets, userEmail }: Props) {
                       className={inputClass}
                       style={inputStyle}
                     />
+                  </div>
+                  <div>
+                    <label
+                      className="block text-xs mb-1"
+                      style={{ color: "rgba(0,0,0,0.45)" }}
+                    >
+                      Confirm email *
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="email@example.com"
+                      value={recipientEmailConfirm}
+                      onChange={(e) => setRecipientEmailConfirm(e.target.value)}
+                      className={inputClass}
+                      style={{
+                        ...inputStyle,
+                        ...(recipientEmailConfirm.length > 0 && !emailsMatch
+                          ? { border: "1px solid rgba(220,38,38,0.4)", background: "rgba(220,38,38,0.04)" }
+                          : {}),
+                      }}
+                    />
+                    {recipientEmailConfirm.length > 0 && !emailsMatch && (
+                      <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Emails don't match</p>
+                    )}
                   </div>
                   <div>
                     <label
