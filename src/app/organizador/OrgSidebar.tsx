@@ -88,15 +88,18 @@ export default function OrgSidebar({
           </Link>
         )}
 
-        <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
+        <Link
+          href="/auth/login"
+          className="w-7 h-7 rounded-full overflow-hidden shrink-0 flex items-center justify-center hover:opacity-70 transition-opacity"
           style={{ background: "rgba(255,255,255,0.12)" }}
+          title="Switch account"
         >
           {avatarUrl ? (
             <Image src={avatarUrl} alt="" width={28} height={28} className="w-full h-full object-cover" />
           ) : (
             <span className="text-xs font-bold text-white">{userName.charAt(0).toUpperCase()}</span>
           )}
-        </div>
+        </Link>
       </div>
     </header>
   );
