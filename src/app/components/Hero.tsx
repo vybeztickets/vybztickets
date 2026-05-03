@@ -73,7 +73,7 @@ export default function Hero() {
               transition: "opacity .8s ease .38s,transform .8s ease .38s",
             }}
           >
-            The complete platform for organizers. Online sales, Point of Sale, mass emails, real-time data and secure resale — all in one.
+            The complete platform for organizers. Online sales, Point of Sale, mass emails, real-time data and secure ticket transfers — all in one.
           </p>
 
           {/* CTAs */}
