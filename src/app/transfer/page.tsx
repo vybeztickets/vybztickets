@@ -35,7 +35,7 @@ export default async function TransferPage() {
     .from("tickets")
     .select(
       `id, qr_code, buyer_name, buyer_email, purchase_price, status, created_at,
-       transferred_from, transferred_to, transferred_at, ticket_type_id,
+       transferred_from, transferred_to, transferred_at, resent_at, ticket_type_id,
        ticket_types(id, name),
        events(id, name, date, time, venue, city, currency)`
     )

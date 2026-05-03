@@ -13,6 +13,7 @@ type Ticket = {
   transferred_from: string | null;
   transferred_to: string | null;
   transferred_at: string | null;
+  resent_at: string | null;
   ticket_types: { id: string; name: string } | null;
   events: {
     id: string;
@@ -101,6 +102,11 @@ export default function TransferClient({ tickets, userEmail }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [localTickets, setLocalTickets] = useState<Ticket[]>(tickets);
+  const [resentIds, setResentIds] = useState<Set<string>>(
+    new Set(tickets.filter((t) => t.resent_at).map((t) => t.id))
+  );
+  const [resending, setResending] = useState<string | null>(null);
+  const [resentError, setResentError] = useState<string | null>(null);
 
   const activeTickets = localTickets.filter(
     (t) => t.status === "active" && t.transferred_from === null
@@ -123,6 +129,32 @@ export default function TransferClient({ tickets, userEmail }: Props) {
     setSelectedTicket(null);
     setError(null);
     setSuccess(false);
+  }
+
+  async function handleResend(ticketId: string) {
+    setResending(ticketId);
+    setResentError(null);
+    try {
+      const res = await fetch("/api/tickets/resend-single", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === "already_resent") {
+          setResentIds((prev) => new Set(prev).add(ticketId));
+        } else {
+          setResentError(data.error ?? "Something went wrong");
+        }
+        return;
+      }
+      setResentIds((prev) => new Set(prev).add(ticketId));
+    } catch {
+      setResentError("Network error. Please try again.");
+    } finally {
+      setResending(null);
+    }
   }
 
   async function handleTransfer() {
@@ -191,6 +223,12 @@ export default function TransferClient({ tickets, userEmail }: Props) {
           <p className="text-sm mb-8" style={{ color: "rgba(0,0,0,0.4)" }}>
             Manage and transfer your tickets
           </p>
+
+          {resentError && (
+            <p className="text-xs mb-4 px-3 py-2 rounded-lg" style={{ background: "rgba(220,38,38,0.07)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.15)" }}>
+              {resentError}
+            </p>
+          )}
 
           {localTickets.length === 0 ? (
             <div
@@ -271,6 +309,29 @@ export default function TransferClient({ tickets, userEmail }: Props) {
                         </button>
                       )}
                     </div>
+
+                    {/* Resend row — only for active tickets */}
+                    {ticket.status === "active" && (
+                      <div className="mt-3 pt-3 flex items-center justify-between" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+                        <p className="text-xs" style={{ color: "rgba(0,0,0,0.3)" }}>
+                          {resentIds.has(ticket.id)
+                            ? "Ticket has already been resent — check your email."
+                            : "Can only be resent once."}
+                        </p>
+                        {resentIds.has(ticket.id) ? (
+                          <span className="text-xs font-medium" style={{ color: "#16a34a" }}>Sent ✓</span>
+                        ) : (
+                          <button
+                            onClick={() => handleResend(ticket.id)}
+                            disabled={resending === ticket.id}
+                            className="text-xs font-semibold transition-opacity hover:opacity-70 disabled:opacity-40"
+                            style={{ color: "rgba(0,0,0,0.5)" }}
+                          >
+                            {resending === ticket.id ? "Sending…" : "Resend ticket →"}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
