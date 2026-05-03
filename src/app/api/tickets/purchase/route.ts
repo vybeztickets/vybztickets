@@ -3,8 +3,14 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { sendTicketEmail } from "@/lib/send-ticket-email";
 import { isValidEmail, isValidUUID, isPositiveInt, isNonEmptyString } from "@/lib/validate";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
+  // 5 purchases per IP per minute
+  if (!checkRateLimit("purchase", getIP(request), 5, 60_000)) {
+    return rateLimitedResponse();
+  }
+
   const body = await request.json();
   const { eventId, ticketTypeId, quantity, buyerEmail, buyerName, buyerPhone, buyerNotes, paxCount, promoCode, discountPercent, marketingOptIn, perTicketData } = body;
 

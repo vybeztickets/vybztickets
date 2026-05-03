@@ -6,8 +6,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTicketEmail } from "@/lib/send-ticket-email";
 import { NextResponse } from "next/server";
 import { isValidUUID } from "@/lib/validate";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
+  // 5 resends per IP per 10 minutes
+  if (!checkRateLimit("resend", getIP(request), 5, 10 * 60_000)) {
+    return rateLimitedResponse();
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

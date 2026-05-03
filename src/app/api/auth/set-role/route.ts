@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createClient as createServerClient } from "@/lib/supabase/server";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 const ALLOWED_INITIAL_ROLES = new Set(["user", "pending_activation"]);
 
 export async function POST(req: Request) {
+  // 5 attempts per IP per 15 minutes
+  if (!checkRateLimit("set-role", getIP(req), 5, 15 * 60_000)) {
+    return rateLimitedResponse();
+  }
+
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

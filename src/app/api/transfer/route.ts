@@ -13,8 +13,14 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTicketEmail } from "@/lib/send-ticket-email";
 import { isValidEmail, isValidUUID, isNonEmptyString } from "@/lib/validate";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function POST(req: NextRequest) {
+  // 3 transfers per IP per hour
+  if (!checkRateLimit("transfer", getIP(req), 3, 60 * 60_000)) {
+    return rateLimitedResponse();
+  }
+
   // 1. Auth check
   const supabase = await createClient();
   const {
