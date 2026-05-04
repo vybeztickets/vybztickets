@@ -15,14 +15,15 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
     .eq("id", user.id)
     .single();
 
+  const p = profile as any;
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") ?? "";
-  const organizerType = (profile?.business_details as Record<string, unknown> | null)?.organizer_type;
+  const organizerType = (p?.business_details as Record<string, unknown> | null)?.organizer_type;
   if (!organizerType && !pathname.startsWith("/organizador/configuracion")) {
     redirect("/organizador/configuracion");
   }
 
-  const role = profile?.role as string | undefined;
+  const role = p?.role as string | undefined;
   const isSuspended = role === "suspended";
   const isPending = role === "pending_activation";
   const showBanner = isSuspended || isPending;
@@ -30,9 +31,9 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen" style={{ background: "#ffffff", paddingLeft: "220px" }}>
       <OrgSidebar
-        userName={profile?.full_name ?? user.email ?? ""}
-        userEmail={profile?.email ?? user.email ?? ""}
-        avatarUrl={profile?.avatar_url ?? null}
+        userName={p?.full_name ?? user.email ?? ""}
+        userEmail={p?.email ?? user.email ?? ""}
+        avatarUrl={p?.avatar_url ?? null}
       />
       <div className="flex flex-col min-h-screen">
         {showBanner && <SuspendedBanner isPending={isPending} />}
