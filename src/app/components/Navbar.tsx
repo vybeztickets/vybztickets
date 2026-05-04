@@ -45,6 +45,12 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="flex items-center gap-3">
+          <Link
+            href="/auth/login"
+            className="hidden md:inline-flex items-center px-5 py-2.5 text-sm font-medium text-[#0a0a0a] border border-[#0a0a0a]/20 rounded-full hover:border-[#0a0a0a]/60 transition-colors"
+          >
+            Login
+          </Link>
           <StarButton
             href="/auth/login?redirectTo=/organizador/eventos/nuevo"
             dark
@@ -81,6 +87,7 @@ export default function Navbar() {
         >
           {[
             { label: "Events", href: "/eventos" },
+            { label: "Login", href: "/auth/login" },
             { label: "Create event", href: "/auth/login?redirectTo=/organizador/eventos/nuevo" },
           ].map(({ label, href }) => (
             <Link
@@ -92,13 +99,6 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
-          <Link
-            href="/eventos"
-            className="bg-[#0a0a0a] text-white text-sm font-semibold px-5 py-3 rounded-full text-center mt-1"
-            onClick={() => setMenuOpen(false)}
-          >
-            Browse events →
-          </Link>
         </div>
       )}
     </nav>

@@ -17,8 +17,9 @@ export default function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [roleChoice, setRoleChoice] = useState<"attendee" | "organizer">("attendee");
   const [loading, setLoading] = useState(false);
+
+  const isOrganizerFlow = redirectTo.includes("/organizador");
   const [error, setError] = useState(urlError ?? "");
   const [success, setSuccess] = useState("");
 
@@ -28,7 +29,7 @@ export default function LoginForm({
   async function handleGoogle() {
     setLoading(true);
     if (tab === "signup") {
-      localStorage.setItem("vybz_pending_role", roleChoice === "organizer" ? "pending_activation" : "user");
+      localStorage.setItem("vybz_pending_role", isOrganizerFlow ? "pending_activation" : "user");
     }
     const callbackRedirect = tab === "signup"
       ? `${window.location.origin}/auth/callback?redirectTo=/auth/choose-role&then=${encodeURIComponent(redirectTo)}`
@@ -60,7 +61,7 @@ export default function LoginForm({
       if (error) { setError(error.message); setLoading(false); return; }
 
       if (data.user) {
-        const role = roleChoice === "organizer" ? "pending_activation" : "user";
+        const role = isOrganizerFlow ? "pending_activation" : "user";
         await fetch("/api/auth/set-role", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -99,29 +100,6 @@ export default function LoginForm({
         ))}
       </div>
 
-      {/* Role selector — shown in signup tab above all auth options */}
-      {tab === "signup" && (
-        <div className="flex rounded-xl overflow-hidden mb-6" style={{ border: "1.5px solid rgba(0,0,0,0.1)" }}>
-          {([
-            { value: "attendee", label: "Attendee", sub: "Buy tickets" },
-            { value: "organizer", label: "Organizer", sub: "Sell tickets" },
-          ] as const).map(({ value, label, sub }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setRoleChoice(value)}
-              className="flex-1 py-3 px-3 text-left transition-all"
-              style={{
-                background: roleChoice === value ? "#0a0a0a" : "rgba(0,0,0,0.02)",
-                borderRight: value === "attendee" ? "1px solid rgba(0,0,0,0.1)" : undefined,
-              }}
-            >
-              <p className="text-xs font-semibold" style={{ color: roleChoice === value ? "#fff" : "#0a0a0a" }}>{label}</p>
-              <p className="text-[10px]" style={{ color: roleChoice === value ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.35)" }}>{sub}</p>
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Google */}
       <button

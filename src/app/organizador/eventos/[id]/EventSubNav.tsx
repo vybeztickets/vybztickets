@@ -14,7 +14,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Orders", path: "pedidos" },
   { label: "Attendees", path: "asistentes" },
   { label: "Traffic source", path: "embajadores" },
-  { label: "QR Scan", path: "ingreso" },
   { label: "Feature", path: "destacar", highlight: true },
 ];
 

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ImageUploadField from "@/app/components/ImageUploadField";
 
-type TeamMember = { id: string; member_email: string; role: string; created_at: string };
 type CustomLink = { name: string; url: string };
 
 const TABS = ["Status", "Profile", "Brand image", "Security", "Business details", "Taxes", "Notifications"];
@@ -206,7 +205,278 @@ function StatusTab({ role, organizerType: initialType }: { role: string; organiz
   );
 }
 
-export default function ConfigTabs({ profile, userId, userEmail, initialTeam, organizerType }: { profile: Profile | null; userId: string; userEmail: string; initialTeam: TeamMember[]; organizerType?: string }) {
+// ── Access code types ────────────────────────────────────────────────────────
+
+type ScanSession = {
+  id: string;
+  code: string;
+  type: string;
+  label: string | null;
+  is_active: boolean;
+  last_active_at: string | null;
+  created_at: string;
+};
+
+type OrgEvent = { id: string; name: string; date: string };
+
+function formatCode(code: string) {
+  return `${code.slice(0, 3)}-${code.slice(3)}`;
+}
+
+function connectionStatus(last_active_at: string | null): "connected" | "idle" | "offline" {
+  if (!last_active_at) return "offline";
+  const diff = Date.now() - new Date(last_active_at).getTime();
+  if (diff < 90_000) return "connected";
+  if (diff < 300_000) return "idle";
+  return "offline";
+}
+
+const STATUS_DOT: Record<string, string> = {
+  connected: "#10b981",
+  idle: "#f59e0b",
+  offline: "rgba(0,0,0,0.18)",
+};
+const STATUS_LABEL: Record<string, string> = {
+  connected: "Connected",
+  idle: "Idle",
+  offline: "Not connected",
+};
+const TYPE_URLS: Record<string, string> = {
+  scanner: "/scan",
+  pos: "/pos",
+  cashier: "/cashier",
+};
+const TYPE_NAMES: Record<string, string> = {
+  scanner: "Scanner",
+  pos: "POS",
+  cashier: "Front Desk",
+};
+
+function nextSlotNumber(codes: ScanSession[], type: string): number {
+  const prefix = TYPE_NAMES[type];
+  const used = codes
+    .filter(c => c.is_active && c.label?.startsWith(`${prefix} `))
+    .map(c => parseInt(c.label!.slice(prefix.length + 1)) || 0);
+  let n = 1;
+  while (used.includes(n)) n++;
+  return n;
+}
+
+// ── AccessCodeManager ────────────────────────────────────────────────────────
+
+function AccessCodeManager({ eventId, type }: { eventId: string; type: "scanner" | "pos" | "cashier" }) {
+  const [codes, setCodes] = useState<ScanSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [loggingOut, setLoggingOut] = useState<string | null>(null);
+  const [origin, setOrigin] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/organizador/scan-codes?event_id=${eventId}&type=${type}`)
+      .then(r => r.json())
+      .then(d => {
+        setCodes((d.codes ?? []).filter((c: ScanSession) => c.type === type));
+        setLoading(false);
+      });
+  }, [eventId, type]);
+
+  async function addSlot() {
+    setCreating(true);
+    const n = nextSlotNumber(codes, type);
+    const res = await fetch("/api/organizador/scan-codes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event_id: eventId, label: `${TYPE_NAMES[type]} ${n}`, type }),
+    });
+    const data = await res.json();
+    if (res.ok) setCodes(prev => [data.session, ...prev]);
+    setCreating(false);
+  }
+
+  async function logout(id: string) {
+    setLoggingOut(id);
+    const res = await fetch(`/api/organizador/scan-codes/${id}`, { method: "PATCH" });
+    const data = await res.json();
+    if (res.ok) setCodes(prev => prev.map(c => c.id === id ? { ...data.session, last_active_at: null } : c));
+    setLoggingOut(null);
+  }
+
+  async function remove(id: string) {
+    // Regenerate first to kick any active device, then delete
+    await fetch(`/api/organizador/scan-codes/${id}`, { method: "PATCH" });
+    await fetch(`/api/organizador/scan-codes/${id}`, { method: "DELETE" });
+    setCodes(prev => prev.filter(c => c.id !== id));
+  }
+
+  const activeCodes = codes.filter(c => c.is_active);
+  const url = `${origin}${TYPE_URLS[type]}`;
+
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+      {/* Header */}
+      <div className="px-5 py-4 flex items-center justify-between gap-4" style={{ background: "#f7f7f7", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+        <div className="flex-1 min-w-0">
+          <p className="text-[#0a0a0a] font-semibold text-sm">{TYPE_NAMES[type]} access</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-[#0a0a0a]/35 text-xs font-mono truncate">{url}</p>
+            <button
+              onClick={() => { navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+              className="shrink-0 px-2 py-0.5 rounded text-[10px] font-medium transition-colors"
+              style={{ background: copied ? "rgba(16,185,129,0.12)" : "rgba(0,0,0,0.06)", color: copied ? "#10b981" : "rgba(0,0,0,0.4)" }}
+            >
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+        </div>
+        <button
+          onClick={addSlot}
+          disabled={creating}
+          className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-40"
+          style={{ background: "#0a0a0a" }}
+        >
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/>
+          </svg>
+          {creating ? "Adding..." : `Add ${TYPE_NAMES[type].toLowerCase()}`}
+        </button>
+      </div>
+
+      {/* Slots */}
+      <div className="p-4 space-y-2.5">
+        {loading ? (
+          <p className="text-[#0a0a0a]/25 text-sm text-center py-4">Loading...</p>
+        ) : activeCodes.length === 0 ? (
+          <p className="text-[#0a0a0a]/25 text-sm text-center py-6">No active {TYPE_NAMES[type].toLowerCase()} slots</p>
+        ) : (
+          activeCodes.map(c => {
+            const status = connectionStatus(c.last_active_at);
+            const isLoggingOut = loggingOut === c.id;
+            return (
+              <div
+                key={c.id}
+                className="flex items-center gap-3 px-4 py-3.5 rounded-2xl"
+                style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}
+              >
+                <div
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ background: STATUS_DOT[status], boxShadow: status === "connected" ? `0 0 5px ${STATUS_DOT.connected}` : "none" }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-[#0a0a0a] text-sm font-semibold">{c.label ?? TYPE_NAMES[type]}</p>
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.4)" }}>
+                      {STATUS_LABEL[status]}
+                    </span>
+                  </div>
+                  <p
+                    className="font-[family-name:var(--font-bebas)] mt-0.5"
+                    style={{ fontSize: 20, letterSpacing: "0.25em", color: isLoggingOut ? "rgba(0,0,0,0.2)" : "#0a0a0a" }}
+                  >
+                    {formatCode(c.code)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {/* Logout — regenerates code, kicks device out */}
+                  <button
+                    onClick={() => logout(c.id)}
+                    disabled={isLoggingOut}
+                    title="Force logout — generates new code"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-30"
+                    style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.5)" }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={isLoggingOut ? "animate-spin" : ""}>
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Logout
+                  </button>
+                  {/* Delete — removes slot permanently */}
+                  <button
+                    onClick={() => remove(c.id)}
+                    title="Remove slot"
+                    className="p-1.5 rounded-lg transition-colors"
+                    style={{ background: "rgba(239,68,68,0.06)", color: "#ef4444" }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── SecurityTab ───────────────────────────────────────────────────────────────
+
+function SecurityTab() {
+  const [events, setEvents] = useState<OrgEvent[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/organizador/eventos?limit=50")
+      .then(r => r.json())
+      .then(d => {
+        const list: OrgEvent[] = (d.events ?? d ?? []).map((e: any) => ({ id: e.id, name: e.name, date: e.date }));
+        setEvents(list);
+        if (list.length > 0) setSelectedEventId(list[0].id);
+        setLoadingEvents(false);
+      })
+      .catch(() => setLoadingEvents(false));
+  }, []);
+
+  return (
+    <div className="max-w-2xl flex flex-col gap-6">
+      <div>
+        <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Access management</h2>
+        <p className="text-[#0a0a0a]/35 text-sm">Manage Scanner, POS and Cashier access codes per event.</p>
+      </div>
+
+      {/* Event selector */}
+      {loadingEvents ? (
+        <p className="text-[#0a0a0a]/25 text-sm">Loading events...</p>
+      ) : events.length === 0 ? (
+        <p className="text-[#0a0a0a]/25 text-sm">No events found. Create an event first.</p>
+      ) : (
+        <>
+          <div>
+            <label className="block text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-2">Event</label>
+            <select
+              value={selectedEventId ?? ""}
+              onChange={e => setSelectedEventId(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] focus:outline-none"
+              style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)" }}
+            >
+              {events.map(e => (
+                <option key={e.id} value={e.id}>{e.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {selectedEventId && (
+            <div className="flex flex-col gap-4">
+              <AccessCodeManager key={`scanner-${selectedEventId}`} eventId={selectedEventId} type="scanner" />
+              <AccessCodeManager key={`pos-${selectedEventId}`} eventId={selectedEventId} type="pos" />
+              <AccessCodeManager key={`cashier-${selectedEventId}`} eventId={selectedEventId} type="cashier" />
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Main ConfigTabs ───────────────────────────────────────────────────────────
+
+export default function ConfigTabs({ profile, userId, userEmail, organizerType }: { profile: Profile | null; userId: string; userEmail: string; organizerType?: string }) {
   const [tab, setTab] = useState("Status");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -259,53 +529,12 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam, or
   const [bizSaved, setBizSaved] = useState(false);
   const [bizError, setBizError] = useState("");
 
-  // Equipo
-  const [team, setTeam] = useState<TeamMember[]>(initialTeam);
-  const [addingMember, setAddingMember] = useState(false);
-  const [newMemberEmail, setNewMemberEmail] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState("checkin");
-  const [teamSaving, setTeamSaving] = useState(false);
-  const [teamError, setTeamError] = useState("");
 
   // Notificaciones
   const [notifyEmail, setNotifyEmail] = useState(userEmail);
   const [notifyCourtesy, setNotifyCourtesy] = useState(true);
   const [notifyPayments, setNotifyPayments] = useState(true);
   const [notifyRefunds, setNotifyRefunds] = useState(true);
-
-  async function handleAddMember(e: React.FormEvent) {
-    e.preventDefault();
-    setTeamSaving(true);
-    setTeamError("");
-    const res = await fetch("/api/organizador/equipo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: newMemberEmail, role: newMemberRole }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setTeamError(data.error ?? "Error adding member");
-    } else {
-      setTeam((t) => [...t, data as TeamMember]);
-      setNewMemberEmail("");
-      setAddingMember(false);
-    }
-    setTeamSaving(false);
-  }
-
-  async function handleRemoveMember(id: string) {
-    await fetch(`/api/organizador/equipo?id=${id}`, { method: "DELETE" });
-    setTeam((t) => t.filter((m) => m.id !== id));
-  }
-
-  async function handleChangeRole(id: string, role: string) {
-    setTeam((t) => t.map((m) => m.id === id ? { ...m, role } : m));
-    await fetch("/api/organizador/equipo", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, role }),
-    });
-  }
 
   async function handleSavePerfil(e: React.FormEvent) {
     e.preventDefault();
@@ -606,133 +835,7 @@ export default function ConfigTabs({ profile, userId, userEmail, initialTeam, or
       )}
 
       {/* Security */}
-      {tab === "Security" && (
-        <div className="max-w-2xl flex flex-col gap-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-[#0a0a0a] font-semibold text-lg">Team</h2>
-              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Add members with Check-in role for your event QR scanner.</p>
-            </div>
-            <button
-              onClick={() => { setAddingMember((v) => !v); setTeamError(""); }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
-              style={{ background: addingMember ? "rgba(0,0,0,0.06)" : "#0a0a0a", color: addingMember ? "#0a0a0a" : "#fff" }}
-            >
-              {addingMember ? "Cancel" : "+ Add"}
-            </button>
-          </div>
-
-          {/* Tabla */}
-          <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
-            {/* Header row */}
-            <div
-              className="grid text-[10px] font-semibold uppercase tracking-wider px-5 py-3"
-              style={{
-                gridTemplateColumns: "minmax(0,1fr) 110px 44px",
-                background: "rgba(0,0,0,0.03)",
-                color: "rgba(0,0,0,0.3)",
-                borderBottom: "1px solid rgba(0,0,0,0.07)",
-              }}
-            >
-              <div>Member</div><div>Role</div><div />
-            </div>
-
-            {/* Owner */}
-            <div
-              className="grid items-center px-5 py-4"
-              style={{ gridTemplateColumns: "minmax(0,1fr) 110px 44px", borderBottom: team.length > 0 || addingMember ? "1px solid rgba(0,0,0,0.05)" : "none" }}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#0a0a0a", color: "#fff" }}>
-                  {userEmail.charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[#0a0a0a] text-sm font-medium truncate">{userEmail}</p>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>You</span>
-                </div>
-              </div>
-              <span className="text-[#0a0a0a]/50 text-xs">Owner</span>
-              <div />
-            </div>
-
-            {/* Team members */}
-            {team.map((m, i) => (
-              <div
-                key={m.id}
-                className="grid items-center px-5 py-4"
-                style={{ gridTemplateColumns: "minmax(0,1fr) 110px 44px", borderBottom: i < team.length - 1 || addingMember ? "1px solid rgba(0,0,0,0.05)" : "none" }}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "rgba(0,0,0,0.07)", color: "rgba(0,0,0,0.4)" }}>
-                    {m.member_email.charAt(0).toUpperCase()}
-                  </div>
-                  <p className="text-[#0a0a0a]/70 text-sm truncate">{m.member_email}</p>
-                </div>
-                <select
-                  value={m.role}
-                  onChange={(e) => handleChangeRole(m.id, e.target.value)}
-                  className="text-xs text-[#0a0a0a]/60 focus:outline-none rounded-lg px-2 py-1 transition-colors hover:bg-black/5"
-                  style={{ background: "transparent", border: "1px solid transparent" }}
-                  onFocus={(e) => e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)"}
-                  onBlur={(e) => e.currentTarget.style.borderColor = "transparent"}
-                >
-                  <option value="checkin">Check-in</option>
-                  <option value="stats">Statistics</option>
-                  <option value="pos">POS</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => handleRemoveMember(m.id)}
-                    className="text-[#0a0a0a]/20 hover:text-red-400 transition-colors"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {/* Inline add form */}
-            {addingMember && (
-              <form onSubmit={handleAddMember} className="flex items-center gap-3 px-5 py-4" style={{ background: "rgba(0,0,0,0.015)" }}>
-                <input
-                  type="email"
-                  required
-                  placeholder="email@example.com"
-                  value={newMemberEmail}
-                  onChange={(e) => setNewMemberEmail(e.target.value)}
-                  className="flex-1 px-3 py-2 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none"
-                  style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.1)" }}
-                />
-                <select
-                  value={newMemberRole}
-                  onChange={(e) => setNewMemberRole(e.target.value)}
-                  className="px-3 py-2 rounded-xl text-sm text-[#0a0a0a]/70 focus:outline-none"
-                  style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.1)" }}
-                >
-                  <option value="checkin">Check-in</option>
-                  <option value="stats">Statistics</option>
-                  <option value="pos">POS</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <button
-                  type="submit"
-                  disabled={teamSaving}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold disabled:opacity-40"
-                  style={{ background: "#0a0a0a", color: "#fff" }}
-                >
-                  {teamSaving ? "..." : "Add"}
-                </button>
-              </form>
-            )}
-          </div>
-
-          {teamError && <p className="text-red-400 text-xs">{teamError}</p>}
-        </div>
-      )}
+      {tab === "Security" && <SecurityTab />}
 
       {/* Business details */}
       {tab === "Business details" && (

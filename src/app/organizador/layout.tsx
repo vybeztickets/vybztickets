@@ -28,13 +28,13 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
   const showBanner = isSuspended || isPending;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#ffffff" }}>
+    <div className="min-h-screen" style={{ background: "#ffffff", paddingLeft: "220px" }}>
       <OrgSidebar
         userName={profile?.full_name ?? user.email ?? ""}
         userEmail={profile?.email ?? user.email ?? ""}
         avatarUrl={profile?.avatar_url ?? null}
       />
-      <div className="flex-1 flex flex-col" style={{ paddingTop: "56px" }}>
+      <div className="flex flex-col min-h-screen">
         {showBanner && <SuspendedBanner isPending={isPending} />}
         <main className="flex-1">{children}</main>
       </div>
