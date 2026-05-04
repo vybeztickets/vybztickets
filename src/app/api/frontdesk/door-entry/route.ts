@@ -1,6 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
 
 async function verifyCode(admin: ReturnType<typeof createAdminClient>, code: string, eventId: string) {
   const { data } = await (admin as any)
@@ -33,7 +32,7 @@ export async function POST(request: Request) {
     tickets.push({
       event_id: eventId,
       ticket_type_id: ticketTypeId,
-      qr_code: uuidv4(),
+      qr_code: crypto.randomUUID(),
       status: "active",
       buyer_name: name || "Door entry",
       buyer_email: email || `door-${Date.now()}-${i}@frontdesk.local`,
