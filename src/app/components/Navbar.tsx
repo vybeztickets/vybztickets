@@ -43,9 +43,6 @@ export default function Navbar() {
 
         {/* Nav links — absolutely centered */}
         <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-          <Link href="/eventos" className="text-[#0a0a0a]/50 hover:text-[#0a0a0a] transition-colors text-sm font-medium tracking-wide">
-            Events
-          </Link>
         </div>
 
         {/* CTA */}
@@ -108,7 +105,6 @@ export default function Navbar() {
           style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(20px)", borderColor: "rgba(0,0,0,0.06)" }}
         >
           {[
-            { label: "Events", href: "/eventos" },
             { label: isLoggedIn ? "My account" : "Login", href: isLoggedIn ? "/cuenta" : "/auth/login?redirectTo=/cuenta" },
             { label: "Create event", href: "/organizador" },
           ].map(({ label, href }) => (
