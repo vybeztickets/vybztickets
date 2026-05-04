@@ -51,14 +51,14 @@ export default function Navbar() {
             <>
               {isLoggedIn ? (
                 <Link
-                  href="/cuenta"
+                  href="/transfer"
                   className="hidden md:inline-flex items-center px-5 py-2.5 text-sm font-medium text-[#0a0a0a] border border-[#0a0a0a]/20 rounded-full hover:border-[#0a0a0a]/60 transition-colors"
                 >
                   My account
                 </Link>
               ) : (
                 <Link
-                  href="/auth/login?redirectTo=/cuenta"
+                  href="/auth/login?redirectTo=/transfer"
                   className="hidden md:inline-flex items-center px-5 py-2.5 text-sm font-medium text-[#0a0a0a] border border-[#0a0a0a]/20 rounded-full hover:border-[#0a0a0a]/60 transition-colors"
                 >
                   Login
@@ -105,7 +105,7 @@ export default function Navbar() {
           style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(20px)", borderColor: "rgba(0,0,0,0.06)" }}
         >
           {[
-            { label: isLoggedIn ? "My account" : "Login", href: isLoggedIn ? "/cuenta" : "/auth/login?redirectTo=/cuenta" },
+            { label: isLoggedIn ? "My account" : "Login", href: isLoggedIn ? "/transfer" : "/auth/login?redirectTo=/transfer" },
             { label: "Create event", href: "/organizador" },
           ].map(({ label, href }) => (
             <Link

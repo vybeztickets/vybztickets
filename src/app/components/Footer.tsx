@@ -12,7 +12,7 @@ const LINKS: Record<string, { label: string; href: string }[]> = {
   ],
   "My account": [
     { label: "Sign in", href: "/auth/login" },
-    { label: "My tickets", href: "/mis-tickets" },
+    { label: "My tickets", href: "/transfer" },
     { label: "Transfer a ticket", href: "/transfer" },
     { label: "Terms of use", href: "/terminos" },
     { label: "Privacy", href: "/privacidad" },
