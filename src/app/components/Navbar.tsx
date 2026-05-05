@@ -41,28 +41,28 @@ export default function Navbar() {
           VYBZ
         </Link>
 
-        {/* Nav links — absolutely centered */}
-        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-        </div>
-
         {/* CTA */}
         <div className="flex items-center gap-3">
           {authChecked && (
             <>
               {isLoggedIn ? (
-                <Link
+                <a
                   href="/transfer"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="hidden md:inline-flex items-center px-5 py-2.5 text-sm font-medium text-[#0a0a0a] border border-[#0a0a0a]/20 rounded-full hover:border-[#0a0a0a]/60 transition-colors"
                 >
                   My account
-                </Link>
+                </a>
               ) : (
-                <Link
+                <a
                   href="/auth/login?redirectTo=/transfer"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="hidden md:inline-flex items-center px-5 py-2.5 text-sm font-medium text-[#0a0a0a] border border-[#0a0a0a]/20 rounded-full hover:border-[#0a0a0a]/60 transition-colors"
                 >
                   Login
-                </Link>
+                </a>
               )}
             </>
           )}
@@ -70,6 +70,8 @@ export default function Navbar() {
           <StarButton
             href="/organizador"
             dark
+            target="_blank"
+            rel="noopener noreferrer"
             className="hidden md:inline-flex py-2.5 px-5 text-sm"
           >
             Create event
@@ -108,14 +110,16 @@ export default function Navbar() {
             { label: isLoggedIn ? "My account" : "Login", href: isLoggedIn ? "/transfer" : "/auth/login?redirectTo=/transfer" },
             { label: "Create event", href: "/organizador" },
           ].map(({ label, href }) => (
-            <Link
+            <a
               key={label}
               href={href}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[#0a0a0a]/60 hover:text-[#0a0a0a] transition-colors text-sm font-medium"
               onClick={() => setMenuOpen(false)}
             >
               {label}
-            </Link>
+            </a>
           ))}
         </div>
       )}

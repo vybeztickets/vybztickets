@@ -1,19 +1,19 @@
 import Link from "next/link";
 
-const LINKS: Record<string, { label: string; href: string }[]> = {
+const LINKS: Record<string, { label: string; href: string; newTab?: boolean }[]> = {
   Events: [
     { label: "All events", href: "/eventos" },
     { label: "This week", href: "/eventos?filter=week" },
     { label: "This month", href: "/eventos?filter=month" },
   ],
   Organizers: [
-    { label: "Create event", href: "/organizador/eventos/nuevo" },
-    { label: "Dashboard", href: "/organizador" },
+    { label: "Create event", href: "/organizador/eventos/nuevo", newTab: true },
+    { label: "Dashboard", href: "/organizador", newTab: true },
   ],
   "My account": [
     { label: "Sign in", href: "/auth/login" },
-    { label: "My tickets", href: "/transfer" },
-    { label: "Transfer a ticket", href: "/transfer" },
+    { label: "My tickets", href: "/transfer", newTab: true },
+    { label: "Transfer a ticket", href: "/transfer", newTab: true },
     { label: "Terms of use", href: "/terminos" },
     { label: "Privacy", href: "/privacidad" },
   ],
@@ -30,7 +30,7 @@ export default function Footer() {
   const cta = {
     title: "Hosting an event?",
     desc: "Sell tickets with the most complete event platform.",
-    primary: { href: "/auth/login?redirectTo=/organizador/eventos/nuevo", label: "Start for free →" },
+    primary: { href: "/organizador", label: "Start for free →" },
     secondary: { href: "mailto:hola@vybztickets.com", label: "Talk to sales" },
   };
 
@@ -46,19 +46,21 @@ export default function Footer() {
             <p className="text-white/25 text-sm">{cta.desc}</p>
           </div>
           <div className="flex gap-3 shrink-0">
-            <Link
+            <a
               href={cta.primary.href}
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-white text-[#0a0a0a] text-sm font-semibold px-6 py-3 rounded-full hover:bg-white/90 transition-colors inline-block"
             >
               {cta.primary.label}
-            </Link>
-            <Link
+            </a>
+            <a
               href={cta.secondary.href}
               className="text-white/40 hover:text-white text-sm px-6 py-3 rounded-full transition-colors"
               style={{ border: "1px solid rgba(255,255,255,0.1)" }}
             >
               {cta.secondary.label}
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -100,9 +102,20 @@ export default function Footer() {
               <ul className="space-y-2.5">
                 {items.map((item) => (
                   <li key={item.label}>
-                    <Link href={item.href} className="text-white/20 hover:text-white/50 text-sm transition-colors">
-                      {item.label}
-                    </Link>
+                    {item.newTab ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-white/20 hover:text-white/50 text-sm transition-colors"
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <Link href={item.href} className="text-white/20 hover:text-white/50 text-sm transition-colors">
+                        {item.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
