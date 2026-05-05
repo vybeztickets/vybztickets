@@ -15,20 +15,16 @@ export default function PlatformNavbar() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <a
+          <Link
             href="/organizador"
-            target="_blank"
-            rel="noopener noreferrer"
             className="hidden md:inline-flex items-center px-5 py-2.5 text-sm font-medium text-[#0a0a0a] border border-[#0a0a0a]/20 rounded-full hover:border-[#0a0a0a]/60 transition-colors"
           >
             My account
-          </a>
+          </Link>
 
           <StarButton
             href="/organizador"
             dark
-            target="_blank"
-            rel="noopener noreferrer"
             className="hidden md:inline-flex py-2.5 px-5 text-sm"
           >
             Create event
@@ -61,21 +57,12 @@ export default function PlatformNavbar() {
           className="md:hidden py-5 px-6 flex flex-col gap-4 border-t"
           style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(20px)", borderColor: "rgba(0,0,0,0.06)" }}
         >
-          {[
-            { label: "My account", href: "/organizador" },
-            { label: "Create event", href: "/organizador" },
-          ].map(({ label, href }) => (
-            <a
-              key={label}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#0a0a0a]/60 hover:text-[#0a0a0a] transition-colors text-sm font-medium"
-              onClick={() => setMenuOpen(false)}
-            >
-              {label}
-            </a>
-          ))}
+          <Link href="/organizador" className="text-[#0a0a0a]/60 hover:text-[#0a0a0a] transition-colors text-sm font-medium" onClick={() => setMenuOpen(false)}>
+            My account
+          </Link>
+          <Link href="/organizador" className="text-[#0a0a0a]/60 hover:text-[#0a0a0a] transition-colors text-sm font-medium" onClick={() => setMenuOpen(false)}>
+            Create event
+          </Link>
         </div>
       )}
     </nav>
