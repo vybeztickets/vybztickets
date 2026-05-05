@@ -8,7 +8,7 @@ type TicketType = { id: string; price: number; total_available: number; sold_cou
 type Event = {
   id: string; name: string; description: string | null; date: string; time: string;
   venue: string; city: string; country: string; category: string;
-  image_url: string | null; status: string; ticket_types: TicketType[];
+  image_url: string | null; status: string; currency: string | null; ticket_types: TicketType[];
 };
 
 const TIME_FILTERS = ["All", "This week", "This month"] as const;
@@ -41,7 +41,12 @@ function formatDate(d: string) {
     weekday: date.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(),
   };
 }
-function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
+function formatPrice(n: number, currency: string | null) {
+  if (currency === "USD") return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (n >= 1_000_000) return "₡" + (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return "₡" + (n / 1_000).toFixed(0) + "K";
+  return "₡" + n.toLocaleString("es-CR");
+}
 
 const FILTER_MAP: Record<string, TimeFilter> = { week: "This week", month: "This month" };
 
@@ -173,7 +178,7 @@ export default function EventsGrid({ events, initialFilter }: { events: Event[];
                       {minPrice !== null ? (
                         <>
                           <p className="text-[#0a0a0a]/25 text-[9px] uppercase tracking-wider">From</p>
-                          <p className="text-[#0a0a0a] font-bold text-base">{formatPrice(minPrice)}</p>
+                          <p className="text-[#0a0a0a] font-bold text-base">{formatPrice(minPrice, event.currency)}</p>
                         </>
                       ) : (
                         <p className="text-[#0a0a0a]/30 text-sm">No tickets</p>

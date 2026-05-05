@@ -35,7 +35,7 @@ export default function DashboardCharts({ chartData, currency = "CRC" }: { chart
         <p className="text-[#0a0a0a]/35 text-[10px] uppercase tracking-[0.18em] mb-1">Gross volume · Last 28 days</p>
         <p className="font-[family-name:var(--font-bebas)] text-4xl text-[#0a0a0a] leading-none mb-4">{fmt(totalRevenue)}</p>
         <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={chartData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 0, left: 10, bottom: 0 }}>
             <defs>
               <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#0a0a0a" stopOpacity={0.1} />
@@ -43,7 +43,7 @@ export default function DashboardCharts({ chartData, currency = "CRC" }: { chart
               </linearGradient>
             </defs>
             <XAxis dataKey="date" tickFormatter={shortDate} tick={tickStyle} axisLine={false} tickLine={false} interval={6} />
-            <YAxis tickFormatter={fmt} tick={tickStyle} axisLine={false} tickLine={false} width={52} allowDecimals={false} />
+            <YAxis tickFormatter={fmt} tick={tickStyle} axisLine={false} tickLine={false} width={70} allowDecimals={false} />
             <Tooltip contentStyle={tooltipStyle} formatter={((v: number) => [fmt(v), "Revenue"]) as any} labelFormatter={shortDate as any} />
             <Area type="monotone" dataKey="revenue" stroke="#0a0a0a" strokeWidth={2} fill="url(#revGrad)" />
           </AreaChart>

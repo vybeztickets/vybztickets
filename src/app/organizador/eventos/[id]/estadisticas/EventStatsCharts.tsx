@@ -23,7 +23,7 @@ export default function EventStatsCharts({ data, currency = "CRC" }: { data: Day
       <div className="rounded-2xl p-6" style={cardStyle}>
         <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Sales volume (last 28 days)</p>
         <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 5, right: 5, left: 10, bottom: 0 }}>
             <defs>
               <linearGradient id="ev-rev" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#0a0a0a" stopOpacity={0.3} />
@@ -32,7 +32,7 @@ export default function EventStatsCharts({ data, currency = "CRC" }: { data: Day
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
             <XAxis dataKey="date" tickFormatter={shortDate} tick={axisStyle} axisLine={false} tickLine={false} />
-            <YAxis tickFormatter={(v) => fmt(v)} tick={axisStyle} axisLine={false} tickLine={false} width={56} />
+            <YAxis tickFormatter={(v) => fmt(v)} tick={axisStyle} axisLine={false} tickLine={false} width={80} />
             <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "rgba(0,0,0,0.4)" }}
               formatter={(v) => [fmt(Number(v)), "Revenue"]} labelFormatter={(l) => shortDate(l)} />
             <Area type="monotone" dataKey="revenue" stroke="#0a0a0a" strokeWidth={2} fill="url(#ev-rev)" />

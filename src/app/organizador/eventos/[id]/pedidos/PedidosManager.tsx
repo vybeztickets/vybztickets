@@ -329,7 +329,7 @@ export default function PedidosManager({ tickets }: { tickets: TicketRow[] }) {
                 {detail.promo_code && (
                   <div className="flex items-center justify-between">
                     <span className="text-[#0a0a0a]/35 text-xs">Promo code</span>
-                    <span className="text-purple-400 text-xs font-mono">{detail.promo_code}</span>
+                    <span className="text-[#0a0a0a] text-xs font-mono">{detail.promo_code}</span>
                   </div>
                 )}
                 {detail.buyer_notes && (

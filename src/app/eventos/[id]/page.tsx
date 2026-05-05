@@ -61,8 +61,8 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-10">
           <div className="flex flex-col lg:flex-row gap-10">
 
-            {/* ── LEFT: flyer + info + location ── */}
-            <div className="lg:w-[420px] shrink-0">
+            {/* ── LEFT: flyer + location (desktop-first, below on mobile) ── */}
+            <div className="lg:w-[420px] shrink-0 order-2 lg:order-1">
               {showOrgChip && (
                 <Link
                   href={`/o/${orgSlug}`}
@@ -98,7 +98,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               </div>
 
               {event.description && (
-                <div className="mb-6">
+                <div className="hidden lg:block mb-6">
                   <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Info</p>
                   <p className="text-[#0a0a0a]/55 text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
                 </div>
@@ -126,8 +126,8 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
 
-            {/* ── RIGHT: date, name, tickets ── */}
-            <div className="flex-1 min-w-0">
+            {/* ── RIGHT: date, name, description (mobile), tickets ── */}
+            <div className="flex-1 min-w-0 order-1 lg:order-2">
               <p className="text-[#0a0a0a]/40 text-sm mb-3 capitalize">
                 {formattedDate}
                 {event.time && <span> · {event.time}{event.till_late ? " – Till late" :event.end_time ? ` – ${event.end_time}` : ""}</span>}
@@ -142,6 +142,13 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                   style={{ background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.5)" }}>
                   {event.category}
                 </span>
+              )}
+
+              {event.description && (
+                <div className="lg:hidden mb-6">
+                  <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Info</p>
+                  <p className="text-[#0a0a0a]/55 text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
+                </div>
               )}
 
               <CheckoutPanel

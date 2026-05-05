@@ -29,7 +29,7 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
   const showBanner = isSuspended || isPending;
 
   return (
-    <div className="min-h-screen" style={{ background: "#ffffff", paddingLeft: "220px" }}>
+    <div className="min-h-screen" style={{ background: "#ffffff", paddingLeft: "280px" }}>
       <OrgSidebar
         userName={p?.full_name ?? user.email ?? ""}
         userEmail={p?.email ?? user.email ?? ""}
