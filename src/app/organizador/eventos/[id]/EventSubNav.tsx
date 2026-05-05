@@ -7,15 +7,14 @@ import { useEffect, useState } from "react";
 type NavItem = { label: string; path: string; highlight?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Estadísticas", path: "estadisticas" },
-  { label: "Editar", path: "editar" },
-  { label: "Entradas", path: "entradas" },
-  { label: "Códigos", path: "codigos" },
-  { label: "Pedidos", path: "pedidos" },
-  { label: "Asistentes", path: "asistentes" },
-  { label: "Embajadores", path: "embajadores" },
-  { label: "Ingreso", path: "ingreso" },
-  { label: "★ Destacar", path: "destacar", highlight: true },
+  { label: "Stats", path: "estadisticas" },
+  { label: "Edit", path: "editar" },
+  { label: "Tickets", path: "entradas" },
+  { label: "Promo codes", path: "codigos" },
+  { label: "Orders", path: "pedidos" },
+  { label: "Attendees", path: "asistentes" },
+  { label: "Traffic source", path: "embajadores" },
+  { label: "Feature", path: "destacar", highlight: true },
 ];
 
 export default function EventSubNav({ eventId }: { eventId: string }) {
@@ -42,7 +41,7 @@ export default function EventSubNav({ eventId }: { eventId: string }) {
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
           </svg>
-          Eventos
+          Events
         </Link>
         <span style={{ color: "rgba(0,0,0,0.2)", fontSize: "11px" }}>/</span>
         <span className="text-[#0a0a0a] text-xs font-semibold truncate max-w-[240px]">

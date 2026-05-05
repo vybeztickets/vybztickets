@@ -15,7 +15,7 @@ type Table = {
   map_position_y: number | null;
 };
 
-function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
 export default function VenueMap({ mapUrl, tables }: { mapUrl: string; tables: Table[] }) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export default function VenueMap({ mapUrl, tables }: { mapUrl: string; tables: T
   return (
     <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-        <Image src={mapUrl} alt="Mapa del venue" fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
+        <Image src={mapUrl} alt="Venue map" fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
 
         {/* Table markers */}
         {tables.map((t) => {

@@ -17,11 +17,11 @@ export default function UpdatePasswordPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (password !== confirm) {
-      setError("Las contraseñas no coinciden.");
+      setError("Passwords do not match.");
       return;
     }
     if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
+      setError("Password must be at least 6 characters.");
       return;
     }
 
@@ -59,20 +59,20 @@ export default function UpdatePasswordPage() {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <h2 className="text-lg font-bold text-[#0a0a0a] mb-2">Contraseña actualizada</h2>
-              <p className="text-sm text-[#0a0a0a]/40">Redirigiendo…</p>
+              <h2 className="text-lg font-bold text-[#0a0a0a] mb-2">Password updated</h2>
+              <p className="text-sm text-[#0a0a0a]/40">Redirecting…</p>
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-bold text-[#0a0a0a] mb-2">Nueva contraseña</h2>
+              <h2 className="text-xl font-bold text-[#0a0a0a] mb-2">New password</h2>
               <p className="text-sm text-[#0a0a0a]/40 mb-6">
-                Elegí una contraseña segura de al menos 6 caracteres.
+                Choose a secure password of at least 6 characters.
               </p>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 <input
                   type="password"
-                  placeholder="Nueva contraseña"
+                  placeholder="New password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -84,7 +84,7 @@ export default function UpdatePasswordPage() {
                 />
                 <input
                   type="password"
-                  placeholder="Confirmar contraseña"
+                  placeholder="Confirm password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   required
@@ -103,7 +103,7 @@ export default function UpdatePasswordPage() {
                   className="w-full py-3 rounded-xl text-sm font-semibold mt-1 transition-colors disabled:opacity-40"
                   style={{ background: "#0a0a0a", color: "#fff" }}
                 >
-                  {loading ? "Guardando…" : "Actualizar contraseña"}
+                  {loading ? "Saving…" : "Update password"}
                 </button>
               </form>
             </>

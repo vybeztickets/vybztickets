@@ -21,7 +21,7 @@ export default function CopyUrl({ url }: { url: string }) {
         <button
           onClick={copy}
           className="shrink-0 text-[#0a0a0a]/30 hover:text-[#0a0a0a] transition-colors"
-          title="Copiar URL"
+          title="Copy URL"
         >
           {copied ? (
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
@@ -39,7 +39,7 @@ export default function CopyUrl({ url }: { url: string }) {
         className="w-full py-2.5 rounded-xl text-xs font-semibold transition-all"
         style={{ background: copied ? "rgba(16,185,129,0.15)" : "rgba(0,0,0,0.06)", color: copied ? "#10b981" : "rgba(0,0,0,0.5)", border: `1px solid ${copied ? "rgba(16,185,129,0.3)" : "rgba(0,0,0,0.15)"}` }}
       >
-        {copied ? "¡Copiado!" : "Copiar enlace"}
+        {copied ? "Copied!" : "Copy link"}
       </button>
     </div>
   );

@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect, notFound } from "next/navigation";
-import EventSubNav from "./EventSubNav";
 
 export default async function EventDetailLayout({
   children,
@@ -25,10 +24,5 @@ export default async function EventDetailLayout({
 
   if (!event) notFound();
 
-  return (
-    <div>
-      <EventSubNav eventId={id} />
-      {children}
-    </div>
-  );
+  return <div>{children}</div>;
 }

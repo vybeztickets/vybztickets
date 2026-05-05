@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import EventsTable from "./EventsTable";
 
-export const metadata = { title: "Eventos — Dashboard Vybz" };
+export const metadata = { title: "Events — Dashboard Vybz" };
 
 export default async function OrgEventosPage() {
   const supabase = await createClient();
@@ -27,10 +27,10 @@ export default async function OrgEventosPage() {
       >
         <div>
           <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-[0.2em] mb-2">
-            {total} evento{total !== 1 ? "s" : ""}
+            {total} event{total !== 1 ? "s" : ""}
           </p>
           <h1 className="font-[family-name:var(--font-bebas)] text-5xl text-[#0a0a0a] leading-none">
-            Eventos
+            Events
           </h1>
         </div>
       </div>

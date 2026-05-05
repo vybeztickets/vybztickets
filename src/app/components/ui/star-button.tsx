@@ -38,6 +38,8 @@ type StarButtonProps = {
   starColor?: string;
   className?: string;
   dark?: boolean;
+  target?: string;
+  rel?: string;
 } & ({ href: string; onClick?: never } | { href?: never; onClick?: () => void });
 
 export function StarButton({
@@ -47,6 +49,8 @@ export function StarButton({
   className,
   dark = false,
   onClick,
+  target,
+  rel,
 }: StarButtonProps) {
   const resolvedStar = starColor ?? "rgba(0,0,0,0.13)";
 
@@ -78,7 +82,7 @@ export function StarButton({
 
   if (href) {
     return (
-      <Link href={href} className={sharedClassName}>
+      <Link href={href} className={sharedClassName} target={target} rel={rel}>
         {content}
       </Link>
     );

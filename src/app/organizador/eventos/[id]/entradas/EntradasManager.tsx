@@ -26,7 +26,7 @@ type TicketType = {
   totalRevenue: number;
 };
 
-function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
 type Tab = "stats" | "entradas" | "mapa";
 type FilterKey = "all" | "general" | "table" | "hidden";
@@ -87,7 +87,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
   }
 
   async function handleCreate() {
-    if (!fName || fPrice === "") { setError("Nombre y precio son requeridos"); return; }
+    if (!fName || fPrice === "") { setError("Name and price are required"); return; }
     setSaving(true); setError("");
     try {
       const res = await fetch("/api/organizador/ticket-types", {
@@ -113,7 +113,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
       setShowCreate(false); resetForm(); router.refresh();
       setTypes((prev) => [...prev, { ...data.ticketType, ingresados: 0, totalRevenue: 0 }]);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Error inesperado");
+      setError(e instanceof Error ? e.message : "Unexpected error");
     } finally { setSaving(false); }
   }
 
@@ -151,7 +151,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
       } : t));
       setEditId(null);
     } catch (e: unknown) {
-      setEditError(e instanceof Error ? e.message : "Error inesperado");
+      setEditError(e instanceof Error ? e.message : "Unexpected error");
     } finally { setEditSaving(false); }
   }
 
@@ -182,39 +182,39 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
   }));
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: "stats", label: "Estadísticas" },
-    { key: "entradas", label: "Entradas" },
-    { key: "mapa", label: "Mapa de mesas" },
+    { key: "stats", label: "Statistics" },
+    { key: "entradas", label: "Tickets" },
+    { key: "mapa", label: "Table map" },
   ];
 
   const formFields = (
     <>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Nombre *</label>
-        <input type="text" placeholder="Ej: Entrada General" value={fName} onChange={(e) => setFName(e.target.value)} className={inputClass} style={inputStyle} />
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Name *</label>
+        <input type="text" placeholder="E.g.: General Admission" value={fName} onChange={(e) => setFName(e.target.value)} className={inputClass} style={inputStyle} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Precio (₡) *</label>
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Price (₡) *</label>
           <input type="number" min="0" placeholder="15000" value={fPrice} onChange={(e) => setFPrice(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Cantidad disponible</label>
-          <input type="number" min="1" placeholder="Vacío = ilimitado" value={fTotal} onChange={(e) => setFTotal(e.target.value)} className={inputClass} style={inputStyle} />
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Available quantity</label>
+          <input type="number" min="1" placeholder="Empty = unlimited" value={fTotal} onChange={(e) => setFTotal(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Descripción</label>
-        <input type="text" placeholder="Descripción opcional" value={fDesc} onChange={(e) => setFDesc(e.target.value)} className={inputClass} style={inputStyle} />
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Description</label>
+        <input type="text" placeholder="Optional description" value={fDesc} onChange={(e) => setFDesc(e.target.value)} className={inputClass} style={inputStyle} />
       </div>
       {fCategory !== "general" && (
         <>
           <div>
-            <label className="block text-[#0a0a0a]/40 text-xs mb-1">Capacidad de personas</label>
-            <input type="number" min="1" placeholder="Ej: 8" value={fCapacity} onChange={(e) => setFCapacity(e.target.value)} className={inputClass} style={inputStyle} />
+            <label className="block text-[#0a0a0a]/40 text-xs mb-1">Person capacity</label>
+            <input type="number" min="1" placeholder="E.g.: 8" value={fCapacity} onChange={(e) => setFCapacity(e.target.value)} className={inputClass} style={inputStyle} />
           </div>
           <div>
-            <label className="block text-[#0a0a0a]/40 text-xs mb-2">Color de zona</label>
+            <label className="block text-[#0a0a0a]/40 text-xs mb-2">Zone color</label>
             <div className="flex gap-2 flex-wrap pl-1" style={{ overflow: "visible" }}>
               {ZONE_COLORS.map((c) => (
                 <button key={c} onClick={() => setFZoneColor(c)} className="w-7 h-7 rounded-full transition-all"
@@ -226,28 +226,28 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
       )}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Mín. por pedido</label>
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Min. per order</label>
           <input type="number" min="1" value={fMin} onChange={(e) => setFMin(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Máx. por pedido</label>
-          <input type="number" min="1" placeholder="Sin límite" value={fMax} onChange={(e) => setFMax(e.target.value)} className={inputClass} style={inputStyle} />
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Max. per order</label>
+          <input type="number" min="1" placeholder="No limit" value={fMax} onChange={(e) => setFMax(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Inicio de venta</label>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Sales start</label>
         <input type="datetime-local" value={fSalesStart} onChange={(e) => setFSalesStart(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "light" }} />
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Fin de venta</label>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Sales end</label>
         <input type="datetime-local" value={fSalesEnd} onChange={(e) => setFSalesEnd(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "light" }} />
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Fecha límite de ingreso</label>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Entry deadline</label>
         <input type="datetime-local" value={fEntryDeadline} onChange={(e) => setFEntryDeadline(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "light" }} />
       </div>
       <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
-        <span className="text-[#0a0a0a]/50 text-xs">Entrada oculta (solo con link directo)</span>
+        <span className="text-[#0a0a0a]/50 text-xs">Hidden ticket (direct link only)</span>
         <button type="button" onClick={() => setFHidden(!fHidden)} className="relative w-9 h-5 rounded-full transition-colors shrink-0" style={{ background: fHidden ? "#0a0a0a" : "rgba(0,0,0,0.08)" }}>
           <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: fHidden ? "17px" : "2px" }} />
         </button>
@@ -280,7 +280,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
           style={{ background: "#0a0a0a", color: "#fff" }}
         >
-          <span>+</span> Entrada
+          <span>+</span> Ticket
         </button>
       </div>
 
@@ -288,13 +288,13 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
       {activeTab === "stats" && (
         <div>
           {types.length === 0 ? (
-            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">Sin entradas todavía</div>
+            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">No tickets yet</div>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-6 mb-6">
                 {/* Pie chart */}
                 <div className="rounded-2xl p-6" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                  <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Distribución de ventas</p>
+                  <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Sales distribution</p>
                   {pieData.length > 0 ? (
                     <div>
                       <ResponsiveContainer width="100%" height={220}>
@@ -316,7 +316,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                           <Tooltip
                             contentStyle={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8 }}
                             itemStyle={{ color: "#fff" }}
-                            formatter={(v: unknown) => [`${v} vendidas`, ""]}
+                            formatter={(v: unknown) => [`${v} sold`, ""]}
                           />
                           <Legend
                             iconType="circle"
@@ -327,16 +327,16 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                       </ResponsiveContainer>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center h-[220px] text-[#0a0a0a]/20 text-xs">Sin ventas aún</div>
+                    <div className="flex items-center justify-center h-[220px] text-[#0a0a0a]/20 text-xs">No sales yet</div>
                   )}
                 </div>
 
                 {/* Summary stats */}
                 <div className="grid grid-rows-3 gap-3">
                   {[
-                    { label: "Total vendidas", value: String(totalSold) },
-                    { label: "Ingresos totales", value: formatPrice(totalRevenue) },
-                    { label: "Asistentes ingresados", value: String(totalIngresados) },
+                    { label: "Total sold", value: String(totalSold) },
+                    { label: "Total revenue", value: formatPrice(totalRevenue) },
+                    { label: "Checked in", value: String(totalIngresados) },
                   ].map((s) => (
                     <div key={s.label} className="rounded-2xl px-5 flex items-center justify-between" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
                       <p className="text-[#0a0a0a]/40 text-xs">{s.label}</p>
@@ -349,7 +349,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
               {/* Progress bars per type */}
               <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
                 <div className="px-5 py-3" style={{ background: "rgba(0,0,0,0.03)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-                  <p className="text-[#0a0a0a]/30 text-xs uppercase tracking-wider font-semibold">Por tipo de entrada</p>
+                  <p className="text-[#0a0a0a]/30 text-xs uppercase tracking-wider font-semibold">By ticket type</p>
                 </div>
                 {types.map((tt, i) => {
                   const pct = tt.total_available >= 999999 ? 0 : Math.min(100, (tt.sold_count / tt.total_available) * 100);
@@ -363,8 +363,8 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                           <span className="text-[#0a0a0a]/30 text-xs">{formatPrice(tt.price)}</span>
                         </div>
                         <div className="flex items-center gap-4 text-xs text-[#0a0a0a]/40">
-                          <span><span className="text-[#0a0a0a] font-semibold">{tt.sold_count}</span> vendidas</span>
-                          <span><span className="text-[#0a0a0a] font-semibold">{tt.ingresados}</span> ingresados</span>
+                          <span><span className="text-[#0a0a0a] font-semibold">{tt.sold_count}</span> sold</span>
+                          <span><span className="text-[#0a0a0a] font-semibold">{tt.ingresados}</span> checked in</span>
                           <span className="text-[#0a0a0a]/60 font-semibold">{formatPrice(tt.totalRevenue)}</span>
                         </div>
                       </div>
@@ -375,8 +375,8 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                         <div className="h-1.5 rounded-full transition-all" style={{ width: `${ingPct}%`, background: "#5a8a6a" }} />
                       </div>
                       <div className="flex gap-4 mt-1.5">
-                        <span className="text-[10px] text-[#0a0a0a]/25">Vendidas {pct.toFixed(0)}%</span>
-                        <span className="text-[10px] text-[#0a0a0a]/40">Ingresados {ingPct.toFixed(0)}%</span>
+                        <span className="text-[10px] text-[#0a0a0a]/25">Sold {pct.toFixed(0)}%</span>
+                        <span className="text-[10px] text-[#0a0a0a]/40">Checked in {ingPct.toFixed(0)}%</span>
                       </div>
                     </div>
                   );
@@ -393,10 +393,10 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           <div className="flex items-center gap-3 mb-5">
             <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
               {([
-                { key: "all", label: "Todos" },
-                { key: "general", label: "Generales" },
-                { key: "table", label: "Mesas" },
-                { key: "hidden", label: "Oculto" },
+                { key: "all", label: "All" },
+                { key: "general", label: "General" },
+                { key: "table", label: "Tables" },
+                { key: "hidden", label: "Hidden" },
               ] as { key: FilterKey; label: string }[]).map((f) => (
                 <button
                   key={f.key}
@@ -416,7 +416,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
 
           {filteredTypes.length === 0 ? (
             <div className="rounded-2xl py-16 text-center" style={{ border: "1px dashed rgba(0,0,0,0.08)" }}>
-              <p className="text-[#0a0a0a]/20 text-sm">Sin entradas en este filtro</p>
+              <p className="text-[#0a0a0a]/20 text-sm">No tickets in this filter</p>
             </div>
           ) : (
             <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
@@ -424,11 +424,11 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                 className="grid text-xs font-semibold uppercase tracking-wider px-5 py-3"
                 style={{ gridTemplateColumns: "1fr 90px 90px 130px 110px 36px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
               >
-                <div>Entrada</div>
-                <div className="text-center">Vendidas</div>
-                <div className="text-center">Restante</div>
-                <div className="text-right">Ingresos</div>
-                <div className="text-center">Estado</div>
+                <div>Ticket</div>
+                <div className="text-center">Sold</div>
+                <div className="text-center">Remaining</div>
+                <div className="text-right">Revenue</div>
+                <div className="text-center">Status</div>
                 <div />
               </div>
 
@@ -446,10 +446,10 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                         <p className="text-[#0a0a0a] text-sm font-medium">{tt.name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.4)" }}>
-                            {tt.category === "table" ? "Mesa" : tt.category === "seat" ? "Asiento" : "General"}
+                            {tt.category === "table" ? "Table" : tt.category === "seat" ? "Seat" : "General"}
                           </span>
                           <span className="text-[#0a0a0a]/30 text-xs">{formatPrice(tt.price)}</span>
-                          {tt.is_hidden && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>Oculta</span>}
+                          {tt.is_hidden && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>Hidden</span>}
                         </div>
                       </div>
                     </div>
@@ -480,7 +480,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                         ) : (
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                         )}
-                        {tt.is_active ? "Activa" : "Oculta"}
+                        {tt.is_active ? "Active" : "Hidden"}
                       </button>
                     </div>
 
@@ -502,9 +502,9 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
       {/* ── TAB: MAPA DE MESAS ── */}
       {activeTab === "mapa" && (
         <div>
-          <p className="text-[#0a0a0a]/40 text-xs mb-5">Sube la imagen del mapa de tu venue. Se mostrará en la página pública del evento antes de las mesas VIP.</p>
+          <p className="text-[#0a0a0a]/40 text-xs mb-5">Upload your venue map image. It will be shown on the event public page before VIP tables.</p>
           <ImageUploadField
-            label="Mapa de mesas"
+            label="Table map"
             value={venueMapUrl ?? ""}
             onChange={async (url) => {
               setVenueMapUrl(url);
@@ -518,8 +518,8 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
             }}
             aspectRatio="16:9"
           />
-          {mapSaving && <p className="text-[#0a0a0a]/30 text-xs mt-2">Guardando...</p>}
-          {venueMapUrl && !mapSaving && <p className="text-green-400/60 text-xs mt-2">Mapa guardado correctamente</p>}
+          {mapSaving && <p className="text-[#0a0a0a]/30 text-xs mt-2">Saving...</p>}
+          {venueMapUrl && !mapSaving && <p className="text-green-400/60 text-xs mt-2">Map saved successfully</p>}
         </div>
       )}
 
@@ -532,13 +532,13 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
         >
           <div className="w-full max-w-md rounded-2xl p-6" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-[#0a0a0a] font-bold text-lg">Nueva entrada</h3>
+              <h3 className="text-[#0a0a0a] font-bold text-lg">New ticket</h3>
               <button onClick={() => { setShowCreate(false); resetForm(); }} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
             <div className="flex gap-2 mb-5">
-              {([{ key: "general", label: "General" }, { key: "table", label: "Mesa VIP" }, { key: "seat", label: "Asiento" }] as { key: "general" | "table" | "seat"; label: string }[]).map((t) => (
+              {([{ key: "general", label: "General" }, { key: "table", label: "VIP Table" }, { key: "seat", label: "Seat" }] as { key: "general" | "table" | "seat"; label: string }[]).map((t) => (
                 <button
                   key={t.key}
                   onClick={() => setFCategory(t.key)}
@@ -560,7 +560,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-60 mt-1"
                 style={{ background: "#0a0a0a", color: "#fff" }}
               >
-                {saving ? "Creando..." : "Crear entrada"}
+                {saving ? "Creating..." : "Create ticket"}
               </button>
             </div>
           </div>
@@ -577,7 +577,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           >
             <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
               <div>
-                <h3 className="text-[#0a0a0a] font-bold text-base">Editar entrada</h3>
+                <h3 className="text-[#0a0a0a] font-bold text-base">Edit ticket</h3>
                 <p className="text-[#0a0a0a]/30 text-xs mt-0.5">{types.find((t) => t.id === editId)?.name}</p>
               </div>
               <button onClick={() => setEditId(null)} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
@@ -595,7 +595,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-60"
                 style={{ background: "#0a0a0a", color: "#fff" }}
               >
-                {editSaving ? "Guardando..." : "Actualizar entrada"}
+                {editSaving ? "Saving..." : "Update ticket"}
               </button>
             </div>
           </div>

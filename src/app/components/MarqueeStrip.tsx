@@ -1,15 +1,15 @@
 const ITEMS = [
-  "Entradas Digitales",
-  "Mesas VIP",
+  "Digital Tickets",
+  "VIP Tables",
   "Ticket Swap",
-  "Escrow Protegido",
+  "Protected Escrow",
   "Point of Sale",
-  "Festivales",
-  "Conciertos",
-  "QR Instantáneo",
-  "Pago Seguro",
-  "Teatro & Arte",
-  "Control de Inventario",
+  "Festivals",
+  "Concerts",
+  "Instant QR",
+  "Secure Payment",
+  "Theater & Art",
+  "Inventory Control",
 ];
 
 export default function MarqueeStrip() {

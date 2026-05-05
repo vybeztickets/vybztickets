@@ -37,7 +37,7 @@ export default async function SampleTicketPage({
     <SampleTicketCard
       event={event}
       ticketType={ticketType}
-      organizerName={organizer?.full_name ?? "Organizador"}
+      organizerName={organizer?.full_name ?? "Organizer"}
       backHref={`/organizador/eventos/${eventId}/entradas`}
     />
   );

@@ -1,7 +1,7 @@
 import LoginForm from "./LoginForm";
 
 export const metadata = {
-  title: "Iniciar sesión — Vybz Tickets",
+  title: "Sign in — Vybz Tickets",
 };
 
 export default function LoginPage({

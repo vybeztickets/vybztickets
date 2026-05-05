@@ -121,11 +121,11 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
                 )}
                 {followerCount > 0 && (
                   <span className="text-[#0a0a0a]/30 text-sm">
-                    {followerCount} {followerCount === 1 ? "seguidor" : "seguidores"}
+                    {followerCount} {followerCount === 1 ? "follower" : "followers"}
                   </span>
                 )}
                 {upcoming.length > 0 && (
-                  <span className="text-[#0a0a0a]/30 text-sm">{upcoming.length} evento{upcoming.length !== 1 ? "s" : ""} próximo{upcoming.length !== 1 ? "s" : ""}</span>
+                  <span className="text-[#0a0a0a]/30 text-sm">{upcoming.length} upcoming event{upcoming.length !== 1 ? "s" : ""}</span>
                 )}
               </div>
               {org.description && (
@@ -159,7 +159,7 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
         {/* Upcoming events */}
         {upcoming.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-[#0a0a0a]/50 text-xs font-bold uppercase tracking-wider mb-5">Próximos eventos</h2>
+            <h2 className="text-[#0a0a0a]/50 text-xs font-bold uppercase tracking-wider mb-5">Upcoming events</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {upcoming.map((event: any) => (
                 <EventCard key={event.id} event={event} />
@@ -171,7 +171,7 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
         {/* Past events */}
         {past.length > 0 && (
           <section className="mb-16">
-            <h2 className="text-[#0a0a0a]/50 text-xs font-bold uppercase tracking-wider mb-5">Eventos pasados</h2>
+            <h2 className="text-[#0a0a0a]/50 text-xs font-bold uppercase tracking-wider mb-5">Past events</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {past.map((event: any) => (
                 <EventCard key={event.id} event={event} isPast />
@@ -182,7 +182,7 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
 
         {upcoming.length === 0 && past.length === 0 && (
           <div className="py-20 text-center">
-            <p className="text-[#0a0a0a]/20 text-sm">Sin eventos publicados todavía</p>
+            <p className="text-[#0a0a0a]/20 text-sm">No published events yet</p>
           </div>
         )}
       </div>
@@ -197,7 +197,7 @@ function EventCard({ event, isPast }: { event: any; isPast?: boolean }) {
   const minPrice = activeTickets.length
     ? Math.min(...activeTickets.map((t: any) => t.price))
     : null;
-  const date = new Date(event.date + "T00:00:00").toLocaleDateString("es-CR", {
+  const date = new Date(event.date + "T00:00:00").toLocaleDateString("en-US", {
     day: "numeric", month: "short",
   });
 
@@ -228,7 +228,7 @@ function EventCard({ event, isPast }: { event: any; isPast?: boolean }) {
           <p className="text-[#0a0a0a] text-sm font-semibold leading-tight line-clamp-2 group-hover:opacity-60 transition-opacity">{event.name}</p>
           <p className="text-[#0a0a0a]/35 text-xs mt-1">{event.venue}</p>
           {minPrice !== null && !isPast && (
-            <p className="text-[#0a0a0a]/50 text-xs mt-0.5">Desde ${minPrice.toLocaleString("en-US")}</p>
+            <p className="text-[#0a0a0a]/50 text-xs mt-0.5">From ${minPrice.toLocaleString("en-US")}</p>
           )}
         </div>
       </div>

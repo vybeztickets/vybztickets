@@ -7,8 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 import CheckoutPanel from "./CheckoutPanel";
 import ResendTicket from "./ResendTicket";
-import Countdown from "./Countdown";
 import EventMap from "./EventMap";
+import EventViewTracker from "./EventViewTracker";
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -45,7 +45,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   };
 
   const d = new Date(event.date + "T00:00:00");
-  const formattedDate = d.toLocaleDateString("es-CR", {
+  const formattedDate = d.toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric",
   });
 
@@ -56,12 +56,13 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#ffffff" }}>
       <Navbar />
+      <EventViewTracker eventId={event.id} />
       <main className="flex-1 pt-16 pb-20">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-10">
           <div className="flex flex-col lg:flex-row gap-10">
 
-            {/* ── LEFT: flyer + info + location ── */}
-            <div className="lg:w-[420px] shrink-0 lg:sticky lg:top-20 lg:self-start" style={{ maxHeight: "calc(100vh - 5rem)", overflowY: "auto" }}>
+            {/* ── LEFT: flyer + location (desktop-first, below on mobile) ── */}
+            <div className="lg:w-[420px] shrink-0 order-2 lg:order-1">
               {showOrgChip && (
                 <Link
                   href={`/o/${orgSlug}`}
@@ -78,7 +79,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
                   <div>
-                    <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider font-semibold leading-none mb-0.5">Organizado por</p>
+                    <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider font-semibold leading-none mb-0.5">Organized by</p>
                     <p className="text-[#0a0a0a] text-sm font-bold leading-none">{organizer.full_name}</p>
                   </div>
                 </Link>
@@ -97,14 +98,14 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               </div>
 
               {event.description && (
-                <div className="mb-6">
+                <div className="hidden lg:block mb-6">
                   <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Info</p>
                   <p className="text-[#0a0a0a]/55 text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
                 </div>
               )}
 
               <div>
-                <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Ubicación</p>
+                <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Location</p>
                 <EventMap
                   lat={event.location_lat}
                   lng={event.location_lng}
@@ -114,17 +115,23 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                   mapsUrl={mapsUrl}
                 />
                 <ResendTicket eventId={event.id} />
+                <div className="mt-2">
+                  <a
+                    href="/transfer"
+                    className="text-xs transition-colors text-black/25 hover:text-black/45"
+                  >
+                    Transfer my ticket →
+                  </a>
+                </div>
               </div>
             </div>
 
-            {/* ── RIGHT: date, name, tickets ── */}
-            <div className="flex-1 min-w-0">
+            {/* ── RIGHT: date, name, description (mobile), tickets ── */}
+            <div className="flex-1 min-w-0 order-1 lg:order-2">
               <p className="text-[#0a0a0a]/40 text-sm mb-3 capitalize">
                 {formattedDate}
                 {event.time && <span> · {event.time}{event.till_late ? " – Till late" :event.end_time ? ` – ${event.end_time}` : ""}</span>}
               </p>
-
-              <Countdown date={event.date} time={event.time} />
 
               <h1 className="font-[family-name:var(--font-bebas)] text-4xl md:text-5xl tracking-wide text-[#0a0a0a] mb-3 leading-none">
                 {event.name}
@@ -135,6 +142,13 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                   style={{ background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.5)" }}>
                   {event.category}
                 </span>
+              )}
+
+              {event.description && (
+                <div className="lg:hidden mb-6">
+                  <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Info</p>
+                  <p className="text-[#0a0a0a]/55 text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
+                </div>
               )}
 
               <CheckoutPanel

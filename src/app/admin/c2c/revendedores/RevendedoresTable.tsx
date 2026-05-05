@@ -27,24 +27,24 @@ const KYC_COLORS: Record<string, { bg: string; color: string }> = {
   suspended: { bg: "rgba(200,0,0,0.08)", color: "#991b1b" },
 };
 
-const STATUSES = ["Todos", "approved", "pending", "rejected", "suspended"];
+const STATUSES = ["All", "approved", "pending", "rejected", "suspended"];
 
-function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function fmt(n: number) { return "₡" + n.toLocaleString("en-US"); }
 function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function RevendedoresTable({ rows, total }: { rows: Revendedor[]; total: number }) {
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("Todos");
-  const [country, setCountry] = useState("Todos");
+  const [status, setStatus] = useState("All");
+  const [country, setCountry] = useState("All");
 
-  const countries = ["Todos", ...Array.from(new Set(rows.map(r => r.country).filter(Boolean) as string[])).sort()];
+  const countries = ["All", ...Array.from(new Set(rows.map(r => r.country).filter(Boolean) as string[])).sort()];
 
   const filtered = rows.filter(r => {
     const matchQ = !q || [r.full_name_on_id, r.email].some(v => v?.toLowerCase().includes(q.toLowerCase()));
-    const matchStatus = status === "Todos" || r.status === status;
-    const matchCountry = country === "Todos" || r.country === country;
+    const matchStatus = status === "All" || r.status === status;
+    const matchCountry = country === "All" || r.country === country;
     return matchQ && matchStatus && matchCountry;
   });
 
@@ -57,7 +57,7 @@ export default function RevendedoresTable({ rows, total }: { rows: Revendedor[];
           </svg>
           <input
             type="text"
-            placeholder="Buscar por nombre o email…"
+            placeholder="Search by name or email…"
             value={q}
             onChange={e => setQ(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none"
@@ -67,31 +67,31 @@ export default function RevendedoresTable({ rows, total }: { rows: Revendedor[];
         <select value={status} onChange={e => setStatus(e.target.value)}
           className="px-3 py-2.5 rounded-xl text-sm focus:outline-none"
           style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}>
-          {STATUSES.map(s => <option key={s} value={s}>{s === "Todos" ? "Todos los estados" : s}</option>)}
+          {STATUSES.map(s => <option key={s} value={s}>{s === "All" ? "All statuses" : s}</option>)}
         </select>
         {countries.length > 1 && (
           <select value={country} onChange={e => setCountry(e.target.value)}
             className="px-3 py-2.5 rounded-xl text-sm focus:outline-none"
             style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}>
-            {countries.map(c => <option key={c} value={c}>{c === "Todos" ? "Todos los países" : c}</option>)}
+            {countries.map(c => <option key={c} value={c}>{c === "All" ? "All countries" : c}</option>)}
           </select>
         )}
       </div>
 
-      <p className="text-[#0a0a0a]/30 text-xs mb-3">{filtered.length} de {total} revendedores</p>
+      <p className="text-[#0a0a0a]/30 text-xs mb-3">{filtered.length} of {total} resellers</p>
 
       <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-              {["Revendedor", "País", "KYC", "Método de cobro", "Activos", "Vendidos", "Revenue", "Desde", ""].map(h => (
+              {["Reseller", "Country", "KYC", "Payment method", "Active", "Sold", "Revenue", "Since", ""].map(h => (
                 <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={9} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">Sin resultados</td></tr>
+              <tr><td colSpan={9} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">No results</td></tr>
             ) : filtered.map(r => {
               const kc = KYC_COLORS[r.status] ?? KYC_COLORS.pending;
               return (

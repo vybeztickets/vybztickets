@@ -25,9 +25,9 @@ const CURRENCY_SYMBOL: Record<string, string> = {
 };
 
 function formatPrice(n: number, currency = "CRC") {
-  if (n === 0) return "Gratis";
+  if (n === 0) return "Free";
   const sym = CURRENCY_SYMBOL[currency] ?? currency;
-  const locale = currency === "CRC" ? "es-CR" : "en-US";
+  const locale = "en-US";
   const decimals = currency === "CRC" ? 0 : 2;
   return sym + n.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
@@ -253,7 +253,7 @@ export default function CheckoutPanel({
   if (activeTypes.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-[#0a0a0a]/30">Tickets agotados</p>
+        <p className="text-sm text-[#0a0a0a]/30">Tickets sold out</p>
       </div>
     );
   }
@@ -276,12 +276,12 @@ export default function CheckoutPanel({
             </svg>
           </div>
           <p className="text-white font-bold text-xl mb-1">
-            {isTable ? "¡Reserva confirmada!" : "¡Compra exitosa!"}
+            {isTable ? "Reservation confirmed!" : "Purchase successful!"}
           </p>
           <p className="text-white/40 text-sm">
             {isTable
-              ? `${selected?.name} · ${paxCount} persona${paxCount !== 1 ? "s" : ""}`
-              : `${qty} entrada${qty > 1 ? "s" : ""} · ${eventName}`}
+              ? `${selected?.name} · ${paxCount} person${paxCount !== 1 ? "s" : ""}`
+              : `${qty} ticket${qty > 1 ? "s" : ""} · ${eventName}`}
           </p>
         </div>
 
@@ -295,9 +295,9 @@ export default function CheckoutPanel({
             <polyline points="22,6 12,13 2,6"/>
           </svg>
           <p className="text-sm" style={{ color: "rgba(0,0,0,0.55)" }}>
-            Tus entradas fueron enviadas a{" "}
+            Your tickets were sent to{" "}
             <span className="font-semibold text-[#0a0a0a]">{email}</span>
-            {" "}— revisá tu bandeja de entrada (y spam).
+            {" "}— check your inbox (and spam).
           </p>
         </div>
 
@@ -311,7 +311,7 @@ export default function CheckoutPanel({
                 style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}
               >
                 <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider mb-3">
-                  {purchasedQRs.length > 1 ? `Entrada ${i + 1} de ${purchasedQRs.length}` : "Tu entrada"}
+                  {purchasedQRs.length > 1 ? `Ticket ${i + 1} of ${purchasedQRs.length}` : "Your ticket"}
                 </p>
                 <div className="p-4 rounded-2xl bg-white border border-black/08">
                   <QRCode value={qr} size={150} />
@@ -326,7 +326,7 @@ export default function CheckoutPanel({
                   className="mt-4 flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold transition-all"
                   style={{ background: "#0a0a0a", color: "#fff" }}
                 >
-                  Ver entrada completa →
+                  View full ticket →
                 </a>
               </div>
             ))}
@@ -340,7 +340,7 @@ export default function CheckoutPanel({
             style={{ background: "#f7f7f7", border: "1px solid rgba(0,0,0,0.06)" }}
           >
             <p className="text-[#0a0a0a]/35 text-[9px] uppercase tracking-widest font-semibold mb-2">
-              Mensaje del organizador
+              Message from organizer
             </p>
             <p className="text-[#0a0a0a]/65 text-sm leading-relaxed whitespace-pre-line">
               {postPurchaseMessage}
@@ -352,7 +352,7 @@ export default function CheckoutPanel({
         {termsConditions && (
           <div className="mb-5" style={{ borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 16 }}>
             <p className="text-[#0a0a0a]/30 text-[9px] uppercase tracking-widest font-semibold mb-2">
-              Términos y condiciones del evento
+              Event terms and conditions
             </p>
             <p className="text-[#0a0a0a]/35 text-xs leading-relaxed whitespace-pre-line">
               {termsConditions}
@@ -364,7 +364,7 @@ export default function CheckoutPanel({
           onClick={() => { setStep("select"); setSelectedId(""); setPurchasedQRs([]); }}
           className="text-[#0a0a0a]/30 text-xs hover:text-[#0a0a0a]/60 transition-colors"
         >
-          ← Volver al evento
+          ← Back to event
         </button>
       </div>
     );
@@ -377,7 +377,7 @@ export default function CheckoutPanel({
         <button type="button" onClick={() => setStep("details")}
           className="flex items-center gap-1.5 text-[#0a0a0a]/35 text-xs mb-5 hover:text-[#0a0a0a] transition-colors">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          Volver
+          Back
         </button>
 
         <div className="mb-4">
@@ -385,7 +385,7 @@ export default function CheckoutPanel({
             holderName={name}
             eventName={eventName}
           />
-          <p className="text-center text-[#0a0a0a]/20 text-[9px] mt-2">Click para ver reverso</p>
+          <p className="text-center text-[#0a0a0a]/20 text-[9px] mt-2">Click to see back</p>
         </div>
 
         <div className="p-4 rounded-xl mb-5" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
@@ -410,7 +410,7 @@ export default function CheckoutPanel({
         <button type="button" onClick={() => setStep("select")}
           className="flex items-center gap-1.5 text-[#0a0a0a]/35 text-xs mb-5 hover:text-[#0a0a0a] transition-colors">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          Volver
+          Back
         </button>
 
         {/* Summary */}
@@ -426,9 +426,9 @@ export default function CheckoutPanel({
         </div>
 
         <form onSubmit={handlePurchase} className="flex flex-col gap-3">
-          <input type="text" placeholder="Nombre completo *" value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} style={inputStyle} />
+          <input type="text" placeholder="Full name *" value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} style={inputStyle} />
           <input type="email" placeholder="Email *" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} style={inputStyle} />
-          <input type="email" placeholder="Confirma tu email *" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required className={inputClass}
+          <input type="email" placeholder="Confirm your email *" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required className={inputClass}
             style={{ ...inputStyle, border: emailConfirm && email !== emailConfirm ? "1px solid rgba(239,68,68,0.4)" : "1px solid rgba(0,0,0,0.08)" }} />
           <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
             <select
@@ -452,7 +452,7 @@ export default function CheckoutPanel({
             </select>
             <input
               type="tel"
-              placeholder="Teléfono *"
+              placeholder="Phone *"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
@@ -464,7 +464,7 @@ export default function CheckoutPanel({
           {/* Multi-email toggle — general tickets */}
           {!isTable && qty >= 2 && (
             <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-              <span className="text-[#0a0a0a]/50 text-sm">Enviar todas al mismo correo</span>
+              <span className="text-[#0a0a0a]/50 text-sm">Send all to the same email</span>
               <button type="button" onClick={() => {
                 const next = !sameEmail;
                 setSameEmail(next);
@@ -480,8 +480,8 @@ export default function CheckoutPanel({
             <div className="flex flex-col gap-3">
               {Array.from({ length: qty }, (_, i) => (
                 <div key={i} className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                  <p className="text-[#0a0a0a]/40 text-xs font-semibold">Entrada {i + 1}</p>
-                  <input type="text" placeholder={`Nombre${i === 0 ? " (tú)" : ""}`}
+                  <p className="text-[#0a0a0a]/40 text-xs font-semibold">Ticket {i + 1}</p>
+                  <input type="text" placeholder={`Name${i === 0 ? " (you)" : ""}`}
                     value={perTicket[i]?.name ?? (i === 0 ? name : "")}
                     onChange={(e) => updatePerTicket(i, "name", e.target.value)}
                     className={inputClass} style={inputStyle} />
@@ -494,11 +494,11 @@ export default function CheckoutPanel({
             </div>
           )}
 
-          {/* Mesa: pax counter + optional per-person emails */}
+          {/* Table: pax counter + optional per-person emails */}
           {isTable && (
             <>
               <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                <span className="text-[#0a0a0a]/50 text-sm">¿Cuántas personas?</span>
+                <span className="text-[#0a0a0a]/50 text-sm">How many people?</span>
                 <div className="flex items-center gap-3">
                   <button type="button" onClick={() => { setPaxCount(Math.max(1, paxCount - 1)); setPerTicket([]); }} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>−</button>
                   <span className="text-[#0a0a0a] font-semibold w-4 text-center">{paxCount}</span>
@@ -508,7 +508,7 @@ export default function CheckoutPanel({
 
               {paxCount >= 2 && (
                 <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                  <span className="text-[#0a0a0a]/50 text-sm">Enviar a correos distintos</span>
+                  <span className="text-[#0a0a0a]/50 text-sm">Send to different emails</span>
                   <button type="button" onClick={() => {
                     const next = !sameEmail;
                     setSameEmail(next);
@@ -526,8 +526,8 @@ export default function CheckoutPanel({
                 <div className="flex flex-col gap-3">
                   {Array.from({ length: paxCount }, (_, i) => (
                     <div key={i} className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                      <p className="text-[#0a0a0a]/40 text-xs font-semibold">Persona {i + 1}{i === 0 ? " (tú)" : ""}</p>
-                      <input type="text" placeholder="Nombre"
+                      <p className="text-[#0a0a0a]/40 text-xs font-semibold">Person {i + 1}{i === 0 ? " (you)" : ""}</p>
+                      <input type="text" placeholder="Name"
                         value={perTicket[i]?.name ?? (i === 0 ? name : "")}
                         onChange={(e) => updatePerTicket(i, "name", e.target.value)}
                         className={inputClass} style={inputStyle} />
@@ -544,7 +544,7 @@ export default function CheckoutPanel({
 
           {!isTable && (
             <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-              <span className="text-[#0a0a0a]/50 text-sm">Cantidad</span>
+              <span className="text-[#0a0a0a]/50 text-sm">Quantity</span>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>−</button>
                 <span className="text-[#0a0a0a] font-semibold w-4 text-center">{qty}</span>
@@ -554,25 +554,25 @@ export default function CheckoutPanel({
           )}
 
           {isTable && (
-            <textarea placeholder="Observaciones (opcional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
+            <textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
               className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none resize-none" style={inputStyle} />
           )}
 
           {!showPromo ? (
             <button type="button" onClick={() => setShowPromo(true)} className="text-left text-[#0a0a0a]/30 text-xs hover:text-[#0a0a0a]/50 transition-colors py-1">
-              + ¿Tienes un código de descuento?
+              + Have a discount code?
             </button>
           ) : (
             <div className="flex flex-col gap-1.5">
               <div className="flex gap-2">
-                <input type="text" placeholder="Código de descuento" value={promoCode}
+                <input type="text" placeholder="Discount code" value={promoCode}
                   onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoApplied(null); setPromoError(""); }}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyPromo())}
                   className="flex-1 px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none uppercase" style={inputStyle} />
                 <button type="button" onClick={applyPromo} disabled={promoLoading || !promoCode.trim()}
                   className="px-4 py-3 rounded-xl text-sm font-semibold disabled:opacity-40 transition-all"
                   style={{ background: promoApplied && promoValid ? "rgba(16,185,129,0.1)" : "rgba(0,0,0,0.07)", color: promoApplied && promoValid ? "#059669" : "rgba(0,0,0,0.6)" }}>
-                  {promoLoading ? "..." : promoApplied && promoValid ? "✓" : "Aplicar"}
+                  {promoLoading ? "..." : promoApplied && promoValid ? "✓" : "Apply"}
                 </button>
                 <button type="button" onClick={() => { setShowPromo(false); setPromoCode(""); setPromoApplied(null); setPromoError(""); }}
                   className="px-3 py-3 rounded-xl text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors" style={{ background: "rgba(0,0,0,0.04)" }}>
@@ -580,8 +580,8 @@ export default function CheckoutPanel({
                 </button>
               </div>
               {promoError && <p className="text-red-500 text-xs pl-1">{promoError}</p>}
-              {promoApplied && promoValid && <p className="text-green-600 text-xs pl-1">{promoApplied.discount === 100 ? "Guestlist aplicado — entrada gratis" : `${promoApplied.discount}% de descuento aplicado`}</p>}
-              {promoApplied && !promoValid && <p className="text-yellow-600/70 text-xs pl-1">Este código no aplica para la entrada seleccionada</p>}
+              {promoApplied && promoValid && <p className="text-green-600 text-xs pl-1">{promoApplied.discount === 100 ? "Guestlist applied — free ticket" : `${promoApplied.discount}% discount applied`}</p>}
+              {promoApplied && !promoValid && <p className="text-yellow-600/70 text-xs pl-1">This code does not apply to the selected ticket</p>}
             </div>
           )}
 

@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import QRCode from "react-qr-code";
+import { useRef } from "react";
 
 type TicketData = Record<string, unknown>;
 
@@ -13,13 +13,13 @@ function fmt12(t: string) {
 }
 
 function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("es-CR", {
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", {
     weekday: "short", day: "numeric", month: "short", year: "numeric",
   });
 }
 
 function fmtPrice(n: number) {
-  return "₡" + n.toLocaleString("es-CR");
+  return "₡" + n.toLocaleString("en-US");
 }
 
 function InfoRow({ label, value, accent, text }: { label: string; value: string; accent: string; text: string }) {
@@ -32,6 +32,7 @@ function InfoRow({ label, value, accent, text }: { label: string; value: string;
 }
 
 export default function TicketCard({ ticket, organizerName }: { ticket: TicketData; organizerName: string }) {
+  const ticketRef = useRef<HTMLDivElement>(null);
   const event = ticket.events as Record<string, unknown>;
   const ticketType = ticket.ticket_types as Record<string, unknown>;
 
@@ -43,7 +44,7 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
   const qrCode = ticket.qr_code as string;
   const shortRef = "#" + qrCode.slice(0, 8).toUpperCase();
   const isTable = ticketType?.category === "table" || ticketType?.category === "seat";
-  const typeLabel = isTable ? "MESA VIP" : "GENERAL";
+  const typeLabel = isTable ? "VIP TABLE" : "GENERAL";
 
   const startTime = event?.time ? fmt12(event.time as string) : null;
   const endTime = event?.end_time ? fmt12(event.end_time as string) : null;
@@ -55,27 +56,46 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
       {/* Actions — hidden on print */}
       <div className="flex items-center gap-3 mb-8 print:hidden">
         <button
-          onClick={() => window.print()}
+          onClick={async () => {
+            const el = ticketRef.current;
+            if (!el) return;
+            const h2c = (await import("html2canvas")).default;
+            const { jsPDF } = await import("jspdf");
+            // scale so the output is 1125px wide (Apple @3x retina)
+            const targetW = 1125;
+            const naturalW = el.offsetWidth || 420;
+            const scale = targetW / naturalW;
+            const canvas = await h2c(el, { scale, useCORS: true, allowTaint: true, backgroundColor: bg });
+            const imgData = canvas.toDataURL("image/jpeg", 0.96);
+            // 1pt = 1/72 inch; use 264 DPI → 1pt = 264/72 px
+            const dpi = 264;
+            const ptW = (canvas.width / dpi) * 72;
+            const ptH = (canvas.height / dpi) * 72;
+            const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: [ptW, ptH] });
+            pdf.addImage(imgData, "JPEG", 0, 0, ptW, ptH);
+            pdf.save(`ticket-${shortRef.replace("#", "")}.pdf`);
+          }}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
           style={{ background: `linear-gradient(135deg,${border},${accent})` }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
-            <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          Descargar / Imprimir
+          Download
         </button>
         <button
           onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = "/")}
           className="text-white/30 text-sm hover:text-white/60 transition-colors"
         >
-          ← Volver
+          ← Back
         </button>
       </div>
 
       {/* ── THE TICKET ── */}
       <div
         id="ticket"
+        ref={ticketRef}
         className="w-full relative"
         style={{
           maxWidth: 420,
@@ -105,7 +125,7 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
         </div>
 
         {/* ── TOP HEADER BAND ── */}
-        <div className="flex items-center justify-between px-5 py-3" style={{ background: `linear-gradient(90deg,${border}22,${accent}22)`, borderBottom: `1px solid ${border}33` }}>
+        <div className="flex items-center px-5 py-3" style={{ position: "relative", background: `linear-gradient(90deg,${border}22,${accent}22)`, borderBottom: `1px solid ${border}33` }}>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: `linear-gradient(135deg,${border},${accent})` }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
@@ -114,9 +134,15 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
             </div>
             <span className="text-[10px] font-black tracking-[0.2em] uppercase" style={{ color: accent }}>VYBZ TICKETS</span>
           </div>
-          <span className="text-[9px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full" style={{ background: `${accent}22`, color: accent, border: `1px solid ${accent}44` }}>
-            {typeLabel}
-          </span>
+          <svg width="84" height="24" style={{ position: "absolute", right: 16, top: 8 }}>
+            <rect x="0.5" y="0.5" width="83" height="23" rx="11"
+              fill={`${accent}22`} stroke={`${accent}55`} strokeWidth="1" />
+            <text x="42" y="16" textAnchor="middle" dominantBaseline="middle"
+              fill={accent} fontSize="8" fontWeight="800"
+              fontFamily="Arial, Helvetica, sans-serif" letterSpacing="0.5">
+              {typeLabel}
+            </text>
+          </svg>
         </div>
 
         {/* ── EVENT NAME ── */}
@@ -150,41 +176,42 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
           <div className="flex gap-4">
             {/* Left */}
             <div className="flex flex-col gap-3 flex-1">
-              <InfoRow label="Evento" value={event?.name as string} accent={accent} text={textColor} />
-              <InfoRow label="Organizador" value={organizerName} accent={accent} text={textColor} />
-              <InfoRow label="Lugar" value={`${event?.venue as string}, ${event?.city as string}`} accent={accent} text={textColor} />
-              <InfoRow label="Fecha" value={event?.date ? fmtDate(event.date as string) : "—"} accent={accent} text={textColor} />
-              {timeStr && <InfoRow label="Hora" value={timeStr} accent={accent} text={textColor} />}
+              <InfoRow label="Event" value={event?.name as string} accent={accent} text={textColor} />
+              <InfoRow label="Organizer" value={organizerName} accent={accent} text={textColor} />
+              <InfoRow label="Venue" value={`${event?.venue as string}, ${event?.city as string}`} accent={accent} text={textColor} />
+              <InfoRow label="Date" value={event?.date ? fmtDate(event.date as string) : "—"} accent={accent} text={textColor} />
+              {timeStr && <InfoRow label="Time" value={timeStr} accent={accent} text={textColor} />}
             </div>
 
             {/* Right */}
             <div className="flex flex-col gap-3 flex-1">
-              <InfoRow label="Nombre" value={(ticket.buyer_name as string) || "—"} accent={accent} text={textColor} />
-              <InfoRow label="Tipo de entrada" value={ticketType?.name as string} accent={accent} text={textColor} />
-              <InfoRow label="Ref. pedido" value={shortRef} accent={accent} text={textColor} />
-              <InfoRow label="Precio pagado" value={fmtPrice(ticket.purchase_price as number)} accent={accent} text={textColor} />
+              <InfoRow label="Name" value={(ticket.buyer_name as string) || "—"} accent={accent} text={textColor} />
+              <InfoRow label="Ticket type" value={ticketType?.name as string} accent={accent} text={textColor} />
+              <InfoRow label="Order ref." value={shortRef} accent={accent} text={textColor} />
+              <InfoRow label="Price paid" value={fmtPrice(ticket.purchase_price as number)} accent={accent} text={textColor} />
             </div>
 
-            {/* Flyer */}
+            {/* Flyer thumbnail */}
             {!!event?.image_url && (
-              <div className="shrink-0 w-[68px]">
-                <div className="rounded-xl overflow-hidden" style={{ aspectRatio: "3/4", border: `1px solid ${border}44` }}>
-                  <Image src={event.image_url as string} alt="Flyer" width={68} height={90} className="w-full h-full object-cover" />
+              <div style={{ flexShrink: 0, width: 80 }}>
+                <div style={{ width: 80, height: 120, borderRadius: 6, overflow: "hidden", border: `1px solid ${border}44` }}>
+                  <div style={{
+                    width: "100%", height: "100%",
+                    backgroundImage: `url(${event.image_url as string})`,
+                    backgroundSize: "contain",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                    backgroundColor: `${border}18`,
+                  }} />
                 </div>
               </div>
             )}
           </div>
 
-          {/* UUID */}
-          <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${border}22` }}>
-            <p className="text-[8px] font-bold tracking-widest uppercase mb-0.5" style={{ color: `${textColor}33` }}>UUID</p>
-            <p className="text-[8px] font-mono break-all" style={{ color: `${textColor}30` }}>{qrCode}</p>
-          </div>
-
           {/* Footer */}
           <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${border}22` }}>
             <p className="text-center text-[8px] leading-relaxed" style={{ color: `${textColor}30` }}>
-              Prohibida la reventa no autorizada. La entrada pierde validez una vez ingresada al recinto.
+              Unauthorized resale is prohibited. This ticket becomes void once used to enter the venue.
               <br /><span style={{ color: accent + "60" }}>Powered by Vybz Tickets</span>
             </p>
           </div>

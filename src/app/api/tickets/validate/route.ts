@@ -4,29 +4,45 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { qrCode, eventId } = body;
+  const { qrCode, eventId, scanCode } = body;
 
   if (!qrCode || !eventId) {
     return NextResponse.json({ status: "invalid", message: "Datos incompletos" }, { status: 400 });
   }
 
-  // Must be authenticated
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ status: "invalid", message: "No autorizado" }, { status: 401 });
-  }
-
   const admin = createAdminClient();
 
-  // Check access: must be organizer or have scanner_access for this event
-  const { data: event } = await admin.from("events").select("organizer_id").eq("id", eventId).single();
-  if (event && event.organizer_id !== user.id) {
-    const userProfile = await admin.from("profiles").select("email").eq("id", user.id).single();
-    const userEmail = userProfile.data?.email ?? "";
-    const { data: access } = await (admin as any).from("scanner_access")
-      .select("id").eq("event_id", eventId).eq("email", userEmail).single();
-    if (!access) return NextResponse.json({ status: "invalid", message: "Sin acceso a este evento" }, { status: 403 });
+  // Auth path 1: scan session code (no account needed)
+  if (scanCode) {
+    const { data: session } = await (admin as any)
+      .from("scan_sessions")
+      .select("id, event_id, expires_at, is_active")
+      .eq("code", (scanCode as string).toUpperCase().trim())
+      .eq("is_active", true)
+      .single();
+
+    if (!session || session.event_id !== eventId) {
+      return NextResponse.json({ status: "invalid", message: "Código de acceso inválido" }, { status: 403 });
+    }
+    if (session.expires_at && new Date(session.expires_at) < new Date()) {
+      return NextResponse.json({ status: "invalid", message: "Código expirado" }, { status: 403 });
+    }
+  } else {
+    // Auth path 2: Supabase session (organizer scanning from dashboard)
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ status: "invalid", message: "No autorizado" }, { status: 401 });
+    }
+
+    const { data: event } = await admin.from("events").select("organizer_id").eq("id", eventId).single();
+    if (event && event.organizer_id !== user.id) {
+      const userProfile = await admin.from("profiles").select("email").eq("id", user.id).single();
+      const userEmail = userProfile.data?.email ?? "";
+      const { data: access } = await (admin as any).from("scanner_access")
+        .select("id").eq("event_id", eventId).eq("email", userEmail).single();
+      if (!access) return NextResponse.json({ status: "invalid", message: "Sin acceso a este evento" }, { status: 403 });
+    }
   }
 
   // Find ticket by qr_code
@@ -78,10 +94,10 @@ export async function POST(request: Request) {
     .insert({
       ticket_id: ticket.id,
       event_id: eventId,
-      validated_by: user.id,
-      validation_method: "manual",
+      validated_by: null,
+      validation_method: scanCode ? "scan_code" : "manual",
       status: "valid",
-    });
+    } as any);
 
   return NextResponse.json({
     status: "valid",

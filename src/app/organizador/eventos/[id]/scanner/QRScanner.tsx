@@ -9,7 +9,41 @@ type ScanResult = {
   ticket?: { buyerName: string | null; buyerEmail: string; ticketType: string };
 };
 
-type StaffRow = { id: string; email: string; created_at: string };
+type ScanSession = {
+  id: string;
+  code: string;
+  type: string;
+  label: string | null;
+  expires_at: string | null;
+  is_active: boolean;
+  last_active_at: string | null;
+  created_at: string;
+};
+
+function formatCode(code: string) {
+  return `${code.slice(0, 3)}-${code.slice(3)}`;
+}
+
+function connectionStatus(last_active_at: string | null): "connected" | "idle" | "offline" {
+  if (!last_active_at) return "offline";
+  const diff = Date.now() - new Date(last_active_at).getTime();
+  if (diff < 90_000) return "connected";
+  if (diff < 300_000) return "idle";
+  return "offline";
+}
+
+const STATUS_COLORS = {
+  connected: "#10b981",
+  idle: "#f59e0b",
+  offline: "rgba(0,0,0,0.2)",
+};
+const STATUS_LABELS = {
+  connected: "Connected",
+  idle: "Idle",
+  offline: "Not connected",
+};
+
+// ── Camera scanner (organizer preview) ──────────────────────────────────────
 
 function CameraScanner({ eventId }: { eventId: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -17,13 +51,13 @@ function CameraScanner({ eventId }: { eventId: string }) {
   const rafRef = useRef<number>(0);
   const cooldownRef = useRef(false);
   const lastCodeRef = useRef("");
+  const streamRef = useRef<MediaStream | null>(null);
 
   const [result, setResult] = useState<ScanResult | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [active, setActive] = useState(true);
   const [recentScans, setRecentScans] = useState<Array<ScanResult & { time: string }>>([]);
-  const streamRef = useRef<MediaStream | null>(null);
 
   const processFrame = useCallback(() => {
     const video = videoRef.current;
@@ -32,7 +66,6 @@ function CameraScanner({ eventId }: { eventId: string }) {
       rafRef.current = requestAnimationFrame(processFrame);
       return;
     }
-
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
@@ -44,7 +77,6 @@ function CameraScanner({ eventId }: { eventId: string }) {
     if (code && !cooldownRef.current && code.data !== lastCodeRef.current) {
       lastCodeRef.current = code.data;
       cooldownRef.current = true;
-
       fetch("/api/tickets/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,7 +85,10 @@ function CameraScanner({ eventId }: { eventId: string }) {
         .then(r => r.json())
         .then((data: ScanResult) => {
           setResult(data);
-          setRecentScans(prev => [{ ...data, time: new Date().toLocaleTimeString("es-CR", { hour: "2-digit", minute: "2-digit" }) }, ...prev.slice(0, 4)]);
+          setRecentScans(prev => [
+            { ...data, time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) },
+            ...prev.slice(0, 4),
+          ]);
           setTimeout(() => {
             setResult(null);
             lastCodeRef.current = "";
@@ -61,7 +96,6 @@ function CameraScanner({ eventId }: { eventId: string }) {
           }, 2800);
         });
     }
-
     rafRef.current = requestAnimationFrame(processFrame);
   }, [eventId]);
 
@@ -88,7 +122,7 @@ function CameraScanner({ eventId }: { eventId: string }) {
           rafRef.current = requestAnimationFrame(processFrame);
         }
       })
-      .catch(() => setCameraError("No se pudo acceder a la cámara. Verificá los permisos del navegador."));
+      .catch(() => setCameraError("Could not access the camera. Check your browser permissions."));
   }
 
   useEffect(() => {
@@ -108,61 +142,30 @@ function CameraScanner({ eventId }: { eventId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Camera viewport */}
       <div
         className="relative rounded-2xl overflow-hidden"
         style={{ background: "#000", aspectRatio: "4/3", opacity: active ? 1 : 0.4 }}
       >
         <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
         <canvas ref={canvasRef} className="hidden" />
-
-        {/* Corner brackets */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="relative w-48 h-48">
-            {[
-              "top-0 left-0 border-t-2 border-l-2 rounded-tl-lg",
-              "top-0 right-0 border-t-2 border-r-2 rounded-tr-lg",
-              "bottom-0 left-0 border-b-2 border-l-2 rounded-bl-lg",
-              "bottom-0 right-0 border-b-2 border-r-2 rounded-br-lg",
-            ].map((cls, i) => (
+            {["top-0 left-0 border-t-2 border-l-2 rounded-tl-lg","top-0 right-0 border-t-2 border-r-2 rounded-tr-lg","bottom-0 left-0 border-b-2 border-l-2 rounded-bl-lg","bottom-0 right-0 border-b-2 border-r-2 rounded-br-lg"].map((cls, i) => (
               <div key={i} className={`absolute w-8 h-8 ${cls}`} style={{ borderColor: "rgba(255,255,255,0.7)" }} />
             ))}
-            {/* Animated scan line */}
             {scanning && !result && (
-              <div
-                className="absolute left-2 right-2 h-px"
-                style={{
-                  background: "rgba(255,255,255,0.6)",
-                  boxShadow: "0 0 6px rgba(255,255,255,0.4)",
-                  animation: "scan-line 2s ease-in-out infinite",
-                }}
-              />
+              <div className="absolute left-2 right-2 h-px" style={{ background: "rgba(255,255,255,0.6)", boxShadow: "0 0 6px rgba(255,255,255,0.4)", animation: "scan-line 2s ease-in-out infinite" }} />
             )}
           </div>
         </div>
-
-        {/* Camera error */}
         {cameraError && (
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center" style={{ background: "rgba(0,0,0,0.8)" }}>
-            <div>
-              <svg className="mx-auto mb-3" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-              </svg>
-              <p className="text-white/60 text-sm">{cameraError}</p>
-            </div>
+            <p className="text-white/60 text-sm">{cameraError}</p>
           </div>
         )}
-
-        {/* Result overlay */}
         {result && (
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-4"
-            style={{ background: resultColors[result.status].bg }}
-          >
-            <span className="text-white font-bold" style={{ fontSize: 64, lineHeight: 1 }}>
-              {resultColors[result.status].icon}
-            </span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4" style={{ background: resultColors[result.status].bg }}>
+            <span className="text-white font-bold" style={{ fontSize: 64, lineHeight: 1 }}>{resultColors[result.status].icon}</span>
             <p className="text-white font-bold text-xl text-center px-6">{result.message}</p>
             {result.ticket && (
               <div className="text-center">
@@ -172,50 +175,28 @@ function CameraScanner({ eventId }: { eventId: string }) {
             )}
           </div>
         )}
-
-        {/* Scanning indicator */}
         {scanning && !result && !cameraError && (
           <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-            <span
-              className="px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider text-white"
-              style={{ background: "rgba(0,0,0,0.5)" }}
-            >
-              Escaneando...
-            </span>
+            <span className="px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider text-white" style={{ background: "rgba(0,0,0,0.5)" }}>Scanning...</span>
           </div>
         )}
       </div>
-
-      {/* Start / Stop button */}
       <button
         onClick={active ? stopCamera : startCamera}
         className="w-full py-3 rounded-2xl text-sm font-semibold transition-colors"
-        style={active
-          ? { background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }
-          : { background: "#0a0a0a", color: "#fff" }}
+        style={active ? { background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" } : { background: "#0a0a0a", color: "#fff" }}
       >
-        {active ? "⏹ Detener cámara" : "▶ Iniciar escáner"}
+        {active ? "⏹ Stop camera" : "▶ Start scanner"}
       </button>
-
-      {/* Recent scans */}
       {recentScans.length > 0 && (
         <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
           <div className="px-4 py-2.5" style={{ background: "#f7f7f7", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-            <p className="text-[#0a0a0a]/40 text-[9px] uppercase tracking-widest font-semibold">Últimos escaneos</p>
+            <p className="text-[#0a0a0a]/40 text-[9px] uppercase tracking-widest font-semibold">Recent scans</p>
           </div>
           {recentScans.map((s, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between px-4 py-3"
-              style={{ borderBottom: i < recentScans.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none" }}
-            >
+            <div key={i} className="flex items-center justify-between px-4 py-3" style={{ borderBottom: i < recentScans.length - 1 ? "1px solid rgba(0,0,0,0.05)" : "none" }}>
               <div className="flex items-center gap-3">
-                <span
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                  style={{
-                    background: s.status === "valid" ? "#10b981" : s.status === "already_used" ? "#f59e0b" : "#ef4444",
-                  }}
-                >
+                <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: s.status === "valid" ? "#10b981" : s.status === "already_used" ? "#f59e0b" : "#ef4444" }}>
                   {s.status === "valid" ? "✓" : "!"}
                 </span>
                 <div>
@@ -232,118 +213,200 @@ function CameraScanner({ eventId }: { eventId: string }) {
   );
 }
 
-function StaffManager({ eventId }: { eventId: string }) {
-  const [staff, setStaff] = useState<StaffRow[]>([]);
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [fetchingStaff, setFetchingStaff] = useState(true);
+// ── Scan code manager ────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    fetch(`/api/organizador/scanner-access?event_id=${eventId}`)
+function ScanCodeManager({ eventId }: { eventId: string }) {
+  const [codes, setCodes] = useState<ScanSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [regenerating, setRegenerating] = useState<string | null>(null);
+  const [origin, setOrigin] = useState("");
+  const [copied, setCopied] = useState<string | null>(null);
+  const [ticker, setTicker] = useState(0);
+
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+
+  function fetchCodes() {
+    fetch(`/api/organizador/scan-codes?event_id=${eventId}`)
       .then(r => r.json())
-      .then(d => { setStaff(d.staff ?? []); setFetchingStaff(false); });
+      .then(d => { setCodes(d.codes ?? []); setLoading(false); });
+  }
+
+  useEffect(() => { fetchCodes(); }, [eventId]);
+
+  // Refresh statuses every 30s
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTicker(t => t + 1);
+      fetchCodes();
+    }, 30_000);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
-  async function addStaff(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setLoading(true);
-    setError(null);
-    const res = await fetch("/api/organizador/scanner-access", {
+  async function addScanner() {
+    setCreating(true);
+    const count = codes.filter(c => c.is_active).length + 1;
+    const res = await fetch("/api/organizador/scan-codes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ event_id: eventId, email }),
+      body: JSON.stringify({ event_id: eventId, label: `Scanner ${count}`, type: "scanner" }),
     });
     const data = await res.json();
-    if (!res.ok) { setError(data.error); } else { setStaff(prev => [data.staff, ...prev]); setEmail(""); }
-    setLoading(false);
+    if (res.ok) setCodes(prev => [data.session, ...prev]);
+    setCreating(false);
   }
 
-  async function removeStaff(id: string) {
-    await fetch(`/api/organizador/scanner-access/${id}`, { method: "DELETE" });
-    setStaff(prev => prev.filter(s => s.id !== id));
+  async function regenerate(id: string) {
+    setRegenerating(id);
+    const res = await fetch(`/api/organizador/scan-codes/${id}`, { method: "PATCH" });
+    const data = await res.json();
+    if (res.ok) setCodes(prev => prev.map(c => c.id === id ? data.session : c));
+    setRegenerating(null);
   }
+
+  async function revoke(id: string) {
+    await fetch(`/api/organizador/scan-codes/${id}`, { method: "DELETE" });
+    setCodes(prev => prev.filter(c => c.id !== id));
+  }
+
+  function copyUrl() {
+    navigator.clipboard.writeText(`${origin}/scan`);
+    setCopied("url");
+    setTimeout(() => setCopied(null), 2000);
+  }
+
+  const activeCodes = codes.filter(c => c.is_active);
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
-      <div className="px-5 py-4" style={{ background: "#f7f7f7", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-        <p className="text-[#0a0a0a] font-semibold text-sm">Staff de escaneo</p>
-        <p className="text-[#0a0a0a]/40 text-xs mt-0.5">
-          Estas personas podrán escanear entradas desde{" "}
-          <span className="font-mono" style={{ color: "rgba(0,0,0,0.5)" }}>
-            {typeof window !== "undefined" ? window.location.origin : ""}/escanear/{eventId}
-          </span>
-        </p>
+      {/* Header */}
+      <div
+        className="px-5 py-4 flex items-start justify-between gap-4"
+        style={{ background: "#f7f7f7", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
+      >
+        <div className="flex-1 min-w-0">
+          <p className="text-[#0a0a0a] font-semibold text-sm">Scanner access</p>
+          <div className="flex items-center gap-2 mt-1.5">
+            <p className="text-[#0a0a0a]/40 text-xs font-mono truncate">{origin}/scan</p>
+            <button
+              onClick={copyUrl}
+              className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors"
+              style={{
+                background: copied === "url" ? "rgba(16,185,129,0.12)" : "rgba(0,0,0,0.06)",
+                color: copied === "url" ? "#10b981" : "rgba(0,0,0,0.4)",
+              }}
+            >
+              {copied === "url" ? "Copied!" : "Copy"}
+            </button>
+          </div>
+        </div>
+        <button
+          onClick={addScanner}
+          disabled={creating}
+          className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-40 transition-opacity"
+          style={{ background: "#0a0a0a" }}
+        >
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/>
+          </svg>
+          {creating ? "Adding..." : "Add scanner"}
+        </button>
       </div>
 
-      <div className="p-5">
-        <form onSubmit={addStaff} className="flex gap-2 mb-5">
-          <input
-            type="email"
-            placeholder="email@ejemplo.com"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="flex-1 px-4 py-2.5 rounded-xl text-sm focus:outline-none"
-            style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}
-          />
-          <button
-            type="submit"
-            disabled={loading || !email.trim()}
-            className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-40"
-            style={{ background: "#0a0a0a" }}
-          >
-            {loading ? "..." : "Agregar"}
-          </button>
-        </form>
-
-        {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
-
-        {fetchingStaff ? (
-          <p className="text-[#0a0a0a]/30 text-sm">Cargando...</p>
-        ) : staff.length === 0 ? (
-          <p className="text-[#0a0a0a]/30 text-sm">Sin staff asignado aún.</p>
-        ) : (
-          <div className="space-y-2">
-            {staff.map(s => (
-              <div
-                key={s.id}
-                className="flex items-center justify-between px-4 py-3 rounded-xl"
-                style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)" }}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: "rgba(0,0,0,0.07)" }}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                    </svg>
-                  </div>
-                  <p className="text-[#0a0a0a] text-sm font-medium">{s.email}</p>
-                </div>
-                <button
-                  onClick={() => removeStaff(s.id)}
-                  className="text-[#0a0a0a]/25 hover:text-red-500 transition-colors"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                </button>
-              </div>
-            ))}
+      {/* Code list */}
+      <div className="p-4 space-y-3">
+        {loading ? (
+          <p className="text-[#0a0a0a]/30 text-sm text-center py-4">Loading...</p>
+        ) : activeCodes.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-[#0a0a0a]/25 text-sm">No scanners yet</p>
+            <p className="text-[#0a0a0a]/20 text-xs mt-1">Click "Add scanner" to generate an access code</p>
           </div>
+        ) : (
+          activeCodes.map(c => {
+            const status = connectionStatus(c.last_active_at);
+            const isRegen = regenerating === c.id;
+            return (
+              <div
+                key={c.id}
+                className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
+                style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}
+              >
+                {/* Status dot */}
+                <div
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{
+                    background: STATUS_COLORS[status],
+                    boxShadow: status === "connected" ? `0 0 6px ${STATUS_COLORS.connected}` : "none",
+                  }}
+                />
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-[#0a0a0a] text-sm font-semibold">
+                      {c.label ?? "Scanner"}
+                    </p>
+                    <span
+                      className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                      style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.4)" }}
+                    >
+                      {STATUS_LABELS[status]}
+                    </span>
+                  </div>
+                  <p
+                    className="font-[family-name:var(--font-bebas)] tracking-widest mt-0.5"
+                    style={{ fontSize: 20, color: isRegen ? "rgba(0,0,0,0.2)" : "#0a0a0a", letterSpacing: "0.25em" }}
+                  >
+                    {formatCode(c.code)}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => regenerate(c.id)}
+                    disabled={isRegen}
+                    title="Generate new code"
+                    className="p-2 rounded-lg transition-colors disabled:opacity-30"
+                    style={{ background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)" }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={isRegen ? "animate-spin" : ""}>
+                      <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => revoke(c.id)}
+                    title="Revoke access"
+                    className="p-2 rounded-lg transition-colors"
+                    style={{ background: "rgba(239,68,68,0.06)", color: "#ef4444" }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
+
+      {/* Footer hint */}
+      {activeCodes.length > 0 && (
+        <div className="px-5 py-3" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+          <p className="text-[#0a0a0a]/25 text-[10px]">
+            Green dot = scanner connected in the last 90 seconds. Refreshes every 30s.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
+// ── Export ───────────────────────────────────────────────────────────────────
+
 export default function QRScanner({ eventId }: { eventId: string }) {
-  return (
-    <div className="space-y-8">
-      <CameraScanner eventId={eventId} />
-      <StaffManager eventId={eventId} />
-    </div>
-  );
+  return <ScanCodeManager eventId={eventId} />;
 }

@@ -31,9 +31,9 @@ export default async function EscanearPage({ params }: { params: Promise<{ event
       return (
         <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0a0a" }}>
           <div className="text-center px-6">
-            <p className="text-white/20 text-sm mb-2">Sin acceso</p>
-            <p className="text-white font-semibold">No tenés permiso para escanear este evento.</p>
-            <p className="text-white/30 text-xs mt-2">Pedile al organizador que agregue tu email como escáner.</p>
+            <p className="text-white/20 text-sm mb-2">Access denied</p>
+            <p className="text-white font-semibold">You don't have permission to scan this event.</p>
+            <p className="text-white/30 text-xs mt-2">Ask the organizer to add your email as a scanner.</p>
           </div>
         </div>
       );

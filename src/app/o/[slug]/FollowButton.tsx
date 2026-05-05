@@ -3,13 +3,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
-function setPageBlur(on: boolean) {
-  const el = document.getElementById("org-page-content");
-  if (!el) return;
-  el.style.transition = "filter 0.2s ease";
-  el.style.filter = on ? "blur(8px)" : "";
-}
-
 export default function FollowButton({
   slug,
   organizerId,
@@ -27,7 +20,6 @@ export default function FollowButton({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
-  useEffect(() => { setPageBlur(showNotify); return () => setPageBlur(false); }, [showNotify]);
 
   async function handleClick() {
     if (!isLoggedIn) {
@@ -69,10 +61,10 @@ export default function FollowButton({
       >
         <div>
           <p className="font-[family-name:var(--font-bebas)] text-2xl tracking-wide text-[#0a0a0a] leading-none mb-2">
-            Seguir este organizador
+            Follow this organizer
           </p>
           <p className="text-[#0a0a0a]/45 text-sm leading-relaxed">
-            ¿Querés recibir un email cuando este organizador publique nuevos eventos?
+            Would you like to receive an email when this organizer publishes new events?
           </p>
         </div>
         <button
@@ -80,13 +72,13 @@ export default function FollowButton({
           className="w-full py-3.5 rounded-2xl text-sm font-semibold"
           style={{ background: "#0a0a0a", color: "#fff" }}
         >
-          Seguir y recibir alertas
+          Follow and receive alerts
         </button>
         <button
           onClick={() => doFollow(false)}
           className="w-full py-2 text-xs text-[#0a0a0a]/35 hover:text-[#0a0a0a]/60 transition-colors"
         >
-          Seguir sin notificaciones
+          Follow without notifications
         </button>
       </div>
     </div>
@@ -104,7 +96,7 @@ export default function FollowButton({
             : { background: "#0a0a0a", color: "#fff" }
         }
       >
-        {loading ? "…" : following ? "Siguiendo" : "Seguir"}
+        {loading ? "…" : following ? "Following" : "Follow"}
       </button>
       {mounted && createPortal(showNotify ? modal : null, document.body)}
     </>

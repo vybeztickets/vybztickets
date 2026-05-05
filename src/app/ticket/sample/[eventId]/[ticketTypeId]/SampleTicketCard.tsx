@@ -15,13 +15,13 @@ function fmt12(t: string) {
 }
 
 function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("es-CR", {
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", {
     weekday: "short", day: "numeric", month: "short", year: "numeric",
   });
 }
 
 function fmtPrice(n: number) {
-  return "₡" + n.toLocaleString("es-CR");
+  return "₡" + n.toLocaleString("en-US");
 }
 
 function InfoRow({ label, value, accent, text }: { label: string; value: string; accent: string; text: string }) {
@@ -33,7 +33,7 @@ function InfoRow({ label, value, accent, text }: { label: string; value: string;
   );
 }
 
-const FAKE_UUID = "00000000-MUESTRA-0000-0000-000000000000";
+const FAKE_UUID = "00000000-SAMPLE-0000-0000-000000000000";
 const FAKE_REF = "#00000000";
 
 export default function SampleTicketCard({
@@ -53,7 +53,7 @@ export default function SampleTicketCard({
   const textColor = (event.ticket_text_color as string) || "#ffffff";
 
   const isTable = ticketType.category === "table" || ticketType.category === "seat";
-  const typeLabel = isTable ? "MESA VIP" : "GENERAL";
+  const typeLabel = isTable ? "VIP TABLE" : "GENERAL";
 
   const startTime = event.time ? fmt12(event.time as string) : null;
   const endTime = event.end_time ? fmt12(event.end_time as string) : null;
@@ -65,7 +65,7 @@ export default function SampleTicketCard({
       {/* Actions */}
       <div className="flex items-center gap-3 mb-6 print:hidden">
         <div className="px-3 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase" style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>
-          BOLETO DE MUESTRA — NO VÁLIDO PARA INGRESO
+          SAMPLE TICKET — NOT VALID FOR ENTRY
         </div>
       </div>
 
@@ -79,15 +79,15 @@ export default function SampleTicketCard({
             <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
             <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
           </svg>
-          Descargar / Imprimir
+          Download / Print
         </button>
         {backHref ? (
           <Link href={backHref} className="text-white/30 text-sm hover:text-white/60 transition-colors">
-            ← Volver
+            ← Back
           </Link>
         ) : (
           <button onClick={() => window.history.back()} className="text-white/30 text-sm hover:text-white/60 transition-colors">
-            ← Volver
+            ← Back
           </button>
         )}
       </div>
@@ -143,7 +143,7 @@ export default function SampleTicketCard({
               letterSpacing: 8,
             }}
           >
-            MUESTRA
+            SAMPLE
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export default function SampleTicketCard({
             <QRCode value={FAKE_UUID} size={220} level="H" />
             {/* MUESTRA overlay on QR */}
             <div className="absolute inset-0 flex items-center justify-center rounded-2xl" style={{ background: "rgba(239,68,68,0.1)" }}>
-              <span className="text-red-600 font-black text-sm tracking-widest opacity-70 rotate-[-35deg]">MUESTRA</span>
+              <span className="text-red-600 font-black text-sm tracking-widest opacity-70 rotate-[-35deg]">SAMPLE</span>
             </div>
           </div>
           <p className="text-[10px] font-mono font-bold mt-3 tracking-[0.25em]" style={{ color: `${textColor}44` }}>{FAKE_REF}</p>
@@ -197,19 +197,19 @@ export default function SampleTicketCard({
           <div className="flex gap-4">
             {/* Left */}
             <div className="flex flex-col gap-3 flex-1">
-              <InfoRow label="Evento" value={event.name as string} accent={accent} text={textColor} />
-              <InfoRow label="Organizador" value={organizerName} accent={accent} text={textColor} />
-              <InfoRow label="Lugar" value={`${event.venue as string}, ${event.city as string}`} accent={accent} text={textColor} />
-              <InfoRow label="Fecha" value={event.date ? fmtDate(event.date as string) : "—"} accent={accent} text={textColor} />
-              {timeStr && <InfoRow label="Hora" value={timeStr} accent={accent} text={textColor} />}
+              <InfoRow label="Event" value={event.name as string} accent={accent} text={textColor} />
+              <InfoRow label="Organizer" value={organizerName} accent={accent} text={textColor} />
+              <InfoRow label="Venue" value={`${event.venue as string}, ${event.city as string}`} accent={accent} text={textColor} />
+              <InfoRow label="Date" value={event.date ? fmtDate(event.date as string) : "—"} accent={accent} text={textColor} />
+              {timeStr && <InfoRow label="Time" value={timeStr} accent={accent} text={textColor} />}
             </div>
 
             {/* Right */}
             <div className="flex flex-col gap-3 flex-1">
-              <InfoRow label="Nombre" value="Juan Pérez" accent={accent} text={textColor} />
-              <InfoRow label="Tipo de entrada" value={ticketType.name as string} accent={accent} text={textColor} />
-              <InfoRow label="Ref. pedido" value={FAKE_REF} accent={accent} text={textColor} />
-              <InfoRow label="Precio" value={fmtPrice(ticketType.price as number)} accent={accent} text={textColor} />
+              <InfoRow label="Name" value="John Doe" accent={accent} text={textColor} />
+              <InfoRow label="Ticket type" value={ticketType.name as string} accent={accent} text={textColor} />
+              <InfoRow label="Order ref." value={FAKE_REF} accent={accent} text={textColor} />
+              <InfoRow label="Price" value={fmtPrice(ticketType.price as number)} accent={accent} text={textColor} />
             </div>
 
             {/* Flyer */}
@@ -231,8 +231,8 @@ export default function SampleTicketCard({
           {/* Footer */}
           <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${border}22` }}>
             <p className="text-center text-[8px] leading-relaxed" style={{ color: `${textColor}30` }}>
-              BOLETO DE MUESTRA — No válido para ingreso al evento.
-              <br />Prohibida la reventa no autorizada.
+              SAMPLE TICKET — Not valid for event entry.
+              <br />Unauthorized resale is prohibited.
               <br /><span style={{ color: accent + "60" }}>Powered by Vybz Tickets</span>
             </p>
           </div>

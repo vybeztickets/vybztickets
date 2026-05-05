@@ -85,7 +85,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
       d.setDate(d.getDate() - (29 - i));
       const dateStr = d.toISOString().split("T")[0];
       const total = contacts.filter((c) => c.created_at.split("T")[0] <= dateStr).length;
-      const label = d.toLocaleDateString("es-CR", { day: "numeric", month: "short" });
+      const label = d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
       return { date: label, total };
     });
   }, [contacts]);
@@ -118,9 +118,9 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
   }
 
   async function handleSend() {
-    if (!fSubject.trim()) { setSendError("El asunto es requerido."); return; }
+    if (!fSubject.trim()) { setSendError("Subject is required."); return; }
     if (audienceType === "events" && selectedEventIds.length === 0) {
-      setSendError("Seleccioná al menos un evento."); return;
+      setSendError("Select at least one event."); return;
     }
     setSending(true); setSendError("");
     const audience = audienceType === "all" ? "all" : `events:${selectedEventIds.join(",")}`;
@@ -134,8 +134,8 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
     });
     const data = await res.json();
     setSending(false);
-    if (!res.ok) { setSendError(data.error ?? "Error al enviar"); return; }
-    setSendSuccess(`¡Campaña enviada a ${data.sent} destinatarios!`);
+    if (!res.ok) { setSendError(data.error ?? "Error sending campaign"); return; }
+    setSendSuccess(`Campaign sent to ${data.sent} recipients!`);
     setTimeout(() => {
       setShowCreate(false); resetForm();
       fetch("/api/organizador/marketing/campaigns").then((r) => r.json()).then((d) => setCampaigns(Array.isArray(d) ? d : []));
@@ -171,7 +171,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
   }
 
   async function handleImport() {
-    if (importRows.length === 0) { setImportError("No se detectaron contactos válidos."); return; }
+    if (importRows.length === 0) { setImportError("No valid contacts detected."); return; }
     setImporting(true); setImportError("");
     const res = await fetch("/api/organizador/marketing/contacts", {
       method: "POST",
@@ -196,17 +196,17 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
   }
 
   function exportCSV() {
-    const header = "email,nombre,fuente,estado,fecha\n";
+    const header = "email,name,source,status,date\n";
     const rows = contacts
       .map((c) =>
-        `${c.email},${c.full_name || ""},${c.source},${c.subscribed ? "activo" : "desuscrito"},${c.created_at.split("T")[0]}`
+        `${c.email},${c.full_name || ""},${c.source},${c.subscribed ? "active" : "unsubscribed"},${c.created_at.split("T")[0]}`
       )
       .join("\n");
     const blob = new Blob(["﻿" + header + rows], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `contactos-vybz-${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `contacts-vybz-${new Date().toISOString().split("T")[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -216,14 +216,14 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
   const subscribedCount = contacts.filter((c) => c.subscribed).length;
 
   const audienceLabel = (aud: string) => {
-    if (aud === "all") return "Todos los contactos";
+    if (aud === "all") return "All contacts";
     if (aud.startsWith("events:")) {
       const ids = aud.replace("events:", "").split(",");
       if (ids.length === 1) {
         const ev = events.find((e) => e.id === ids[0]);
-        return ev ? `Asistentes · ${ev.name}` : "1 evento";
+        return ev ? `Attendees · ${ev.name}` : "1 event";
       }
-      return `Asistentes · ${ids.length} eventos`;
+      return `Attendees · ${ids.length} events`;
     }
     return aud;
   };
@@ -237,10 +237,10 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
         <div className="flex items-center justify-between px-4 py-2.5 rounded-lg mb-6" style={{ background: "#0a0a0a" }}>
           <div className="flex items-center gap-2.5">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <p className="text-xs text-white/50">Cuenta pendiente de activación — el envío de emails está deshabilitado</p>
+            <p className="text-xs text-white/50">Account pending activation — email sending is disabled</p>
           </div>
           <a href="/organizador/configuracion" className="text-xs font-semibold text-white/80 hover:text-white transition-colors">
-            Ver estado →
+            View status →
           </a>
         </div>
       )}
@@ -257,7 +257,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              Exportar CSV
+              Export CSV
             </button>
           )}
           {tab === "contactos" && (
@@ -266,7 +266,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
               style={{ background: "rgba(0,0,0,0.07)", color: "#0a0a0a" }}
             >
-              Importar CSV
+              Import CSV
             </button>
           )}
           {tab === "correos" && (
@@ -275,7 +275,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
               style={{ background: "#0a0a0a", color: "#fff" }}
             >
-              + Nuevo mensaje
+              + New message
             </button>
           )}
         </div>
@@ -290,28 +290,28 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
             className="px-4 py-3 text-sm font-medium transition-colors"
             style={tab === t ? { color: "#0a0a0a", borderBottom: "2px solid #0a0a0a", marginBottom: -1 } : { color: "rgba(0,0,0,0.3)" }}
           >
-            {t === "correos" ? "Correos" : `Contactos${!loadingCont ? ` (${subscribedCount})` : ""}`}
+            {t === "correos" ? "Emails" : `Contacts${!loadingCont ? ` (${subscribedCount})` : ""}`}
           </button>
         ))}
       </div>
 
-      {/* ── CORREOS TAB ── */}
+      {/* ── EMAILS TAB ── */}
       {tab === "correos" && (
         <>
           {loadingCamp ? (
-            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">Cargando…</div>
+            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">Loading…</div>
           ) : campaigns.length === 0 ? (
             <div className="rounded-2xl py-20 text-center" style={{ border: "1px dashed rgba(0,0,0,0.08)" }}>
-              <p className="text-[#0a0a0a]/20 text-sm mb-3">Sin campañas todavía</p>
+              <p className="text-[#0a0a0a]/20 text-sm mb-3">No campaigns yet</p>
               <button onClick={() => { resetForm(); setShowCreate(true); }} className="text-xs font-semibold px-4 py-2 rounded-xl" style={{ background: "#0a0a0a", color: "#fff" }}>
-                Crear primer mensaje
+                Create first message
               </button>
             </div>
           ) : (
             <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
               <div className="grid text-xs font-semibold uppercase tracking-wider px-5 py-3"
                 style={{ gridTemplateColumns: "1fr 220px 160px 100px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-                <div>Asunto</div><div>Enviado a</div><div>Fecha</div><div className="text-right">Destinatarios</div>
+                <div>Subject</div><div>Sent to</div><div>Date</div><div className="text-right">Recipients</div>
               </div>
               {campaigns.map((c, i) => (
                 <div key={c.id} className="grid items-center px-5 py-4"
@@ -326,7 +326,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
                     </span>
                   </div>
                   <div className="text-[#0a0a0a]/40 text-xs">
-                    {new Date(c.sent_at ?? c.created_at).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" })}
+                    {new Date(c.sent_at ?? c.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
                   </div>
                   <div className="text-right text-[#0a0a0a] text-sm font-medium">{c.sent_count.toLocaleString()}</div>
                 </div>
@@ -336,14 +336,14 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
         </>
       )}
 
-      {/* ── CONTACTOS TAB ── */}
+      {/* ── CONTACTS TAB ── */}
       {tab === "contactos" && (
         <>
           {/* Stats */}
           <div className="flex gap-4 mb-6">
             {[
-              { label: "Suscritos", value: subscribedCount },
-              { label: "Desuscritos", value: contacts.filter((c) => !c.subscribed).length },
+              { label: "Subscribed", value: subscribedCount },
+              { label: "Unsubscribed", value: contacts.filter((c) => !c.subscribed).length },
               { label: "Total", value: contacts.length },
             ].map((s) => (
               <div key={s.label} className="rounded-xl px-5 py-4 flex-1" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
@@ -356,7 +356,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
           {/* Growth chart */}
           {contacts.length > 0 && (
             <div className="rounded-2xl p-5 mb-6" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-              <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Crecimiento de suscriptores (30 días)</p>
+              <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Subscriber growth (30 days)</p>
               <ResponsiveContainer width="100%" height={120}>
                 <AreaChart data={growthData} margin={{ top: 4, right: 0, left: -30, bottom: 0 }}>
                   <defs>
@@ -368,7 +368,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
                   <XAxis dataKey="date" tick={{ fontSize: 9, fill: "rgba(0,0,0,0.25)" }} tickLine={false} axisLine={false} interval={4} />
                   <Tooltip
                     contentStyle={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8, fontSize: 12 }}
-                    formatter={(v: unknown) => [v as string, "Total suscritos"]}
+                    formatter={(v: unknown) => [v as string, "Total subscribers"]}
                   />
                   <Area type="monotone" dataKey="total" stroke="#0a0a0a" strokeWidth={1.5} fill="url(#growthGrad)" dot={false} />
                 </AreaChart>
@@ -378,19 +378,19 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
 
           {/* Contacts table */}
           {loadingCont ? (
-            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">Cargando…</div>
+            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">Loading…</div>
           ) : contacts.length === 0 ? (
             <div className="rounded-2xl py-20 text-center" style={{ border: "1px dashed rgba(0,0,0,0.08)" }}>
-              <p className="text-[#0a0a0a]/20 text-sm mb-3">Sin contactos todavía</p>
+              <p className="text-[#0a0a0a]/20 text-sm mb-3">No contacts yet</p>
               <button onClick={() => setShowImport(true)} className="text-xs font-semibold px-4 py-2 rounded-xl" style={{ background: "#0a0a0a", color: "#fff" }}>
-                Importar CSV
+                Import CSV
               </button>
             </div>
           ) : (
             <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
               <div className="grid text-xs font-semibold uppercase tracking-wider px-5 py-3"
                 style={{ gridTemplateColumns: "1fr 160px 100px 80px 40px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-                <div>Email</div><div>Nombre</div><div>Fuente</div><div>Estado</div><div />
+                <div>Email</div><div>Name</div><div>Source</div><div>Status</div><div />
               </div>
               {contacts.map((c, i) => (
                 <div key={c.id} className="grid items-center px-5 py-3"
@@ -398,10 +398,10 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
                   <p className="text-[#0a0a0a] text-sm truncate">{c.email}</p>
                   <p className="text-[#0a0a0a]/50 text-sm truncate">{c.full_name || "—"}</p>
                   <span className="text-[10px] px-2 py-0.5 rounded-full w-fit" style={{ background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.4)" }}>
-                    {c.source === "purchase" ? "Compra" : "Importado"}
+                    {c.source === "purchase" ? "Purchase" : "Imported"}
                   </span>
                   <span className="text-[10px] font-semibold" style={{ color: c.subscribed ? "#5a8a6a" : "rgba(0,0,0,0.25)" }}>
-                    {c.subscribed ? "Activo" : "Baja"}
+                    {c.subscribed ? "Active" : "Unsubscribed"}
                   </span>
                   <button onClick={() => deleteContact(c.id)} className="text-[#0a0a0a]/15 hover:text-red-400 transition-colors">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -423,8 +423,8 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
           <div className="w-full max-w-lg rounded-2xl flex flex-col" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", maxHeight: "92vh" }}>
             <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
               <div>
-                <h3 className="text-[#0a0a0a] font-bold text-lg">Crear mensaje de Marketing</h3>
-                <p className="text-[#0a0a0a]/30 text-xs mt-0.5">Personaliza y envía tus mensajes de marketing en minutos.</p>
+                <h3 className="text-[#0a0a0a] font-bold text-lg">Create marketing message</h3>
+                <p className="text-[#0a0a0a]/30 text-xs mt-0.5">Customize and send your marketing messages in minutes.</p>
               </div>
               <button onClick={() => { setShowCreate(false); resetForm(); }} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -436,59 +436,59 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </div>
                 <div>
-                  <p className="font-semibold text-[#0a0a0a] text-base mb-1.5">Cuenta pendiente de activación</p>
-                  <p className="text-sm text-[#0a0a0a]/40 max-w-xs">Tu cuenta debe estar activa para poder crear y enviar campañas de marketing.</p>
+                  <p className="font-semibold text-[#0a0a0a] text-base mb-1.5">Account pending activation</p>
+                  <p className="text-sm text-[#0a0a0a]/40 max-w-xs">Your account must be active to create and send marketing campaigns.</p>
                 </div>
                 <a
                   href="/organizador/configuracion"
                   className="px-5 py-2.5 rounded-xl text-sm font-semibold"
                   style={{ background: "#0a0a0a", color: "#fff" }}
                 >
-                  Ir a configuración
+                  Go to settings
                 </a>
               </div>
             )}
             {!isBlocked && (<><div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
               <div>
-                <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">Asunto *</label>
-                <input type="text" className={inputClass} style={inputStyle} placeholder="Ej: ¡Lineup oficial de HALLOWFEST!" value={fSubject} onChange={(e) => setFSubject(e.target.value)} />
+                <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">Subject *</label>
+                <input type="text" className={inputClass} style={inputStyle} placeholder="E.g.: Official HALLOWFEST lineup!" value={fSubject} onChange={(e) => setFSubject(e.target.value)} />
               </div>
 
               <div>
-                <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">Imagen del flyer</label>
-                <ImageUploadField value={fImageUrl} onChange={setFImageUrl} label="" hint="JPG, PNG o WebP · máx 10MB" aspectRatio="1:1" />
+                <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">Flyer image</label>
+                <ImageUploadField value={fImageUrl} onChange={setFImageUrl} label="" hint="JPG, PNG or WebP · max 10MB" aspectRatio="1:1" />
               </div>
 
               <div>
-                <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">Mensaje</label>
+                <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">Message</label>
                 <textarea rows={4} className={inputClass} style={{ ...inputStyle, resize: "none" }}
-                  placeholder="Hola familia, queríamos contarles que..." value={fBody} onChange={(e) => setFBody(e.target.value)} />
+                  placeholder="Hey everyone, we wanted to let you know..." value={fBody} onChange={(e) => setFBody(e.target.value)} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">Texto del botón</label>
-                  <input type="text" className={inputClass} style={inputStyle} placeholder="Comprar entradas" value={fCtaText} onChange={(e) => setFCtaText(e.target.value)} />
+                  <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">Button text</label>
+                  <input type="text" className={inputClass} style={inputStyle} placeholder="Buy tickets" value={fCtaText} onChange={(e) => setFCtaText(e.target.value)} />
                 </div>
                 <div>
-                  <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">URL del botón</label>
+                  <label className="block text-[#0a0a0a]/40 text-xs mb-1.5 uppercase tracking-wider">Button URL</label>
                   <input type="url" className={inputClass} style={inputStyle} placeholder="https://..." value={fCtaUrl} onChange={(e) => setFCtaUrl(e.target.value)} />
                 </div>
               </div>
 
               {/* Audience */}
               <div>
-                <label className="block text-[#0a0a0a]/40 text-xs mb-2 uppercase tracking-wider">Enviar a</label>
+                <label className="block text-[#0a0a0a]/40 text-xs mb-2 uppercase tracking-wider">Send to</label>
                 <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
                   <label className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-black/[0.02] transition-colors" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                     <input type="radio" name="aud" checked={audienceType === "all"} onChange={() => setAudienceType("all")} className="accent-black" />
-                    <span className="text-sm text-[#0a0a0a]">Toda la base de datos <span className="text-[#0a0a0a]/30">({subscribedCount} suscritos)</span></span>
+                    <span className="text-sm text-[#0a0a0a]">Entire database <span className="text-[#0a0a0a]/30">({subscribedCount} subscribed)</span></span>
                   </label>
                   {events.length > 0 && (
                     <div>
                       <label className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-black/[0.02] transition-colors" style={{ borderBottom: audienceType === "events" && events.length > 0 ? "1px solid rgba(0,0,0,0.06)" : "none" }}>
                         <input type="radio" name="aud" checked={audienceType === "events"} onChange={() => setAudienceType("events")} className="accent-black" />
-                        <span className="text-sm text-[#0a0a0a]">Asistentes de eventos específicos</span>
+                        <span className="text-sm text-[#0a0a0a]">Attendees of specific events</span>
                       </label>
                       {audienceType === "events" && (
                         <div className="px-4 pb-3 flex flex-col gap-2 pt-1" style={{ background: "rgba(0,0,0,0.02)" }}>
@@ -499,7 +499,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
                             </label>
                           ))}
                           {selectedEventIds.length > 1 && (
-                            <p className="text-[10px] text-[#0a0a0a]/30 mt-1">Los emails duplicados entre eventos se envían una sola vez.</p>
+                            <p className="text-[10px] text-[#0a0a0a]/30 mt-1">Duplicate emails across events are sent only once.</p>
                           )}
                         </div>
                       )}
@@ -514,13 +514,13 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
 
             <div className="px-6 py-4 flex flex-col gap-3" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#0a0a0a]/40">Destinatarios estimados</span>
+                <span className="text-xs text-[#0a0a0a]/40">Estimated recipients</span>
                 <span className="text-sm font-bold text-[#0a0a0a]">
                   {loadingCount ? "…" : recipientCount !== null ? recipientCount.toLocaleString() : "—"}
                 </span>
               </div>
               <button onClick={handleSend} disabled={sending} className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-40 transition-opacity" style={{ background: "#0a0a0a", color: "#fff" }}>
-                {sending ? "Enviando…" : "Enviar campaña"}
+                {sending ? "Sending…" : "Send campaign"}
               </button>
             </div>
             </>)}
@@ -535,7 +535,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
           onClick={(e) => { if (e.target === e.currentTarget) { setShowImport(false); setImportRows([]); } }}>
           <div className="w-full max-w-md rounded-2xl" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-              <h3 className="text-[#0a0a0a] font-bold text-lg">Importar contactos</h3>
+              <h3 className="text-[#0a0a0a] font-bold text-lg">Import contacts</h3>
               <button onClick={() => { setShowImport(false); setImportRows([]); }} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
@@ -544,9 +544,9 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
             <div className="px-6 py-5 flex flex-col gap-4">
               {/* CSV format instructions */}
               <div className="rounded-xl p-4 flex flex-col gap-3" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
-                <p className="text-xs font-semibold text-[#0a0a0a]/60 uppercase tracking-wider">Formato del archivo CSV</p>
+                <p className="text-xs font-semibold text-[#0a0a0a]/60 uppercase tracking-wider">CSV file format</p>
                 <p className="text-xs text-[#0a0a0a]/40 leading-relaxed">
-                  El archivo debe tener exactamente estas dos columnas. Los contactos repetidos se actualizan sin duplicar.
+                  The file must have exactly these two columns. Duplicate contacts are updated without creating duplicates.
                 </p>
                 {/* Visual table example */}
                 <div className="rounded-lg overflow-hidden text-xs" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>
@@ -555,7 +555,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
                     <div className="px-3 py-1.5 font-semibold">B</div>
                   </div>
                   {[
-                    { a: "email", b: "nombre", header: true },
+                    { a: "email", b: "name", header: true },
                     { a: "juan@email.com", b: "Juan Pérez", header: false },
                     { a: "maria@email.com", b: "María López", header: false },
                     { a: "carlos@email.com", b: "Carlos Ruiz", header: false },
@@ -575,8 +575,8 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
                 {importRows.length > 0
-                  ? <p className="text-sm font-semibold" style={{ color: "#5a8a6a" }}>{importRows.length} contactos detectados</p>
-                  : <p className="text-sm text-[#0a0a0a]/30">Seleccioná un archivo .csv</p>}
+                  ? <p className="text-sm font-semibold" style={{ color: "#5a8a6a" }}>{importRows.length} contacts detected</p>
+                  : <p className="text-sm text-[#0a0a0a]/30">Select a .csv file</p>}
                 <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleFile} />
               </label>
 
@@ -589,7 +589,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
                       <span className="text-[#0a0a0a]/30 truncate">{r.full_name || "—"}</span>
                     </div>
                   ))}
-                  {importRows.length > 5 && <div className="px-4 py-2 text-[10px] text-[#0a0a0a]/25">...y {importRows.length - 5} más</div>}
+                  {importRows.length > 5 && <div className="px-4 py-2 text-[10px] text-[#0a0a0a]/25">...and {importRows.length - 5} more</div>}
                 </div>
               )}
 
@@ -598,7 +598,7 @@ export default function MarketingClient({ events, organizerName, role }: Props) 
               <button onClick={handleImport} disabled={importing || importRows.length === 0}
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-40"
                 style={{ background: "#0a0a0a", color: "#fff" }}>
-                {importing ? "Importando…" : `Importar ${importRows.length} contactos`}
+                {importing ? "Importing…" : `Import ${importRows.length} contacts`}
               </button>
             </div>
           </div>
