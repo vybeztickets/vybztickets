@@ -108,7 +108,7 @@ export default function OrgSidebar({
     >
       {/* Logo */}
       <div className="px-5 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <Link href="/organizador" className="font-[family-name:var(--font-bebas)] text-white tracking-widest text-xl block">
+        <Link href="/platform" className="font-[family-name:var(--font-bebas)] text-white tracking-widest text-xl block">
           VYBZ
         </Link>
         <p className="text-white/30 text-[10px] uppercase tracking-widest mt-0.5">Platform</p>
