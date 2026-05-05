@@ -46,29 +46,25 @@ export default function Navbar() {
           {authChecked && (
             <>
               {isLoggedIn ? (
-                <a
+                <Link
                   href="/transfer"
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="hidden md:inline-flex items-center px-5 py-2.5 text-sm font-medium text-[#0a0a0a] border border-[#0a0a0a]/20 rounded-full hover:border-[#0a0a0a]/60 transition-colors"
                 >
                   My account
-                </a>
+                </Link>
               ) : (
-                <a
+                <Link
                   href="/auth/login?redirectTo=/transfer"
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="hidden md:inline-flex items-center px-5 py-2.5 text-sm font-medium text-[#0a0a0a] border border-[#0a0a0a]/20 rounded-full hover:border-[#0a0a0a]/60 transition-colors"
                 >
                   Login
-                </a>
+                </Link>
               )}
             </>
           )}
 
           <StarButton
-            href="/organizador"
+            href="/platform"
             dark
             target="_blank"
             rel="noopener noreferrer"
@@ -106,21 +102,22 @@ export default function Navbar() {
           className="md:hidden py-5 px-6 flex flex-col gap-4 border-t"
           style={{ background: "rgba(255,255,255,0.96)", backdropFilter: "blur(20px)", borderColor: "rgba(0,0,0,0.06)" }}
         >
-          {[
-            { label: isLoggedIn ? "My account" : "Login", href: isLoggedIn ? "/transfer" : "/auth/login?redirectTo=/transfer" },
-            { label: "Create event", href: "/organizador" },
-          ].map(({ label, href }) => (
-            <a
-              key={label}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#0a0a0a]/60 hover:text-[#0a0a0a] transition-colors text-sm font-medium"
-              onClick={() => setMenuOpen(false)}
-            >
-              {label}
-            </a>
-          ))}
+          <Link
+            href={isLoggedIn ? "/transfer" : "/auth/login?redirectTo=/transfer"}
+            className="text-[#0a0a0a]/60 hover:text-[#0a0a0a] transition-colors text-sm font-medium"
+            onClick={() => setMenuOpen(false)}
+          >
+            {isLoggedIn ? "My account" : "Login"}
+          </Link>
+          <a
+            href="/platform"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#0a0a0a]/60 hover:text-[#0a0a0a] transition-colors text-sm font-medium"
+            onClick={() => setMenuOpen(false)}
+          >
+            Create event
+          </a>
         </div>
       )}
     </nav>
