@@ -271,6 +271,7 @@ function AccessCodeManager({ eventId, type }: { eventId: string; type: "scanner"
   const [loggingOut, setLoggingOut] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
   const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => { setOrigin(window.location.origin); }, []);
 
@@ -372,12 +373,21 @@ function AccessCodeManager({ eventId, type }: { eventId: string; type: "scanner"
                       {STATUS_LABEL[status]}
                     </span>
                   </div>
-                  <p
-                    className="font-[family-name:var(--font-bebas)] mt-0.5"
-                    style={{ fontSize: 20, letterSpacing: "0.25em", color: isLoggingOut ? "rgba(0,0,0,0.2)" : "#0a0a0a" }}
-                  >
-                    {formatCode(c.code)}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p
+                      className="font-[family-name:var(--font-bebas)]"
+                      style={{ fontSize: 20, letterSpacing: "0.25em", color: isLoggingOut ? "rgba(0,0,0,0.2)" : "#0a0a0a" }}
+                    >
+                      {formatCode(c.code)}
+                    </p>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(c.code); setCopiedCode(c.id); setTimeout(() => setCopiedCode(null), 2000); }}
+                      className="shrink-0 px-2 py-0.5 rounded text-[10px] font-medium transition-colors"
+                      style={{ background: copiedCode === c.id ? "rgba(16,185,129,0.12)" : "rgba(0,0,0,0.06)", color: copiedCode === c.id ? "#10b981" : "rgba(0,0,0,0.4)" }}
+                    >
+                      {copiedCode === c.id ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {/* Logout — regenerates code, kicks device out */}
