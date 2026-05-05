@@ -1,4 +1,4 @@
-import Navbar from "../components/Navbar";
+import PlatformNavbar from "../components/PlatformNavbar";
 import Hero from "../components/Hero";
 import MarqueeStrip from "../components/MarqueeStrip";
 import ScrollShowcase from "../components/ScrollShowcase";
@@ -13,7 +13,7 @@ export default function PlatformPage() {
   return (
     <div style={{ color: "#0a0a0a" }}>
       <MeshBackground />
-      <Navbar />
+      <PlatformNavbar />
       <Hero />
       <MarqueeStrip />
       <ScrollShowcase />
