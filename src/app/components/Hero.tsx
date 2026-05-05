@@ -88,6 +88,8 @@ export default function Hero() {
             <StarButton
               href="/eventos"
               dark
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Browse events
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
