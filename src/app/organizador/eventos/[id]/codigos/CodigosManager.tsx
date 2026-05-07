@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type TicketType = { id: string; name: string; price: number };
 type PromoCode = {
@@ -9,6 +9,7 @@ type PromoCode = {
   promoter_name: string | null;
   discount_percent: number;
   ticket_type_id: string | null;
+  ticket_type_ids?: string[] | null;
   is_active: boolean;
   max_uses: number | null;
   times_used: number;
@@ -21,6 +22,84 @@ function formatDate(d: string) {
 }
 
 const PAGE_SIZES = [10, 25, 50];
+
+function TicketMultiSelect({
+  value,
+  onChange,
+  ticketTypes,
+  inputClass,
+  inputStyle,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  ticketTypes: TicketType[];
+  inputClass: string;
+  inputStyle: React.CSSProperties;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  const label = value.length === 0
+    ? "All tickets"
+    : value.map(id => ticketTypes.find(t => t.id === id)?.name).filter(Boolean).join(", ");
+
+  function toggle(id: string) {
+    onChange(value.includes(id) ? value.filter(x => x !== id) : [...value, id]);
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className={inputClass + " flex items-center justify-between"}
+        style={inputStyle}
+      >
+        <span style={{ color: value.length === 0 ? "rgba(0,0,0,0.25)" : "#0a0a0a" }} className="truncate">{label}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 ml-2" style={{ transform: open ? "rotate(180deg)" : undefined }}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 w-full mt-1 rounded-xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.1)", boxShadow: "0 8px 24px rgba(0,0,0,0.1)" }}>
+          <div className="p-1">
+            <button
+              type="button"
+              onClick={() => { onChange([]); setOpen(false); }}
+              className="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors hover:bg-black/[0.04]"
+              style={{ color: value.length === 0 ? "#0a0a0a" : "rgba(0,0,0,0.4)", fontWeight: value.length === 0 ? 600 : 400 }}
+            >
+              All tickets
+            </button>
+            {ticketTypes.map(tt => (
+              <label key={tt.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-black/[0.04]">
+                <div
+                  className="w-4 h-4 rounded flex items-center justify-center shrink-0"
+                  style={{ border: value.includes(tt.id) ? "none" : "1.5px solid rgba(0,0,0,0.2)", background: value.includes(tt.id) ? "#0a0a0a" : "transparent" }}
+                >
+                  {value.includes(tt.id) && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                  )}
+                </div>
+                <input type="checkbox" checked={value.includes(tt.id)} onChange={() => toggle(tt.id)} className="sr-only" />
+                <span className="text-sm text-[#0a0a0a]">{tt.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function CodigosManager({
   eventId, initialCodes, ticketTypes,
@@ -42,11 +121,11 @@ export default function CodigosManager({
   const [fCode, setFCode] = useState("");
   const [fName, setFName] = useState("");
   const [fDiscount, setFDiscount] = useState("");
-  const [fTicketType, setFTicketType] = useState("");
+  const [fTicketTypes, setFTicketTypes] = useState<string[]>([]);
   const [fMaxUses, setFMaxUses] = useState("");
 
   function resetForm() {
-    setFCode(""); setFName(""); setFDiscount(""); setFTicketType(""); setFMaxUses(""); setError("");
+    setFCode(""); setFName(""); setFDiscount(""); setFTicketTypes([]); setFMaxUses(""); setError("");
   }
 
   function openEdit(c: PromoCode) {
@@ -54,7 +133,7 @@ export default function CodigosManager({
     setFCode(c.code);
     setFName(c.promoter_name ?? "");
     setFDiscount(String(c.discount_percent));
-    setFTicketType(c.ticket_type_id ?? "");
+    setFTicketTypes(c.ticket_type_ids ?? (c.ticket_type_id ? [c.ticket_type_id] : []));
     setFMaxUses(c.max_uses ? String(c.max_uses) : "");
     setError("");
   }
@@ -71,7 +150,8 @@ export default function CodigosManager({
           code: fCode,
           promoter_name: fName || "",
           discount_percent: parseFloat(fDiscount),
-          ticket_type_id: fTicketType || null,
+          ticket_type_ids: fTicketTypes.length > 0 ? fTicketTypes : null,
+          ticket_type_id: fTicketTypes.length === 1 ? fTicketTypes[0] : null,
           max_uses: fMaxUses ? parseInt(fMaxUses) : null,
         }),
       });
@@ -95,7 +175,8 @@ export default function CodigosManager({
         body: JSON.stringify({
           promoter_name: fName || "",
           discount_percent: discountNum,
-          ticket_type_id: fTicketType || null,
+          ticket_type_ids: fTicketTypes.length > 0 ? fTicketTypes : null,
+          ticket_type_id: fTicketTypes.length === 1 ? fTicketTypes[0] : null,
           max_uses: fMaxUses ? parseInt(fMaxUses) : null,
           is_guestlist: discountNum === 100,
         }),
@@ -105,7 +186,8 @@ export default function CodigosManager({
         ...c,
         promoter_name: fName || "",
         discount_percent: discountNum,
-        ticket_type_id: fTicketType || null,
+        ticket_type_ids: fTicketTypes.length > 0 ? fTicketTypes : null,
+        ticket_type_id: fTicketTypes.length === 1 ? fTicketTypes[0] : null,
         max_uses: fMaxUses ? parseInt(fMaxUses) : null,
         is_guestlist: discountNum === 100,
       } : c));
@@ -142,7 +224,7 @@ export default function CodigosManager({
   const totalPages = Math.max(1, Math.ceil(codes.length / pageSize));
   const pageCodes = codes.slice((page - 1) * pageSize, page * pageSize);
 
-  const inputStyle = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" };
+  const inputStyle: React.CSSProperties = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" };
   const inputClass = "w-full px-3 py-2.5 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none";
 
   const formFields = (
@@ -165,13 +247,14 @@ export default function CodigosManager({
         <input type="text" placeholder="E.g.: Ambassador Nicola" value={fName} onChange={(e) => setFName(e.target.value)} className={inputClass} style={inputStyle} />
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Applicable ticket</label>
-        <select value={fTicketType} onChange={(e) => setFTicketType(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "light" }}>
-          <option value="">All tickets</option>
-          {ticketTypes.map((tt) => (
-            <option key={tt.id} value={tt.id}>{tt.name}</option>
-          ))}
-        </select>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Applicable tickets</label>
+        <TicketMultiSelect
+          value={fTicketTypes}
+          onChange={setFTicketTypes}
+          ticketTypes={ticketTypes}
+          inputClass={inputClass}
+          inputStyle={inputStyle}
+        />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -228,7 +311,10 @@ export default function CodigosManager({
             </div>
 
             {pageCodes.map((c, i) => {
-              const ttName = ticketTypes.find((t) => t.id === c.ticket_type_id)?.name;
+              const selectedIds = c.ticket_type_ids ?? (c.ticket_type_id ? [c.ticket_type_id] : []);
+              const ttLabel = selectedIds.length === 0
+                ? "All tickets"
+                : selectedIds.map(id => ticketTypes.find(t => t.id === id)?.name).filter(Boolean).join(", ");
               return (
                 <div
                   key={c.id}
@@ -259,9 +345,9 @@ export default function CodigosManager({
                     </span>
                   </div>
 
-                  {/* Ticket type */}
-                  <div>
-                    <span className="text-[#0a0a0a]/50 text-xs">{ttName ?? "All tickets"}</span>
+                  {/* Ticket type(s) */}
+                  <div className="truncate pr-2">
+                    <span className="text-[#0a0a0a]/50 text-xs">{ttLabel}</span>
                     {!c.is_guestlist && <span className="text-[#0a0a0a]/30 text-xs ml-2">–{c.discount_percent}%</span>}
                   </div>
 

@@ -5,6 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { formatPrice } from "@/lib/currency";
 
 type DayData = { date: string; revenue: number; tickets: number };
+type PosDay = { date: string; barRevenue: number };
 
 function shortDate(d: string) {
   const date = new Date(d + "T00:00:00");
@@ -18,9 +19,20 @@ const tooltipStyle = {
 };
 const cardStyle = { border: "1px solid rgba(0,0,0,0.07)", background: "#fff" };
 
-export default function DashboardCharts({ chartData, currency = "CRC" }: { chartData: DayData[]; currency?: string }) {
+export default function DashboardCharts({
+  chartData,
+  currency = "CRC",
+  posChartData,
+}: {
+  chartData: DayData[];
+  currency?: string;
+  posChartData?: PosDay[];
+}) {
   const totalRevenue = chartData.reduce((s, d) => s + d.revenue, 0);
   const totalTickets = chartData.reduce((s, d) => s + d.tickets, 0);
+  const totalBarRevenue = (posChartData ?? []).reduce((s, d) => s + d.barRevenue, 0);
+  const hasBarData = totalBarRevenue > 0;
+
   const [now, setNow] = useState("");
   useEffect(() => {
     setNow(new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }));
@@ -30,9 +42,9 @@ export default function DashboardCharts({ chartData, currency = "CRC" }: { chart
 
   return (
     <div className="flex flex-col gap-4 mb-8">
-      {/* Revenue */}
+      {/* Ticket Revenue */}
       <div className="rounded-2xl p-6" style={cardStyle}>
-        <p className="text-[#0a0a0a]/35 text-[10px] uppercase tracking-[0.18em] mb-1">Gross volume · Last 28 days</p>
+        <p className="text-[#0a0a0a]/35 text-[10px] uppercase tracking-[0.18em] mb-1">Ticket revenue · Last 28 days</p>
         <p className="font-[family-name:var(--font-bebas)] text-4xl text-[#0a0a0a] leading-none mb-4">{fmt(totalRevenue)}</p>
         <ResponsiveContainer width="100%" height={180}>
           <AreaChart data={chartData} margin={{ top: 4, right: 0, left: 10, bottom: 0 }}>
@@ -44,14 +56,36 @@ export default function DashboardCharts({ chartData, currency = "CRC" }: { chart
             </defs>
             <XAxis dataKey="date" tickFormatter={shortDate} tick={tickStyle} axisLine={false} tickLine={false} interval={6} />
             <YAxis tickFormatter={fmt} tick={tickStyle} axisLine={false} tickLine={false} width={70} allowDecimals={false} />
-            <Tooltip contentStyle={tooltipStyle} formatter={((v: number) => [fmt(v), "Revenue"]) as any} labelFormatter={shortDate as any} />
+            <Tooltip contentStyle={tooltipStyle} formatter={((v: number) => [fmt(v), "Ticket revenue"]) as any} labelFormatter={shortDate as any} />
             <Area type="monotone" dataKey="revenue" stroke="#0a0a0a" strokeWidth={2} fill="url(#revGrad)" />
           </AreaChart>
         </ResponsiveContainer>
         <p className="text-[#0a0a0a]/18 text-[10px] mt-3">Updated {now}</p>
       </div>
 
-      {/* Tickets */}
+      {/* Bar Revenue (only if POS data exists) */}
+      {hasBarData && posChartData && (
+        <div className="rounded-2xl p-6" style={cardStyle}>
+          <p className="text-[#0a0a0a]/35 text-[10px] uppercase tracking-[0.18em] mb-1">Bar revenue · Last 28 days</p>
+          <p className="font-[family-name:var(--font-bebas)] text-4xl text-[#0a0a0a] leading-none mb-4">{fmt(totalBarRevenue)}</p>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={posChartData} margin={{ top: 4, right: 0, left: 10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#555" stopOpacity={0.12} />
+                  <stop offset="95%" stopColor="#555" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="date" tickFormatter={shortDate} tick={tickStyle} axisLine={false} tickLine={false} interval={6} />
+              <YAxis tickFormatter={fmt} tick={tickStyle} axisLine={false} tickLine={false} width={70} allowDecimals={false} />
+              <Tooltip contentStyle={tooltipStyle} formatter={((v: number) => [fmt(v), "Bar revenue"]) as any} labelFormatter={shortDate as any} />
+              <Area type="monotone" dataKey="barRevenue" stroke="#555" strokeWidth={2} fill="url(#barGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Tickets Sold */}
       <div className="rounded-2xl p-6" style={cardStyle}>
         <p className="text-[#0a0a0a]/35 text-[10px] uppercase tracking-[0.18em] mb-1">Tickets sold · Last 28 days</p>
         <p className="font-[family-name:var(--font-bebas)] text-4xl text-[#0a0a0a] leading-none mb-4">{totalTickets}</p>

@@ -27,6 +27,16 @@ const MAIN_NAV = [
     ),
   },
   {
+    label: "POS",
+    href: "/organizador/pos",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 21h8" /><path d="M12 17v4" />
+      </svg>
+    ),
+  },
+  {
     label: "Marketing",
     href: "/organizador/marketing",
     icon: (
@@ -54,6 +64,11 @@ const MAIN_NAV = [
       </svg>
     ),
   },
+];
+
+const POS_NAV = [
+  { label: "Products", path: "productos" },
+  { label: "Sales", path: "ventas" },
 ];
 
 const EVENT_NAV = [
@@ -84,6 +99,7 @@ export default function OrgSidebar({
   const pathname = usePathname();
   const eventId = getEventId(pathname);
   const [eventName, setEventName] = useState("");
+  const isPosSection = pathname.startsWith("/organizador/pos");
 
   useEffect(() => {
     if (!eventId) { setEventName(""); return; }
@@ -96,6 +112,7 @@ export default function OrgSidebar({
   function isMainActive(href: string) {
     if (href === "/organizador") return pathname === "/organizador";
     if (href === "/organizador/eventos" && eventId) return false;
+    if (href === "/organizador/pos") return isPosSection;
     return pathname.startsWith(href);
   }
 
@@ -134,6 +151,35 @@ export default function OrgSidebar({
           );
         })}
       </nav>
+
+      {/* POS sub-nav */}
+      {isPosSection && !eventId && (
+        <>
+          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "0 12px" }} />
+          <div className="px-3 py-3 flex-1 overflow-y-auto">
+            <p className="text-white/20 text-[9px] uppercase tracking-widest px-2 mb-2">Point of Sale</p>
+            <div className="space-y-0.5">
+              {POS_NAV.map(item => {
+                const href = `/organizador/pos/${item.path}`;
+                const active = pathname.startsWith(href);
+                return (
+                  <Link
+                    key={item.path}
+                    href={href}
+                    className="w-full flex items-center px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all"
+                    style={{
+                      background: active ? "rgba(255,255,255,0.1)" : "transparent",
+                      color: active ? "#fff" : "rgba(255,255,255,0.38)",
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Event sub-nav */}
       {eventId && (
@@ -179,7 +225,7 @@ export default function OrgSidebar({
         </>
       )}
 
-      {!eventId && <div className="flex-1" />}
+      {!eventId && !isPosSection && <div className="flex-1" />}
 
       {/* Bottom */}
       <div className="px-3 pb-5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 12 }}>
