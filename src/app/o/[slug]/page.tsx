@@ -90,12 +90,13 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
       </div>
 
       {/* Profile header card */}
-      <div className="max-w-4xl mx-auto w-full px-6 relative" style={{ marginTop: -60 }}>
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 relative" style={{ marginTop: -60 }}>
         <div
-          className="rounded-3xl p-6 mb-8"
+          className="rounded-3xl p-5 sm:p-6 mb-8"
           style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 8px 40px rgba(0,0,0,0.08)" }}
         >
-          <div className="flex items-start gap-5">
+          {/* Top row: avatar + (desktop: name+meta) + actions */}
+          <div className="flex items-start gap-4 sm:gap-5">
             {/* Avatar */}
             <div
               className="w-20 h-20 rounded-2xl overflow-hidden shrink-0"
@@ -110,19 +111,15 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
               )}
             </div>
 
-            {/* Name + meta */}
-            <div className="flex-1 min-w-0 pt-1">
+            {/* Name + meta — desktop only in this row */}
+            <div className="flex-1 min-w-0 pt-1 hidden sm:block">
               <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-[#0a0a0a] leading-none mb-1">
                 {org.full_name}
               </h1>
               <div className="flex items-center gap-3 flex-wrap">
-                {org.country && (
-                  <span className="text-[#0a0a0a]/40 text-sm">{org.country}</span>
-                )}
+                {org.country && <span className="text-[#0a0a0a]/40 text-sm">{org.country}</span>}
                 {followerCount > 0 && (
-                  <span className="text-[#0a0a0a]/30 text-sm">
-                    {followerCount} {followerCount === 1 ? "follower" : "followers"}
-                  </span>
+                  <span className="text-[#0a0a0a]/30 text-sm">{followerCount} {followerCount === 1 ? "follower" : "followers"}</span>
                 )}
                 {upcoming.length > 0 && (
                   <span className="text-[#0a0a0a]/30 text-sm">{upcoming.length} upcoming event{upcoming.length !== 1 ? "s" : ""}</span>
@@ -133,8 +130,8 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
               )}
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 pt-1">
+            {/* Actions — always here, push to right on mobile with ml-auto */}
+            <div className="flex items-center gap-2 shrink-0 pt-1 ml-auto sm:ml-0">
               {org.instagram_url && (
                 <a
                   href={org.instagram_url.startsWith("http") ? org.instagram_url : `https://instagram.com/${org.instagram_url.replace("@", "")}`}
@@ -153,6 +150,25 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
               <LinksModal links={customLinks} organizerName={org.full_name ?? ""} />
               <FollowButton slug={effectiveSlug} organizerId={org.id} initialFollowing={isFollowing} isLoggedIn={!!user} />
             </div>
+          </div>
+
+          {/* Name + meta — mobile only, full width below avatar row */}
+          <div className="mt-4 sm:hidden">
+            <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-[#0a0a0a] leading-none mb-1">
+              {org.full_name}
+            </h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              {org.country && <span className="text-[#0a0a0a]/40 text-sm">{org.country}</span>}
+              {followerCount > 0 && (
+                <span className="text-[#0a0a0a]/30 text-sm">{followerCount} {followerCount === 1 ? "follower" : "followers"}</span>
+              )}
+              {upcoming.length > 0 && (
+                <span className="text-[#0a0a0a]/30 text-sm">{upcoming.length} upcoming event{upcoming.length !== 1 ? "s" : ""}</span>
+              )}
+            </div>
+            {org.description && (
+              <p className="text-[#0a0a0a]/55 text-sm leading-relaxed mt-2.5">{org.description}</p>
+            )}
           </div>
         </div>
 
