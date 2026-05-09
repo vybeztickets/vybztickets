@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
   const { data: products } = await (admin as any)
     .from("pos_products")
-    .select("id, name, price, category, currency")
+    .select("id, name, price, category, subcategory, has_mixer, mixers, currency")
     .eq("organizer_id", event.organizer_id)
     .eq("is_active", true)
     .order("category")

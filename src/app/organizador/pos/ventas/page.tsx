@@ -132,7 +132,14 @@ export default function PosSalesPage() {
                 </defs>
                 <XAxis dataKey="date" tickFormatter={fmtDate} tick={tickStyle} axisLine={false} tickLine={false} interval={Math.floor(data.chart.length / 5)} />
                 <YAxis tickFormatter={fmt} tick={tickStyle} axisLine={false} tickLine={false} width={70} allowDecimals={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={((v: number) => [fmt(v), "Bar revenue"]) as any} labelFormatter={fmtDate as any} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  formatter={((v: number) => [fmt(v), "Bar revenue"]) as any}
+                  labelFormatter={((label: string, payload: any[]) => {
+                    const rev = payload?.[0]?.value;
+                    return rev != null ? `${fmtDate(label)}  ·  ${fmt(rev)}` : fmtDate(label);
+                  }) as any}
+                />
                 <Area type="monotone" dataKey="revenue" stroke="#0a0a0a" strokeWidth={2} fill="url(#barRevGrad)" />
               </AreaChart>
             </ResponsiveContainer>

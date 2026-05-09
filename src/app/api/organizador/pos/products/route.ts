@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const { name, price, category = "other", currency = "USD" } = body;
+  const { name, price, category = "other", currency = "USD", subcategory = null, has_mixer = false, mixers = [] } = body;
 
   if (!name || typeof name !== "string" || !name.trim())
     return NextResponse.json({ error: "Name required" }, { status: 400 });
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   const { data, error } = await (admin as any)
     .from("pos_products")
-    .insert({ organizer_id: user.id, name: name.trim(), price, category, currency, is_active: true })
+    .insert({ organizer_id: user.id, name: name.trim(), price, category, currency, subcategory, has_mixer, mixers, is_active: true })
     .select()
     .single();
 

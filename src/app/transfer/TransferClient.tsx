@@ -305,7 +305,7 @@ export default function TransferClient({ tickets, userEmail }: Props) {
                           className="text-sm font-semibold px-4 py-2 rounded-xl transition-opacity hover:opacity-75"
                           style={{ background: "#0a0a0a", color: "#fff" }}
                         >
-                          Transfer ticket →
+                          Transfer ticket
                         </button>
                       )}
                     </div>
@@ -321,14 +321,11 @@ export default function TransferClient({ tickets, userEmail }: Props) {
                             <button
                               onClick={() => handleResend(ticket.id)}
                               disabled={resending === ticket.id}
-                              className="text-xs font-semibold transition-opacity hover:opacity-70 disabled:opacity-40"
-                              style={{ color: "rgba(0,0,0,0.45)" }}
+                              className="text-xs font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
+                              style={{ color: "rgba(0,0,0,0.35)" }}
                             >
-                              {resending === ticket.id ? "Sending…" : "Resend to email →"}
+                              {resending === ticket.id ? "Sending…" : "Resend to email"}
                             </button>
-                          )}
-                          {!resentIds.has(ticket.id) && (
-                            <span className="text-[10px]" style={{ color: "rgba(0,0,0,0.2)" }}>once only</span>
                           )}
                         </div>
 

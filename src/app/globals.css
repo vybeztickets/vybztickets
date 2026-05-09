@@ -222,6 +222,27 @@ body {
   animation: marquee-left 28s linear infinite;
 }
 
+/* ─── Interactive elements ───────────────────────────── */
+button,
+a,
+select,
+label,
+[role="button"],
+[role="tab"],
+[role="option"],
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled):active {
+  transform: scale(0.96);
+  transition: transform 0.08s ease;
+}
+
 /* ─── Light card ──────────────────────────────────────── */
 .card-light {
   background: #fff;
