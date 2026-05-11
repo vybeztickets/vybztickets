@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ConfirmDialog from "@/app/components/ConfirmDialog";
 
 import { formatPrice } from "@/lib/currency";
 
@@ -34,6 +35,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
   const [activeFilters, setActiveFilters] = useState<string[]>(["all"]);
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmState, setConfirmState] = useState<{ message: string; fn: () => void } | null>(null);
   const [visibility, setVisibility] = useState<Record<string, boolean>>(
     Object.fromEntries(events.map((e) => [e.id, e.is_visible !== false]))
   );
@@ -53,17 +55,23 @@ export default function EventsTable({ events }: { events: Event[] }) {
     });
   }
 
-  async function deleteEvent(id: string, name: string, e: React.MouseEvent) {
+  function deleteEvent(id: string, name: string, e: React.MouseEvent) {
     e.preventDefault();
-    if (!confirm(`Delete "${name}"? This action cannot be undone.`)) return;
-    setDeleting(id);
-    const res = await fetch(`/api/organizador/eventos/${id}`, { method: "DELETE" });
-    setDeleting(null);
-    if (!res.ok) {
-      const body = await res.json();
-      alert(`Could not delete: ${body.error}`);
-    }
-    router.refresh();
+    setConfirmState({
+      message: `Delete "${name}"? This action cannot be undone.`,
+      fn: async () => {
+        setConfirmState(null);
+        setDeleting(id);
+        const res = await fetch(`/api/organizador/eventos/${id}`, { method: "DELETE" });
+        setDeleting(null);
+        if (!res.ok) {
+          const body = await res.json();
+          setConfirmState({ message: `Could not delete: ${body.error}`, fn: () => setConfirmState(null) });
+          return;
+        }
+        router.refresh();
+      },
+    });
   }
 
   const today = new Date();
@@ -267,6 +275,14 @@ export default function EventsTable({ events }: { events: Event[] }) {
             );
           })}
         </div>
+      )}
+
+      {confirmState && (
+        <ConfirmDialog
+          message={confirmState.message}
+          onConfirm={confirmState.fn}
+          onCancel={() => setConfirmState(null)}
+        />
       )}
     </div>
   );

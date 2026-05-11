@@ -41,7 +41,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     country: string; category: string | null; venue_map_url: string | null;
     location_lat: number | null; location_lng: number | null;
     post_purchase_message: string | null; terms_conditions: string | null;
-    ticket_types: { id: string; name: string; description: string | null; price: number; total_available: number; sold_count: number; is_active: boolean; is_hidden?: boolean | null; category?: string; capacity?: number | null; zone_name?: string | null; zone_color?: string | null }[];
+    ticket_types: { id: string; name: string; description: string | null; price: number; total_available: number; sold_count: number; is_active: boolean; is_hidden?: boolean | null; category?: string; capacity?: number | null; zone_name?: string | null; zone_color?: string | null; zone_id?: string | null; map_position_x?: number | null; map_position_y?: number | null; table_color?: string | null; table_border_color?: string | null; table_text_color?: string | null; map_table_size?: string | null }[];
   };
 
   const d = new Date(event.date + "T00:00:00");

@@ -75,6 +75,7 @@ const EVENT_NAV = [
   { label: "Stats", path: "estadisticas" },
   { label: "Edit", path: "editar" },
   { label: "Tickets", path: "entradas" },
+  { label: "Tables", path: "mesas" },
   { label: "Promo codes", path: "codigos" },
   { label: "Orders", path: "pedidos" },
   { label: "Attendees", path: "asistentes" },
@@ -131,26 +132,28 @@ export default function OrgSidebar({
         <p className="text-white/30 text-[10px] uppercase tracking-widest mt-0.5">Platform</p>
       </div>
 
-      {/* Main nav */}
-      <nav className="px-3 py-4 space-y-0.5">
-        {MAIN_NAV.map(item => {
-          const active = isMainActive(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] font-medium transition-all"
-              style={{
-                background: active ? "rgba(255,255,255,0.1)" : "transparent",
-                color: active ? "#fff" : "rgba(255,255,255,0.38)",
-              }}
-            >
-              <span style={{ color: active ? "#fff" : "rgba(255,255,255,0.25)" }}>{item.icon}</span>
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+      {/* Main nav — hidden when inside an event */}
+      {!eventId && (
+        <nav className="px-3 py-4 space-y-0.5">
+          {MAIN_NAV.map(item => {
+            const active = isMainActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] font-medium transition-all"
+                style={{
+                  background: active ? "rgba(255,255,255,0.1)" : "transparent",
+                  color: active ? "#fff" : "rgba(255,255,255,0.38)",
+                }}
+              >
+                <span style={{ color: active ? "#fff" : "rgba(255,255,255,0.25)" }}>{item.icon}</span>
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
 
       {/* POS sub-nav */}
       {isPosSection && !eventId && (
@@ -184,20 +187,23 @@ export default function OrgSidebar({
       {/* Event sub-nav */}
       {eventId && (
         <>
-          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "0 12px" }} />
-          <div className="px-3 py-3 flex-1 overflow-y-auto">
+          <div className="px-3 pt-3 pb-1">
             <Link
               href="/organizador/eventos"
-              className="flex items-center gap-1.5 text-xs font-medium px-2 mb-3"
-              style={{ color: "rgba(255,255,255,0.25)" }}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all w-full"
+              style={{ color: "rgba(255,255,255,0.45)", background: "rgba(255,255,255,0.04)" }}
             >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
               </svg>
-              Events
+              All events
             </Link>
-            <div className="px-3 py-2 rounded-xl mb-3" style={{ background: "rgba(255,255,255,0.05)" }}>
-              <p className="text-white text-xs font-semibold truncate">{eventName || "…"}</p>
+          </div>
+          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 12px" }} />
+          <div className="px-3 pb-3 flex-1 overflow-y-auto">
+            <p className="text-white/20 text-[9px] uppercase tracking-widest px-2 mb-2">Current event</p>
+            <div className="px-3 py-2.5 rounded-xl mb-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <p className="text-white text-[13px] font-semibold truncate">{eventName || "…"}</p>
             </div>
             <div className="space-y-0.5">
               {EVENT_NAV.map(item => {

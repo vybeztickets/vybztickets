@@ -15,7 +15,7 @@ export default async function CodigosPage({ params }: { params: Promise<{ id: st
 
   const [{ data: codes }, { data: ticketTypes }] = await Promise.all([
     admin.from("promo_links").select("*").eq("event_id", id).eq("organizer_id", user.id).order("created_at", { ascending: false }),
-    admin.from("ticket_types").select("id, name, price").eq("event_id", id).order("created_at", { ascending: true }),
+    (admin as any).from("ticket_types").select("id, name, price").eq("event_id", id).neq("category", "table").order("created_at", { ascending: true }),
   ]);
 
   return (

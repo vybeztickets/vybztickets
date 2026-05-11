@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import ImageUploadField from "@/app/components/ImageUploadField";
+import ConfirmDialog from "@/app/components/ConfirmDialog";
 
 type TicketType = {
   id: string;
@@ -28,12 +28,12 @@ type TicketType = {
 
 function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
-type Tab = "stats" | "entradas" | "mapa";
-type FilterKey = "all" | "general" | "table" | "hidden";
+type Tab = "stats" | "entradas";
+type FilterKey = "all" | "general" | "hidden";
 
-const ZONE_COLORS = ["#3b6fd4", "#c4a050", "#5a8a6a", "#c45040", "#7a5a90", "#407a8a", "#d4704a", "#6a7a50"];
+const CHART_COLORS = ["#3b6fd4", "#c4a050", "#5a8a6a", "#c45040", "#7a5a90", "#407a8a", "#d4704a", "#6a7a50"];
 
-export default function EntradasManager({ eventId, ticketTypes: initial, venueMapUrl: initialMapUrl }: { eventId: string; ticketTypes: TicketType[]; venueMapUrl: string | null }) {
+export default function EntradasManager({ eventId, ticketTypes: initial }: { eventId: string; ticketTypes: TicketType[] }) {
   const router = useRouter();
   const [types, setTypes] = useState(initial);
   const [activeTab, setActiveTab] = useState<Tab>("stats");
@@ -42,10 +42,9 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
   const [error, setError] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
   const [editId, setEditId] = useState<string | null>(null);
-  const [venueMapUrl, setVenueMapUrl] = useState(initialMapUrl);
-  const [mapSaving, setMapSaving] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
+  const [confirmState, setConfirmState] = useState<{ message: string; fn: () => void } | null>(null);
 
   // Shared form fields
   const [fName, setFName] = useState("");
@@ -58,14 +57,10 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
   const [fSalesStart, setFSalesStart] = useState("");
   const [fSalesEnd, setFSalesEnd] = useState("");
   const [fEntryDeadline, setFEntryDeadline] = useState("");
-  const [fCapacity, setFCapacity] = useState("");
-  const [fZoneColor, setFZoneColor] = useState(ZONE_COLORS[0]);
-  const [fCategory, setFCategory] = useState<"general" | "table" | "seat">("general");
-
   function resetForm() {
     setFName(""); setFPrice(""); setFTotal(""); setFDesc(""); setFHidden(false);
     setFMin("1"); setFMax(""); setFSalesStart(""); setFSalesEnd(""); setFEntryDeadline("");
-    setFCapacity(""); setFZoneColor(ZONE_COLORS[0]); setFCategory("general"); setError("");
+    setError("");
   }
 
   function openEdit(tt: TicketType) {
@@ -80,9 +75,6 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
     setFSalesStart(tt.sales_start_date ?? "");
     setFSalesEnd(tt.sales_end_date ?? "");
     setFEntryDeadline(tt.entry_deadline ?? "");
-    setFCapacity(tt.capacity ? String(tt.capacity) : "");
-    setFZoneColor(tt.zone_color ?? ZONE_COLORS[0]);
-    setFCategory((tt.category as "general" | "table" | "seat") ?? "general");
     setEditError("");
   }
 
@@ -97,9 +89,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           eventId, name: fName, price: parseFloat(fPrice),
           total_available: fTotal ? parseInt(fTotal) : null,
           description: fDesc || null,
-          category: fCategory,
-          capacity: fCapacity ? parseInt(fCapacity) : null,
-          zone_color: fCategory !== "general" ? fZoneColor : null,
+          category: "general",
           is_hidden: fHidden,
           min_per_order: parseInt(fMin) || 1,
           max_per_order: fMax ? parseInt(fMax) : null,
@@ -134,8 +124,6 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           sales_start_date: fSalesStart || null,
           sales_end_date: fSalesEnd || null,
           entry_deadline: fEntryDeadline || null,
-          capacity: fCapacity ? parseInt(fCapacity) : null,
-          zone_color: fZoneColor,
         }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Error"); }
@@ -146,7 +134,6 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
         description: fDesc || null, is_hidden: fHidden,
         min_per_order: parseInt(fMin) || 1,
         max_per_order: fMax ? parseInt(fMax) : null,
-        zone_color: fZoneColor,
         totalRevenue: t.sold_count * newPrice,
       } : t));
       setEditId(null);
@@ -164,27 +151,38 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
     });
   }
 
+  function handleDelete(tt: TicketType) {
+    setConfirmState({
+      message: `Delete "${tt.name}"? This cannot be undone.`,
+      fn: async () => {
+        setConfirmState(null);
+        setEditId(null);
+        await fetch(`/api/organizador/ticket-types/${tt.id}`, { method: "DELETE" });
+        setTypes((prev) => prev.filter((t) => t.id !== tt.id));
+      },
+    });
+  }
+
   const inputStyle = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" };
   const inputClass = "w-full px-3 py-2.5 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none";
 
-  const filteredTypes = types.filter((tt) => {
-    if (filter === "general") return !tt.category || tt.category === "general";
-    if (filter === "table") return tt.category === "table" || tt.category === "seat";
+  const generalTypes = types.filter((tt) => !tt.category || tt.category === "general");
+  const filteredTypes = generalTypes.filter((tt) => {
+    if (filter === "general") return true;
     if (filter === "hidden") return !!tt.is_hidden;
     return true;
   });
 
-  const totalSold = types.reduce((s, t) => s + t.sold_count, 0);
-  const totalRevenue = types.reduce((s, t) => s + t.totalRevenue, 0);
-  const totalIngresados = types.reduce((s, t) => s + t.ingresados, 0);
-  const pieData = types.filter((t) => t.sold_count > 0).map((t, i) => ({
-    name: t.name, value: t.sold_count, color: ZONE_COLORS[i % ZONE_COLORS.length],
+  const totalSold = generalTypes.reduce((s, t) => s + t.sold_count, 0);
+  const totalRevenue = generalTypes.reduce((s, t) => s + t.totalRevenue, 0);
+  const totalIngresados = generalTypes.reduce((s, t) => s + t.ingresados, 0);
+  const pieData = generalTypes.filter((t) => t.sold_count > 0).map((t, i) => ({
+    name: t.name, value: t.sold_count, color: CHART_COLORS[i % CHART_COLORS.length],
   }));
 
   const TABS: { key: Tab; label: string }[] = [
     { key: "stats", label: "Statistics" },
     { key: "entradas", label: "Tickets" },
-    { key: "mapa", label: "Table map" },
   ];
 
   const formFields = (
@@ -207,23 +205,6 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
         <label className="block text-[#0a0a0a]/40 text-xs mb-1">Description</label>
         <input type="text" placeholder="Optional description" value={fDesc} onChange={(e) => setFDesc(e.target.value)} className={inputClass} style={inputStyle} />
       </div>
-      {fCategory !== "general" && (
-        <>
-          <div>
-            <label className="block text-[#0a0a0a]/40 text-xs mb-1">Person capacity</label>
-            <input type="number" min="1" placeholder="E.g.: 8" value={fCapacity} onChange={(e) => setFCapacity(e.target.value)} className={inputClass} style={inputStyle} />
-          </div>
-          <div>
-            <label className="block text-[#0a0a0a]/40 text-xs mb-2">Zone color</label>
-            <div className="flex gap-2 flex-wrap pl-1" style={{ overflow: "visible" }}>
-              {ZONE_COLORS.map((c) => (
-                <button key={c} onClick={() => setFZoneColor(c)} className="w-7 h-7 rounded-full transition-all"
-                  style={{ background: c, boxShadow: fZoneColor === c ? `0 0 0 2px rgba(0,0,0,0.2), 0 0 0 4px ${c}` : "none" }} />
-              ))}
-            </div>
-          </div>
-        </>
-      )}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-[#0a0a0a]/40 text-xs mb-1">Min. per order</label>
@@ -394,8 +375,6 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
             <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
               {([
                 { key: "all", label: "All" },
-                { key: "general", label: "General" },
-                { key: "table", label: "Tables" },
                 { key: "hidden", label: "Hidden" },
               ] as { key: FilterKey; label: string }[]).map((f) => (
                 <button
@@ -422,7 +401,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
             <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
               <div
                 className="grid text-xs font-semibold uppercase tracking-wider px-5 py-3"
-                style={{ gridTemplateColumns: "1fr 90px 90px 130px 110px 36px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
+                style={{ gridTemplateColumns: "1fr 90px 90px 130px 60px 36px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
               >
                 <div>Ticket</div>
                 <div className="text-center">Sold</div>
@@ -438,7 +417,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                   <div
                     key={tt.id}
                     className="grid items-center px-5 py-4 transition-colors hover:bg-white/[0.02]"
-                    style={{ gridTemplateColumns: "1fr 90px 90px 130px 110px 36px", borderBottom: i < filteredTypes.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", opacity: tt.is_active ? 1 : 0.55 }}
+                    style={{ gridTemplateColumns: "1fr 90px 90px 130px 60px 36px", borderBottom: i < filteredTypes.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", opacity: tt.is_active ? 1 : 0.55 }}
                   >
                     <div className="flex items-center gap-2.5">
                       {tt.zone_color && <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: tt.zone_color }} />}
@@ -446,7 +425,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                         <p className="text-[#0a0a0a] text-sm font-medium">{tt.name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.4)" }}>
-                            {tt.category === "table" ? "Table" : tt.category === "seat" ? "Seat" : "General"}
+                            {tt.category === "table" ? "Table" : "General"}
                           </span>
                           <span className="text-[#0a0a0a]/30 text-xs">{formatPrice(tt.price)}</span>
                           {tt.is_hidden && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>Hidden</span>}
@@ -469,26 +448,18 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
 
                     <div className="flex justify-center">
                       <button
+                        type="button"
                         onClick={() => toggleActive(tt)}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all"
-                        style={tt.is_active
-                          ? { background: "rgba(16,185,129,0.15)", color: "#10b981" }
-                          : { background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.3)" }}
+                        className="relative w-9 h-5 rounded-full transition-colors"
+                        style={{ background: tt.is_active ? "#0a0a0a" : "rgba(0,0,0,0.08)" }}
                       >
-                        {tt.is_active ? (
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        ) : (
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                        )}
-                        {tt.is_active ? "Active" : "Hidden"}
+                        <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: tt.is_active ? "17px" : "2px" }} />
                       </button>
                     </div>
 
                     <div className="flex justify-end">
-                      <button onClick={() => openEdit(tt)} className="text-[#0a0a0a]/20 hover:text-[#0a0a0a]/60 transition-colors">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
-                        </svg>
+                      <button onClick={() => openEdit(tt)} className="text-[#0a0a0a]/20 hover:text-[#0a0a0a]/60 transition-colors" title="Edit">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       </button>
                     </div>
                   </div>
@@ -499,29 +470,6 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
         </div>
       )}
 
-      {/* ── TAB: MAPA DE MESAS ── */}
-      {activeTab === "mapa" && (
-        <div>
-          <p className="text-[#0a0a0a]/40 text-xs mb-5">Upload your venue map image. It will be shown on the event public page before VIP tables.</p>
-          <ImageUploadField
-            label="Table map"
-            value={venueMapUrl ?? ""}
-            onChange={async (url) => {
-              setVenueMapUrl(url);
-              setMapSaving(true);
-              await fetch(`/api/organizador/eventos/${eventId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ venue_map_url: url }),
-              });
-              setMapSaving(false);
-            }}
-            aspectRatio="16:9"
-          />
-          {mapSaving && <p className="text-[#0a0a0a]/30 text-xs mt-2">Saving...</p>}
-          {venueMapUrl && !mapSaving && <p className="text-green-400/60 text-xs mt-2">Map saved successfully</p>}
-        </div>
-      )}
 
       {/* ── CREATE MODAL ── */}
       {showCreate && (
@@ -536,20 +484,6 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
               <button onClick={() => { setShowCreate(false); resetForm(); }} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
-            </div>
-            <div className="flex gap-2 mb-5">
-              {([{ key: "general", label: "General" }, { key: "table", label: "VIP Table" }, { key: "seat", label: "Seat" }] as { key: "general" | "table" | "seat"; label: string }[]).map((t) => (
-                <button
-                  key={t.key}
-                  onClick={() => setFCategory(t.key)}
-                  className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
-                  style={fCategory === t.key
-                    ? { background: "#0a0a0a", color: "#fff" }
-                    : { background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)", border: "1px solid rgba(0,0,0,0.07)" }}
-                >
-                  {t.label}
-                </button>
-              ))}
             </div>
             <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1">
               {formFields}
@@ -588,7 +522,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
               {formFields}
               {editError && <p className="text-red-400 text-xs">{editError}</p>}
             </div>
-            <div className="px-6 py-4" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
+            <div className="px-6 py-4 flex flex-col gap-2" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
               <button
                 onClick={handleUpdate}
                 disabled={editSaving}
@@ -597,9 +531,24 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
               >
                 {editSaving ? "Saving..." : "Update ticket"}
               </button>
+              <button
+                onClick={() => { const tt = types.find((t) => t.id === editId); if (tt) handleDelete(tt); }}
+                className="w-full py-2.5 rounded-xl text-sm font-medium transition-colors"
+                style={{ color: "#ef4444" }}
+              >
+                Delete ticket
+              </button>
             </div>
           </div>
         </>
+      )}
+
+      {confirmState && (
+        <ConfirmDialog
+          message={confirmState.message}
+          onConfirm={confirmState.fn}
+          onCancel={() => setConfirmState(null)}
+        />
       )}
     </div>
   );

@@ -52,7 +52,7 @@ export default function SampleTicketCard({
   const border = (event.ticket_border_color as string) || "#7c3aed";
   const textColor = (event.ticket_text_color as string) || "#ffffff";
 
-  const isTable = ticketType.category === "table" || ticketType.category === "seat";
+  const isTable = ticketType.category === "table";
   const typeLabel = isTable ? "VIP TABLE" : "GENERAL";
 
   const startTime = event.time ? fmt12(event.time as string) : null;

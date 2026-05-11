@@ -43,7 +43,7 @@ export default function TicketCard({ ticket, organizerName }: { ticket: TicketDa
 
   const qrCode = ticket.qr_code as string;
   const shortRef = "#" + qrCode.slice(0, 8).toUpperCase();
-  const isTable = ticketType?.category === "table" || ticketType?.category === "seat";
+  const isTable = ticketType?.category === "table";
   const typeLabel = isTable ? "VIP TABLE" : "GENERAL";
 
   const startTime = event?.time ? fmt12(event.time as string) : null;

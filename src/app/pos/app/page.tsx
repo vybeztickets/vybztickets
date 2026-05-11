@@ -14,6 +14,7 @@ type Product = {
   has_mixer?: boolean;
   mixers?: Mixer[];
   currency: string;
+  is_pinned?: boolean;
 };
 type CartItem = {
   cartKey: string;
@@ -23,7 +24,7 @@ type CartItem = {
   currency: string;
   quantity: number;
 };
-type PayState = "idle" | "cash" | "card";
+type PayState = "idle" | "cash" | "card" | "comp";
 
 const CAT_COLOR: Record<string, string> = {
   copas:       "#f59e0b",
@@ -150,6 +151,7 @@ export default function PosApp() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [mixerProduct, setMixerProduct] = useState<Product | null>(null);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -163,6 +165,8 @@ export default function PosApp() {
       localStorage.removeItem("vybz_pos_session");
       router.replace("/pos");
     }
+    const savedTheme = (localStorage.getItem("vybz_app_theme") as "dark" | "light") ?? "dark";
+    setTheme(savedTheme);
     setReady(true);
   }, [router]);
 
@@ -196,7 +200,11 @@ export default function PosApp() {
   const orderedCats = CAT_ORDER.filter(c => presentCats.includes(c));
   const extraCats = presentCats.filter(c => !CAT_ORDER.includes(c));
 
-  const catProducts = activeCategory === "all"
+  const pinnedProducts = products.filter(p => p.is_pinned);
+
+  const catProducts = activeCategory === "pinned"
+    ? pinnedProducts
+    : activeCategory === "all"
     ? products
     : products.filter(p => p.category === activeCategory);
 
@@ -241,7 +249,7 @@ export default function PosApp() {
 
   function clearCart() { setCart([]); setPayState("idle"); }
 
-  async function submitOrder(method: "cash" | "card") {
+  async function submitOrder(method: "cash" | "card" | "comp") {
     if (!session || cart.length === 0) return;
     setSubmitting(true);
     const items = cart.map(i => ({
@@ -251,7 +259,7 @@ export default function PosApp() {
     const res = await fetch("/api/pos/order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: session.code, eventId: session.eventId, items, total: cartTotal, paymentMethod: method }),
+      body: JSON.stringify({ code: session.code, eventId: session.eventId, items, total: method === "comp" ? 0 : cartTotal, paymentMethod: method }),
     });
     setSubmitting(false);
     if (!res.ok) return;
@@ -259,16 +267,40 @@ export default function PosApp() {
     const cur = cartCurrency;
     clearCart();
     if (successTimer.current) clearTimeout(successTimer.current);
-    setSuccessMsg(`${fmtPrice(saved, cur)} — order saved`);
+    setSuccessMsg(method === "comp" ? `Comp — order saved` : `${fmtPrice(saved, cur)} — order saved`);
     successTimer.current = setTimeout(() => setSuccessMsg(null), 3000);
   }
 
   function disconnect() { localStorage.removeItem("vybz_pos_session"); router.replace("/pos"); }
 
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("vybz_app_theme", next);
+  }
+
+  const dark = theme === "dark";
+  const contentBg  = dark ? "#080808" : "#f0f0f0";
+  const cartBg     = dark ? "#0f0f13" : "#ffffff";
+  const ct = {
+    text:       dark ? "rgba(255,255,255,0.85)" : "#0a0a0a",
+    textMuted:  dark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.45)",
+    textFaint:  dark ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.25)",
+    border:     dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.07)",
+    btnBg:      dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+    btnColor:   dark ? "rgba(255,255,255,0.5)"  : "rgba(0,0,0,0.5)",
+    qty:        dark ? "#ffffff"                : "#0a0a0a",
+    pillBg:     dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+    pillColor:  dark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.5)",
+    emptyBorder:dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)",
+    totalLabel: dark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)",
+    totalAmt:   dark ? "#ffffff"                : "#0a0a0a",
+  };
+
   if (!ready || !session) return null;
 
   return (
-    <div className="fixed inset-0 flex" style={{ background: "#080808" }}>
+    <div className="fixed inset-0 flex" style={{ background: contentBg }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <div
@@ -285,6 +317,24 @@ export default function PosApp() {
         </div>
 
         <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-0.5">
+          {pinnedProducts.length > 0 && (
+            <button
+              onClick={() => setActiveCategory("pinned")}
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left mb-1"
+              style={{
+                background: activeCategory === "pinned" ? "rgba(245,158,11,0.15)" : "transparent",
+                color: activeCategory === "pinned" ? "#f59e0b" : "rgba(255,255,255,0.35)",
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill={activeCategory === "pinned" ? "#f59e0b" : "none"} stroke={activeCategory === "pinned" ? "#f59e0b" : "rgba(255,255,255,0.3)"} strokeWidth="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              Pinned
+              <span className="ml-auto text-xs tabular-nums" style={{ color: activeCategory === "pinned" ? "rgba(245,158,11,0.55)" : "rgba(255,255,255,0.15)" }}>
+                {pinnedProducts.length}
+              </span>
+            </button>
+          )}
           <button
             onClick={() => setActiveCategory("all")}
             className="w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left"
@@ -322,6 +372,15 @@ export default function PosApp() {
           })}
         </nav>
 
+        <div className="px-4 py-3" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+          <button onClick={toggleTheme}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all"
+            style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}>
+            <span className="text-xs font-medium">{theme === "dark" ? "Dark mode" : "Light mode"}</span>
+            <span className="text-sm">{theme === "dark" ? "☾" : "☀︎"}</span>
+          </button>
+        </div>
+
         <div className="px-3 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: 10 }}>
           <button
             onClick={() => setShowDisconnect(true)}
@@ -343,7 +402,7 @@ export default function PosApp() {
         {successMsg && (
           <div
             className="mx-5 mt-4 px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 shrink-0"
-            style={{ background: "rgba(16,185,129,0.12)", color: "#10b981", border: "1px solid rgba(16,185,129,0.18)" }}
+            style={{ background: dark ? "rgba(16,185,129,0.12)" : "rgba(16,185,129,0.1)", color: "#10b981", border: "1px solid rgba(16,185,129,0.18)" }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12"/>
@@ -358,8 +417,8 @@ export default function PosApp() {
               onClick={() => setActiveSubcategory("all")}
               className="px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all"
               style={{
-                background: activeSubcategory === "all" ? "#fff" : "rgba(255,255,255,0.08)",
-                color: activeSubcategory === "all" ? "#000" : "rgba(255,255,255,0.35)",
+                background: activeSubcategory === "all" ? (dark ? "#fff" : "#0a0a0a") : ct.pillBg,
+                color: activeSubcategory === "all" ? (dark ? "#000" : "#fff") : ct.pillColor,
               }}
             >
               All
@@ -373,8 +432,8 @@ export default function PosApp() {
                   onClick={() => setActiveSubcategory(sub)}
                   className="px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all capitalize"
                   style={{
-                    background: active ? color : "rgba(255,255,255,0.08)",
-                    color: active ? "#fff" : "rgba(255,255,255,0.35)",
+                    background: active ? color : ct.pillBg,
+                    color: active ? "#fff" : ct.pillColor,
                   }}
                 >
                   {sub}
@@ -387,16 +446,16 @@ export default function PosApp() {
         <div className="flex-1 overflow-y-auto p-5">
           {loadingProducts ? (
             <div className="flex items-center justify-center h-40">
-              <p className="text-white/18 text-sm">Loading products…</p>
+              <p className="text-sm" style={{ color: ct.textMuted }}>Loading products…</p>
             </div>
           ) : products.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-60 rounded-2xl" style={{ border: "1px dashed rgba(255,255,255,0.07)" }}>
-              <p className="text-white/20 text-sm mb-1">No products configured</p>
-              <p className="text-white/10 text-xs">Add products in Dashboard → POS → Products</p>
+            <div className="flex flex-col items-center justify-center h-60 rounded-2xl" style={{ border: `1px dashed ${ct.emptyBorder}` }}>
+              <p className="text-sm mb-1" style={{ color: ct.textMuted }}>No products configured</p>
+              <p className="text-xs" style={{ color: ct.textFaint }}>Add products in Dashboard → POS → Products</p>
             </div>
           ) : visibleProducts.length === 0 ? (
             <div className="flex items-center justify-center h-40">
-              <p className="text-white/18 text-sm">No products in this category</p>
+              <p className="text-sm" style={{ color: ct.textMuted }}>No products in this category</p>
             </div>
           ) : (
             <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(185px, 1fr))" }}>
@@ -411,11 +470,11 @@ export default function PosApp() {
       {/* ── Cart panel ───────────────────────────────────────────────────── */}
       <div
         className="flex flex-col shrink-0"
-        style={{ width: 290, background: "#0f0f13", borderLeft: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ width: 290, background: cartBg, borderLeft: theme === "dark" ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.07)" }}
       >
-        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-          <p className="text-white/80 font-semibold text-sm">
-            Order{cartCount > 0 && <span className="text-white/25 ml-1.5">({cartCount})</span>}
+        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: `1px solid ${ct.border}` }}>
+          <p className="font-semibold text-sm" style={{ color: ct.text }}>
+            Order{cartCount > 0 && <span className="ml-1.5" style={{ color: ct.textMuted }}>({cartCount})</span>}
           </p>
           {cart.length > 0 && (
             <button onClick={clearCart} className="text-xs font-semibold px-2.5 py-1 rounded-lg transition-all" style={{ background: "rgba(239,68,68,0.12)", color: "rgba(239,68,68,0.6)" }}>
@@ -427,33 +486,25 @@ export default function PosApp() {
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-center">
-              <p className="text-white/13 text-sm">No items</p>
-              <p className="text-white/8 text-xs mt-1">Tap a product to add</p>
+              <p className="text-sm" style={{ color: ct.textFaint }}>No items</p>
+              <p className="text-xs mt-1" style={{ color: ct.textFaint }}>Tap a product to add</p>
             </div>
           ) : (
             <div className="space-y-3">
               {cart.map(item => (
                 <div key={item.cartKey} className="flex items-start gap-2">
                   <div className="flex-1 min-w-0 pt-0.5">
-                    <p className="text-white/85 text-sm font-medium leading-snug">{item.name}</p>
-                    <p className="text-white/28 text-xs mt-0.5">{fmtPrice(item.price * item.quantity, item.currency)}</p>
+                    <p className="text-sm font-medium leading-snug" style={{ color: ct.text }}>{item.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: ct.textMuted }}>{fmtPrice(item.price * item.quantity, item.currency)}</p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => changeQty(item.cartKey, -1)}
+                    <button onClick={() => changeQty(item.cartKey, -1)}
                       className="w-7 h-7 rounded-lg text-sm font-bold flex items-center justify-center"
-                      style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.5)" }}
-                    >
-                      −
-                    </button>
-                    <span className="w-6 text-center text-sm font-semibold text-white tabular-nums">{item.quantity}</span>
-                    <button
-                      onClick={() => changeQty(item.cartKey, 1)}
+                      style={{ background: ct.btnBg, color: ct.btnColor }}>−</button>
+                    <span className="w-6 text-center text-sm font-semibold tabular-nums" style={{ color: ct.qty }}>{item.quantity}</span>
+                    <button onClick={() => changeQty(item.cartKey, 1)}
                       className="w-7 h-7 rounded-lg text-sm font-bold flex items-center justify-center"
-                      style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.5)" }}
-                    >
-                      +
-                    </button>
+                      style={{ background: ct.btnBg, color: ct.btnColor }}>+</button>
                   </div>
                 </div>
               ))}
@@ -461,29 +512,39 @@ export default function PosApp() {
           )}
         </div>
 
-        <div className="px-5 pb-6" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 16 }}>
+        <div className="px-5 pb-6" style={{ borderTop: `1px solid ${ct.border}`, paddingTop: 16 }}>
           <div className="flex items-end justify-between mb-5">
-            <p className="text-white/25 text-xs uppercase tracking-wider">Total</p>
-            <p className="font-[family-name:var(--font-bebas)] text-white text-4xl leading-none">
+            <p className="text-xs uppercase tracking-wider" style={{ color: ct.totalLabel }}>Total</p>
+            <p className="font-[family-name:var(--font-bebas)] text-4xl leading-none" style={{ color: ct.totalAmt }}>
               {cart.length > 0 ? fmtPrice(cartTotal, cartCurrency) : "—"}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                disabled={cart.length === 0}
+                onClick={() => setPayState("cash")}
+                className="py-4 rounded-2xl text-sm font-bold transition-all disabled:opacity-20"
+                style={{ background: "#10b981", color: "#fff" }}
+              >
+                Cash
+              </button>
+              <button
+                disabled={cart.length === 0}
+                onClick={() => setPayState("card")}
+                className="py-4 rounded-2xl text-sm font-bold transition-all disabled:opacity-20"
+                style={{ background: "#3b82f6", color: "#fff" }}
+              >
+                Card
+              </button>
+            </div>
             <button
               disabled={cart.length === 0}
-              onClick={() => setPayState("cash")}
-              className="py-4 rounded-2xl text-sm font-bold transition-all disabled:opacity-20"
-              style={{ background: "#10b981", color: "#fff" }}
+              onClick={() => setPayState("comp")}
+              className="w-full py-4 rounded-2xl text-sm font-bold transition-all disabled:opacity-20"
+              style={{ background: "#8b5cf6", color: "#fff" }}
             >
-              Cash
-            </button>
-            <button
-              disabled={cart.length === 0}
-              onClick={() => setPayState("card")}
-              className="py-4 rounded-2xl text-sm font-bold transition-all disabled:opacity-20"
-              style={{ background: "rgba(255,255,255,0.09)", color: "rgba(255,255,255,0.8)" }}
-            >
-              Card
+              Courtesy
             </button>
           </div>
         </div>
@@ -585,6 +646,48 @@ export default function PosApp() {
                 style={{ background: "#fff", color: "#0a0a0a" }}
               >
                 {submitting ? "Saving…" : "Payment received"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Comp modal ──────────────────────────────────────────────────── */}
+      {payState === "comp" && (
+        <div
+          className="absolute inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: "rgba(0,0,0,0.72)", backdropFilter: "blur(10px)" }}
+        >
+          <div className="w-full max-w-sm rounded-3xl p-6" style={{ background: "#18181f", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <p className="text-white/35 text-[10px] uppercase tracking-widest mb-1">Courtesy · $0</p>
+            <p className="font-[family-name:var(--font-bebas)] text-white/30 text-5xl leading-none line-through mb-1">
+              {fmtPrice(cartTotal, cartCurrency)}
+            </p>
+            <p className="font-[family-name:var(--font-bebas)] text-[#818cf8] text-3xl leading-none mb-6">$0.00</p>
+            <div className="space-y-2.5 mb-6 max-h-48 overflow-y-auto">
+              {cart.map(item => (
+                <div key={item.cartKey} className="flex items-center justify-between">
+                  <span className="text-white/45 text-sm">{item.quantity}× {item.name}</span>
+                  <span className="text-white/30 text-sm line-through">{fmtPrice(item.price * item.quantity, item.currency)}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setPayState("idle")}
+                disabled={submitting}
+                className="flex-1 py-3.5 rounded-2xl text-sm font-medium"
+                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => submitOrder("comp")}
+                disabled={submitting}
+                className="flex-1 py-3.5 rounded-2xl text-sm font-bold disabled:opacity-50"
+                style={{ background: "#8b5cf6", color: "#fff" }}
+              >
+                {submitting ? "Saving…" : "Confirm courtesy"}
               </button>
             </div>
           </div>

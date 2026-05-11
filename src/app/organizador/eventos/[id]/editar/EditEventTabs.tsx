@@ -360,7 +360,7 @@ export default function EditEventTabs({ event, ticketTypes }: { event: Event; ti
             <p className="text-[#0a0a0a]/40 text-xs mb-4">Ticket preview</p>
             {(() => {
               const selTT = ticketTypes.find((t) => t.id === selectedTicketType) ?? ticketTypes[0];
-              const isTable = selTT?.category === "table" || selTT?.category === "seat";
+              const isTable = selTT?.category === "table";
               const typeLabel = isTable ? "VIP TABLE" : "GENERAL";
               const fmtDate = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
               const fmt12 = (t: string) => { const [h, m] = t.split(":").map(Number); const ampm = h >= 12 ? "PM" : "AM"; return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${ampm}`; };

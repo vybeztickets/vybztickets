@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ConfirmDialog from "@/app/components/ConfirmDialog";
 
 type Mixer = { name: string; extra_price: string };
 type Product = {
   id: string; name: string; price: number; category: string;
   subcategory?: string; has_mixer?: boolean; mixers?: { name: string; extra_price: number }[];
-  currency: string; is_active: boolean;
+  currency: string; is_active: boolean; is_pinned?: boolean;
 };
 
 const DEFAULT_CATS = ["copas", "botellas", "vino", "cervezas", "seltzers", "sin_alcohol", "shots", "other"];
@@ -74,6 +75,7 @@ export default function PosProductsPage() {
   // Delete confirmation
   const [confirmDeleteCat, setConfirmDeleteCat] = useState<string | null>(null);
   const [confirmDeleteSubcat, setConfirmDeleteSubcat] = useState<{ cat: string; sub: string } | null>(null);
+  const [confirmState, setConfirmState] = useState<{ message: string; fn: () => void } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   // ── Load localStorage ─────────────────────────────────────────────────────
@@ -144,10 +146,20 @@ export default function PosProductsPage() {
     load();
   }
 
-  async function handleDeleteProduct(id: string) {
-    if (!confirm("Delete this product?")) return;
-    await fetch(`/api/organizador/pos/products/${id}`, { method: "DELETE" });
+  async function togglePin(p: Product) {
+    await fetch(`/api/organizador/pos/products/${p.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ is_pinned: !p.is_pinned }) });
     load();
+  }
+
+  function handleDeleteProduct(id: string) {
+    setConfirmState({
+      message: "Delete this product?",
+      fn: async () => {
+        setConfirmState(null);
+        await fetch(`/api/organizador/pos/products/${id}`, { method: "DELETE" });
+        load();
+      },
+    });
   }
 
   function addMixer() { setForm(f => ({ ...f, mixers: [...f.mixers, { name: "", extra_price: "0" }] })); }
@@ -298,11 +310,11 @@ export default function PosProductsPage() {
         </div>
       ) : (
         <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
-          <div className="grid text-xs font-semibold uppercase tracking-wider px-5 py-3" style={{ gridTemplateColumns: "1fr 130px 110px 100px 90px 60px", background: "rgba(0,0,0,0.02)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-            <div>Product</div><div>Category</div><div>Subcategory</div><div className="text-right">Price</div><div className="text-center">Active</div><div />
+          <div className="grid text-xs font-semibold uppercase tracking-wider px-5 py-3" style={{ gridTemplateColumns: "1fr 130px 110px 100px 90px 36px 60px", background: "rgba(0,0,0,0.02)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+            <div>Product</div><div>Category</div><div>Subcategory</div><div className="text-right">Price</div><div className="text-center">Active</div><div className="text-center">Pin</div><div />
           </div>
           {filtered.map((p, i) => (
-            <div key={p.id} className="grid items-center px-5 py-3.5" style={{ gridTemplateColumns: "1fr 130px 110px 100px 90px 60px", borderBottom: i < filtered.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", opacity: p.is_active ? 1 : 0.4 }}>
+            <div key={p.id} className="grid items-center px-5 py-3.5" style={{ gridTemplateColumns: "1fr 130px 110px 100px 90px 36px 60px", borderBottom: i < filtered.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", opacity: p.is_active ? 1 : 0.4 }}>
               <div>
                 <p className="text-[#0a0a0a] text-sm font-medium">{p.name}</p>
                 {p.has_mixer && <p className="text-[#0a0a0a]/30 text-xs mt-0.5">{(p.mixers ?? []).length} mix{(p.mixers ?? []).length !== 1 ? "es" : ""}</p>}
@@ -313,6 +325,13 @@ export default function PosProductsPage() {
               <div className="flex justify-center">
                 <button onClick={() => toggleActive(p)} className="w-10 h-5 rounded-full transition-colors relative shrink-0" style={{ background: p.is_active ? "#0a0a0a" : "rgba(0,0,0,0.15)" }}>
                   <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: p.is_active ? "calc(100% - 18px)" : "2px" }} />
+                </button>
+              </div>
+              <div className="flex justify-center">
+                <button onClick={() => togglePin(p)} className="p-1 rounded-lg transition-all" title={p.is_pinned ? "Remove from pinned" : "Pin to quick access"}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill={p.is_pinned ? "#f59e0b" : "none"} stroke={p.is_pinned ? "#f59e0b" : "rgba(0,0,0,0.2)"} strokeWidth="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
                 </button>
               </div>
               <div className="flex items-center gap-1 justify-end">
@@ -556,6 +575,14 @@ export default function PosProductsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {confirmState && (
+        <ConfirmDialog
+          message={confirmState.message}
+          onConfirm={confirmState.fn}
+          onCancel={() => setConfirmState(null)}
+        />
       )}
     </div>
   );
