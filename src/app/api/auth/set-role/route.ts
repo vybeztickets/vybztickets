@@ -27,10 +27,13 @@ export async function POST(req: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { error } = await db
+  // Upsert so profile is created here if the DB trigger failed to create it
+  const { error } = await (db as any)
     .from("profiles")
-    .update({ role })
-    .eq("id", userId);
+    .upsert(
+      { id: userId, role, email: user.email ?? "", currency: "USD" },
+      { onConflict: "id" }
+    );
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
