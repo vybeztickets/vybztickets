@@ -36,7 +36,7 @@ export default function UpdatePasswordPage() {
     }
 
     setDone(true);
-    setTimeout(() => router.push("/organizador"), 2000);
+    setTimeout(() => router.push("/cuenta"), 2000);
   }
 
   return (

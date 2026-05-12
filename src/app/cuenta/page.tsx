@@ -43,7 +43,7 @@ export default async function CuentaPage() {
   const [ticketsRes, followsRes] = await Promise.all([
     (admin as any)
       .from("tickets")
-      .select("id, qr_code, buyer_name, status, purchase_price, created_at, transferred_from, transferred_at, ticket_types(id, name), events(id, name, date, venue, city)")
+      .select("id, qr_code, buyer_name, status, purchase_price, created_at, ticket_types(id, name), events(id, name, date, venue, city)")
       .eq("buyer_email", userEmail)
       .in("status", ["active", "used", "transferred"])
       .order("created_at", { ascending: false }),
@@ -154,11 +154,9 @@ export default async function CuentaPage() {
                       >
                         View ticket
                       </a>
-                      {t.transferred_from === null && (
-                        <Link href="/transfer" className="text-xs font-medium" style={{ color: "rgba(0,0,0,0.4)" }}>
-                          Transfer →
-                        </Link>
-                      )}
+                      <Link href="/transfer" className="text-xs font-medium" style={{ color: "rgba(0,0,0,0.4)" }}>
+                        Transfer →
+                      </Link>
                     </div>
                   </div>
                 );
