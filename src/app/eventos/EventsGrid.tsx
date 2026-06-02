@@ -62,7 +62,8 @@ export default function EventsGrid({ events, initialFilter }: { events: Event[];
     const matchSearch = !search ||
       e.name.toLowerCase().includes(search.toLowerCase()) ||
       e.city.toLowerCase().includes(search.toLowerCase()) ||
-      e.venue.toLowerCase().includes(search.toLowerCase());
+      e.venue.toLowerCase().includes(search.toLowerCase()) ||
+      e.country.toLowerCase().includes(search.toLowerCase());
     return matchTime && matchSearch;
   });
 
@@ -101,7 +102,7 @@ export default function EventsGrid({ events, initialFilter }: { events: Event[];
         </div>
       </div>
 
-      <p className="text-[#0a0a0a]/30 text-xs mb-6">
+      <p className="text-[#0a0a0a]/80 text-xs mb-6">
         {filtered.length} event{filtered.length !== 1 ? "s" : ""} found
       </p>
 
@@ -141,9 +142,9 @@ export default function EventsGrid({ events, initialFilter }: { events: Event[];
                     className="absolute top-3 left-3 text-center px-2.5 py-2 rounded-xl"
                     style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)" }}
                   >
-                    <p className="text-[#0a0a0a]/40 text-[8px] font-bold tracking-widest">{weekday}</p>
+                    <p className="text-[#0a0a0a] text-[8px] font-bold tracking-widest">{weekday}</p>
                     <p className="text-[#0a0a0a] font-[family-name:var(--font-bebas)] text-2xl leading-none">{day}</p>
-                    <p className="text-[#0a0a0a]/50 text-[8px] font-bold tracking-widest">{month}</p>
+                    <p className="text-[#0a0a0a] text-[8px] font-bold tracking-widest">{month}</p>
                   </div>
 
                   {/* Category badge */}
@@ -166,7 +167,7 @@ export default function EventsGrid({ events, initialFilter }: { events: Event[];
                   <h3 className="text-[#0a0a0a] font-semibold text-base leading-tight mb-2 line-clamp-2 group-hover:text-[#0a0a0a]/60 transition-colors">
                     {event.name}
                   </h3>
-                  <div className="flex items-center gap-1.5 text-[#0a0a0a]/30 text-xs mb-4">
+                  <div className="flex items-center gap-1.5 text-[#0a0a0a]/80 text-xs mb-4">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                     </svg>
@@ -177,7 +178,7 @@ export default function EventsGrid({ events, initialFilter }: { events: Event[];
                     <div>
                       {minPrice !== null ? (
                         <>
-                          <p className="text-[#0a0a0a]/25 text-[9px] uppercase tracking-wider">From</p>
+                          <p className="text-[#0a0a0a]/80 text-[9px] uppercase tracking-wider">From</p>
                           <p className="text-[#0a0a0a] font-bold text-base">{formatPrice(minPrice, event.currency)}</p>
                         </>
                       ) : (

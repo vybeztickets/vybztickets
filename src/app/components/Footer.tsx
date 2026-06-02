@@ -30,7 +30,7 @@ export default function Footer() {
   const cta = {
     title: "Hosting an event?",
     desc: "Sell tickets with the most complete event platform.",
-    primary: { href: "/organizador", label: "Start for free →" },
+    primary: { href: "/organizador", label: "Start for free" },
     secondary: { href: "mailto:hola@vybztickets.com", label: "Talk to sales" },
   };
 
@@ -43,7 +43,7 @@ export default function Footer() {
             <h3 className="font-[family-name:var(--font-bebas)] text-4xl md:text-5xl text-white tracking-wide mb-1">
               {cta.title}
             </h3>
-            <p className="text-white/25 text-sm">{cta.desc}</p>
+            <p className="text-white text-sm">{cta.desc}</p>
           </div>
           <div className="flex gap-3 shrink-0">
             <a
@@ -56,8 +56,8 @@ export default function Footer() {
             </a>
             <a
               href={cta.secondary.href}
-              className="text-white/40 hover:text-white text-sm px-6 py-3 rounded-full transition-colors"
-              style={{ border: "1px solid rgba(255,255,255,0.1)" }}
+              className="text-white hover:text-white/80 text-sm px-6 py-3 rounded-full transition-colors"
+              style={{ border: "1px solid rgba(255,255,255,0.8)" }}
             >
               {cta.secondary.label}
             </a>
@@ -76,7 +76,7 @@ export default function Footer() {
             >
               VYBZ
             </Link>
-            <p className="text-white/20 text-xs leading-relaxed mb-5">
+            <p className="text-white text-xs leading-relaxed mb-5">
               The easiest way to buy and sell tickets for live events.
             </p>
             <div className="flex gap-2.5">
@@ -86,8 +86,8 @@ export default function Footer() {
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center text-white/25 hover:text-white/60 transition-all text-[9px] font-bold rounded-lg"
-                  style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                  className="w-8 h-8 flex items-center justify-center text-white hover:text-white/70 transition-all text-[9px] font-bold rounded-lg"
+                  style={{ border: "1px solid rgba(255,255,255,0.6)" }}
                 >
                   {s.label}
                 </a>
@@ -98,7 +98,7 @@ export default function Footer() {
           {/* Links */}
           {Object.entries(LINKS).map(([col, items]) => (
             <div key={col}>
-              <p className="text-white/40 text-[10px] font-semibold tracking-[0.18em] uppercase mb-4">{col}</p>
+              <p className="text-white text-[10px] font-semibold tracking-[0.18em] uppercase mb-4">{col}</p>
               <ul className="space-y-2.5">
                 {items.map((item) => (
                   <li key={item.label}>
@@ -107,12 +107,12 @@ export default function Footer() {
                         href={item.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-white/20 hover:text-white/50 text-sm transition-colors"
+                        className="text-white hover:text-white/70 text-sm transition-colors"
                       >
                         {item.label}
                       </a>
                     ) : (
-                      <Link href={item.href} className="text-white/20 hover:text-white/50 text-sm transition-colors">
+                      <Link href={item.href} className="text-white hover:text-white/70 text-sm transition-colors">
                         {item.label}
                       </Link>
                     )}
@@ -127,13 +127,13 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="px-6 py-5" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-white/15 text-xs">
+          <p className="text-white text-xs">
             © {new Date().getFullYear()} Vybz Tickets. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/terminos" className="text-white/15 hover:text-white/35 text-xs transition-colors">Terms</Link>
-            <Link href="/privacidad" className="text-white/15 hover:text-white/35 text-xs transition-colors">Privacy</Link>
-            <Link href="/privacidad" className="text-white/15 hover:text-white/35 text-xs transition-colors">Cookies</Link>
+            <Link href="/terminos" className="text-white hover:text-white/35 text-xs transition-colors">Terms</Link>
+            <Link href="/privacidad" className="text-white hover:text-white/35 text-xs transition-colors">Privacy</Link>
+            <Link href="/privacidad" className="text-white hover:text-white/35 text-xs transition-colors">Cookies</Link>
           </div>
         </div>
       </div>

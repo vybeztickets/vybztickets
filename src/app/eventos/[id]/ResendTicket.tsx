@@ -33,9 +33,9 @@ export default function ResendTicket({ eventId }: { eventId: string }) {
         <button
           onClick={() => setOpen(true)}
           className="text-xs transition-colors"
-          style={{ color: "rgba(0,0,0,0.25)" }}
-          onMouseEnter={e => (e.currentTarget.style.color = "rgba(0,0,0,0.45)")}
-          onMouseLeave={e => (e.currentTarget.style.color = "rgba(0,0,0,0.25)")}
+          style={{ color: "rgba(0,0,0,1)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "rgba(0,0,0,0.6)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "rgba(0,0,0,1)")}
         >
           Already purchased? Resend my ticket
         </button>

@@ -79,7 +79,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
                   <div>
-                    <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider font-semibold leading-none mb-0.5">Organized by</p>
+                    <p className="text-[#0a0a0a] text-[10px] uppercase tracking-wider font-semibold leading-none mb-0.5">Organized by</p>
                     <p className="text-[#0a0a0a] text-sm font-bold leading-none">{organizer.full_name}</p>
                   </div>
                 </Link>
@@ -99,13 +99,13 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
               {event.description && (
                 <div className="hidden lg:block mb-6">
-                  <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Info</p>
-                  <p className="text-[#0a0a0a]/55 text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
+                  <p className="text-[#0a0a0a] text-[10px] font-bold uppercase tracking-wider mb-2">Info</p>
+                  <p className="text-[#0a0a0a] text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
                 </div>
               )}
 
               <div>
-                <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Location</p>
+                <p className="text-[#0a0a0a] text-[10px] font-bold uppercase tracking-wider mb-2">Location</p>
                 <EventMap
                   lat={event.location_lat}
                   lng={event.location_lng}
@@ -118,7 +118,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                 <div className="mt-2">
                   <a
                     href="/transfer"
-                    className="text-xs transition-colors text-black/25 hover:text-black/45"
+                    className="text-xs transition-colors text-black hover:text-black/60"
                   >
                     Transfer my ticket →
                   </a>
@@ -128,7 +128,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
             {/* ── RIGHT: date, name, description (mobile), tickets ── */}
             <div className="flex-1 min-w-0 order-1 lg:order-2">
-              <p className="text-[#0a0a0a]/40 text-sm mb-3 capitalize">
+              <p className="text-[#0a0a0a] text-sm mb-3 capitalize">
                 {formattedDate}
                 {event.time && <span> · {event.time}{event.till_late ? " – Till late" :event.end_time ? ` – ${event.end_time}` : ""}</span>}
               </p>
@@ -146,8 +146,8 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
 
               {event.description && (
                 <div className="lg:hidden mb-6">
-                  <p className="text-[#0a0a0a]/30 text-[10px] font-bold uppercase tracking-wider mb-2">Info</p>
-                  <p className="text-[#0a0a0a]/55 text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
+                  <p className="text-[#0a0a0a] text-[10px] font-bold uppercase tracking-wider mb-2">Info</p>
+                  <p className="text-[#0a0a0a] text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
                 </div>
               )}
 

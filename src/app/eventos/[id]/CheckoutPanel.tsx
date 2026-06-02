@@ -756,7 +756,7 @@ export default function CheckoutPanel({
                         </span>
                       )}
                     </div>
-                    {t.description && <p className="text-[#0a0a0a]/35 text-xs truncate">{t.description}</p>}
+                    {t.description && <p className="text-[#0a0a0a]/80 text-xs truncate">{t.description}</p>}
                     <p className="text-[#0a0a0a] font-bold text-base mt-1">{formatPrice(t.price, currency)}</p>
                   </div>
                   <button onClick={() => selectTicket(t.id)}
