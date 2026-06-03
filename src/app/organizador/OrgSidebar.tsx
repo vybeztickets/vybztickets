@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const MAIN_NAV = [
+const BASE_NAV = [
   {
     label: "Dashboard",
     href: "/organizador",
@@ -33,6 +33,18 @@ const MAIN_NAV = [
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
         <rect x="2" y="3" width="20" height="14" rx="2" />
         <path d="M8 21h8" /><path d="M12 17v4" />
+      </svg>
+    ),
+  },
+  {
+    label: "Inventory",
+    href: "/organizador/inventario",
+    inventoryOnly: true,
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
+        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+        <line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" />
       </svg>
     ),
   },
@@ -92,15 +104,21 @@ export default function OrgSidebar({
   userName,
   userEmail,
   avatarUrl,
+  organizerType,
+  lowStockCount = 0,
 }: {
   userName: string;
   userEmail: string;
   avatarUrl: string | null;
+  organizerType?: string;
+  lowStockCount?: number;
 }) {
   const pathname = usePathname();
   const eventId = getEventId(pathname);
   const [eventName, setEventName] = useState("");
   const isPosSection = pathname.startsWith("/organizador/pos");
+  const hasInventory = organizerType === "discoteca" || organizerType === "festival";
+  const MAIN_NAV = BASE_NAV.filter(item => !("inventoryOnly" in item) || hasInventory);
 
   useEffect(() => {
     if (!eventId) { setEventName(""); return; }
@@ -129,7 +147,7 @@ export default function OrgSidebar({
         <Link href="/platform" className="font-[family-name:var(--font-bebas)] text-white tracking-widest text-xl block">
           VYBZ
         </Link>
-        <p className="text-white/30 text-[10px] uppercase tracking-widest mt-0.5">Platform</p>
+        <p className="text-white/70 text-[10px] uppercase tracking-widest mt-0.5">Platform</p>
       </div>
 
       {/* Main nav — hidden when inside an event */}
@@ -144,11 +162,16 @@ export default function OrgSidebar({
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] font-medium transition-all"
                 style={{
                   background: active ? "rgba(255,255,255,0.1)" : "transparent",
-                  color: active ? "#fff" : "rgba(255,255,255,0.38)",
+                  color: active ? "#fff" : "#cccccc",
                 }}
               >
-                <span style={{ color: active ? "#fff" : "rgba(255,255,255,0.25)" }}>{item.icon}</span>
-                {item.label}
+                <span style={{ color: active ? "#fff" : "#aaaaaa" }}>{item.icon}</span>
+                <span className="flex-1">{item.label}</span>
+                {item.href === "/organizador/inventario" && lowStockCount > 0 && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "#ef4444", color: "#fff", minWidth: 18, textAlign: "center" }}>
+                    {lowStockCount}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -160,7 +183,7 @@ export default function OrgSidebar({
         <>
           <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "0 12px" }} />
           <div className="px-3 py-3 flex-1 overflow-y-auto">
-            <p className="text-white/20 text-[9px] uppercase tracking-widest px-2 mb-2">Point of Sale</p>
+            <p className="text-white/65 text-[9px] uppercase tracking-widest px-2 mb-2">Point of Sale</p>
             <div className="space-y-0.5">
               {POS_NAV.map(item => {
                 const href = `/organizador/pos/${item.path}`;
@@ -172,7 +195,7 @@ export default function OrgSidebar({
                     className="w-full flex items-center px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all"
                     style={{
                       background: active ? "rgba(255,255,255,0.1)" : "transparent",
-                      color: active ? "#fff" : "rgba(255,255,255,0.38)",
+                      color: active ? "#fff" : "#cccccc",
                     }}
                   >
                     {item.label}
@@ -191,7 +214,7 @@ export default function OrgSidebar({
             <Link
               href="/organizador/eventos"
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all w-full"
-              style={{ color: "rgba(255,255,255,0.45)", background: "rgba(255,255,255,0.04)" }}
+              style={{ color: "rgba(255,255,255,0.85)", background: "rgba(255,255,255,0.06)" }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
@@ -201,7 +224,7 @@ export default function OrgSidebar({
           </div>
           <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 12px" }} />
           <div className="px-3 pb-3 flex-1 overflow-y-auto">
-            <p className="text-white/20 text-[9px] uppercase tracking-widest px-2 mb-2">Current event</p>
+            <p className="text-white/65 text-[9px] uppercase tracking-widest px-2 mb-2">Current event</p>
             <div className="px-3 py-2.5 rounded-xl mb-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}>
               <p className="text-white text-[13px] font-semibold truncate">{eventName || "…"}</p>
             </div>
@@ -219,7 +242,7 @@ export default function OrgSidebar({
                       background: active ? (isFeature ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.1)") : "transparent",
                       color: active
                         ? (isFeature ? "#f59e0b" : "#fff")
-                        : (isFeature ? "#f59e0b" : "rgba(255,255,255,0.38)"),
+                        : (isFeature ? "#f59e0b" : "#cccccc"),
                     }}
                   >
                     {item.label}
@@ -271,7 +294,7 @@ export default function OrgSidebar({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-xs font-semibold truncate">{userName}</p>
-            <p className="text-white/30 text-[10px] truncate">{userEmail}</p>
+            <p className="text-[10px] truncate" style={{ color: "#aaaaaa" }}>{userEmail}</p>
           </div>
         </Link>
       </div>

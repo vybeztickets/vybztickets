@@ -5,7 +5,7 @@ import ImageUploadField from "@/app/components/ImageUploadField";
 
 type CustomLink = { name: string; url: string };
 
-const TABS = ["Status", "Profile", "Brand image", "Security", "Business details", "Taxes", "Notifications"];
+const TABS = ["Status", "Profile", "Brand image", "Security", "Business details", "Taxes", "Notifications", "Team"];
 
 type Profile = {
   id: string;
@@ -44,11 +44,42 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 }
 
 type OrgType = "discoteca" | "organizador" | "festival";
+type FeatureItem = { text: string; exclusive: boolean };
 
-const ORG_TYPE_OPTIONS: { value: OrgType; label: string; description: string }[] = [
-  { value: "discoteca", label: "Discoteca / Venue", description: "Tienes un espacio físico con eventos recurrentes" },
-  { value: "organizador", label: "Organizador", description: "Produces eventos en distintos lugares" },
-  { value: "festival", label: "Festival", description: "Eventos multi-artista o multi-jornada" },
+const ORG_TYPE_OPTIONS: { value: OrgType; label: string; description: string; features: FeatureItem[] }[] = [
+  {
+    value: "discoteca",
+    label: "Nightclub / Venue",
+    description: "You have a physical space with recurring events",
+    features: [
+      { text: "Tickets & access control", exclusive: false },
+      { text: "Bar POS & cashier app", exclusive: false },
+      { text: "Permanent VIP table map", exclusive: true },
+      { text: "Bar inventory with alerts", exclusive: true },
+    ],
+  },
+  {
+    value: "organizador",
+    label: "Organizer",
+    description: "You produce events across different venues",
+    features: [
+      { text: "Tickets & access control", exclusive: false },
+      { text: "Bar POS & cashier app", exclusive: false },
+      { text: "VIP tables per event", exclusive: false },
+      { text: "Promo codes & traffic tracking", exclusive: false },
+    ],
+  },
+  {
+    value: "festival",
+    label: "Festival",
+    description: "Multi-artist or multi-day events",
+    features: [
+      { text: "Multi-day / multi-stage events", exclusive: true },
+      { text: "Per-day tickets or full access", exclusive: true },
+      { text: "Bar POS & cashier app", exclusive: false },
+      { text: "Bar inventory with alerts", exclusive: true },
+    ],
+  },
 ];
 
 function StatusTab({ role, organizerType: initialType }: { role: string; organizerType?: string }) {
@@ -100,9 +131,9 @@ function StatusTab({ role, organizerType: initialType }: { role: string; organiz
             </span>
           )}
         </div>
-        <p className="text-[#0a0a0a]/35 text-sm mb-4">Personaliza tu dashboard según cómo usas Vybz.</p>
+        <p className="text-[#0a0a0a]/60 text-sm mb-4">Customize your dashboard based on how you use Vybz.</p>
 
-        <div className="flex flex-col gap-2 mb-4">
+        <div className="flex flex-col gap-3 mb-4">
           {ORG_TYPE_OPTIONS.map((opt) => {
             const isSelected = selectedType === opt.value;
             return (
@@ -110,50 +141,83 @@ function StatusTab({ role, organizerType: initialType }: { role: string; organiz
                 key={opt.value}
                 type="button"
                 onClick={() => setSelectedType(opt.value)}
-                className="flex items-center gap-4 px-5 py-4 rounded-2xl text-left transition-all"
+                className="flex gap-4 px-5 py-5 rounded-2xl text-left transition-all"
                 style={{
-                  background: isSelected ? "#0a0a0a" : "rgba(0,0,0,0.02)",
-                  border: isSelected ? "1px solid #0a0a0a" : "1px solid rgba(0,0,0,0.08)",
+                  background: isSelected ? "#0a0a0a" : "#fff",
+                  border: isSelected ? "1px solid #0a0a0a" : "1px solid #e2e2e2",
                 }}
               >
+                {/* Radio */}
                 <div
-                  className="w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center"
-                  style={{ borderColor: isSelected ? "#fff" : "rgba(0,0,0,0.2)" }}
+                  className="w-[18px] h-[18px] rounded-full border-2 shrink-0 flex items-center justify-center mt-0.5"
+                  style={{ borderColor: isSelected ? "#fff" : "#aaaaaa" }}
                 >
                   {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: isSelected ? "#fff" : "#0a0a0a" }}>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-semibold leading-snug" style={{ color: isSelected ? "#fff" : "#0a0a0a" }}>
                     {opt.label}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: isSelected ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.35)" }}>
+                  <p className="text-[13px] mt-0.5 mb-4" style={{ color: isSelected ? "#888888" : "#777777" }}>
                     {opt.description}
                   </p>
+
+                  {/* Feature list — clean lines, no pills */}
+                  <div className="flex flex-col gap-2">
+                    {opt.features.map((f) => (
+                      <div key={f.text} className="flex items-center gap-2.5">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+                          <circle cx="7" cy="7" r="6.5"
+                            stroke={isSelected ? "#ffffff" : "#0a0a0a"}
+                          />
+                          <path d="M4 7L6 9.5L10 5"
+                            stroke={isSelected ? "#ffffff" : "#0a0a0a"}
+                            strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"
+                          />
+                        </svg>
+                        <span
+                          className="text-[13px]"
+                          style={{ color: isSelected ? "#ffffff" : "#0a0a0a" }}
+                        >
+                          {f.text}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </button>
             );
           })}
         </div>
 
-        <button
-          onClick={handleSaveType}
-          disabled={!selectedType || typeSaving || selectedType === initialType}
-          className="px-6 py-2.5 rounded-full text-sm font-semibold transition-all disabled:opacity-30"
-          style={{
-            background: typeSaved ? "rgba(16,185,129,0.12)" : "#0a0a0a",
-            color: typeSaved ? "#10b981" : "#fff",
-            border: typeSaved ? "1px solid rgba(16,185,129,0.3)" : "none",
-          }}
-        >
-          {typeSaving ? "Guardando…" : typeSaved ? "Guardado" : "Guardar tipo"}
-        </button>
+        <div className="flex items-center gap-4 flex-wrap">
+          <button
+            onClick={handleSaveType}
+            disabled={!selectedType || typeSaving || selectedType === initialType}
+            className="px-6 py-2.5 rounded-full text-sm font-semibold transition-all disabled:opacity-30"
+            style={{
+              background: typeSaved ? "rgba(16,185,129,0.12)" : "#0a0a0a",
+              color: typeSaved ? "#10b981" : "#fff",
+              border: typeSaved ? "1px solid rgba(16,185,129,0.3)" : "none",
+            }}
+          >
+            {typeSaving ? "Guardando…" : typeSaved ? "Guardado" : "Guardar tipo"}
+          </button>
+          {initialType && selectedType !== initialType && (
+            <p className="text-xs" style={{ color: "rgba(0,0,0,0.55)" }}>
+              Changing your type won't delete your events or history.
+            </p>
+          )}
+        </div>
       </div>
 
       <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }} />
 
       <div>
         <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Account status</h2>
-        <p className="text-[#0a0a0a]/35 text-sm">Your account status is managed by the Vybz team.</p>
+        <p className="text-[#0a0a0a]/60 text-sm">Your account status is managed by the Vybz team.</p>
       </div>
 
       <div className="p-5 rounded-2xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
@@ -162,7 +226,7 @@ function StatusTab({ role, organizerType: initialType }: { role: string; organiz
             <span className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0" />
             <div>
               <p className="text-[#0a0a0a] font-medium text-sm">Active account</p>
-              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">You can sell tickets and receive payments.</p>
+              <p className="text-[#0a0a0a]/60 text-xs mt-0.5">You can sell tickets and receive payments.</p>
             </div>
           </div>
         )}
@@ -484,6 +548,205 @@ function SecurityTab() {
   );
 }
 
+// ── TeamTab ───────────────────────────────────────────────────────────────────
+
+type TeamMember = { id: string; email: string; name: string | null; role: string; status: string; last_login_at: string | null; created_at: string };
+
+const ROLE_LABELS: Record<string, string> = { bar_manager: "Bar Manager", inventory_staff: "Inventory Staff", procurement: "Procurement" };
+const ROLE_OPTIONS = [
+  { value: "bar_manager", label: "Bar Manager", desc: "Full inventory access, counts, purchase orders, reports" },
+  { value: "inventory_staff", label: "Inventory Staff", desc: "View stock, physical counts, mark empty bottles" },
+  { value: "procurement", label: "Procurement", desc: "View stock, create and receive purchase orders" },
+];
+
+function TeamTab() {
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("inventory_staff");
+  const [inviting, setInviting] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState("");
+
+  function loadMembers() {
+    fetch("/api/organizador/team")
+      .then(r => r.json())
+      .then(d => { setMembers(d.members ?? []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }
+
+  useEffect(() => { loadMembers(); }, []);
+
+  async function handleInvite(e: React.FormEvent) {
+    e.preventDefault();
+    setInviteError(""); setInviteSuccess(null); setInviting(true);
+    const res = await fetch("/api/team/invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+    });
+    const data = await res.json();
+    setInviting(false);
+    if (!res.ok) { setInviteError(data.error ?? "Failed to send invite"); return; }
+    setInviteSuccess(data.inviteUrl);
+    setInviteEmail("");
+    loadMembers();
+  }
+
+  async function handleStatusChange(id: string, status: string) {
+    await fetch(`/api/organizador/team/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    loadMembers();
+  }
+
+  async function handleRemove(id: string) {
+    if (!confirm("Remove this team member? They will lose access immediately.")) return;
+    await fetch(`/api/organizador/team/${id}`, { method: "DELETE" });
+    loadMembers();
+  }
+
+  const statusBadge = (status: string) => {
+    const map: Record<string, { bg: string; color: string; label: string }> = {
+      invited:   { bg: "rgba(245,158,11,0.1)",  color: "#f59e0b", label: "Invited" },
+      active:    { bg: "rgba(16,185,129,0.1)",  color: "#10b981", label: "Active" },
+      suspended: { bg: "rgba(239,68,68,0.1)",   color: "#ef4444", label: "Suspended" },
+    };
+    const s = map[status] ?? map.invited;
+    return <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>;
+  };
+
+  return (
+    <div className="max-w-2xl flex flex-col gap-8">
+      {/* Invite form */}
+      <div>
+        <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Invite team member</h2>
+        <p className="text-sm mb-5" style={{ color: "#777" }}>
+          Team members get access to inventory management with limited permissions based on their role.
+        </p>
+        <form onSubmit={handleInvite} className="flex flex-col gap-3">
+          <div>
+            <label className={labelClass}>Email address</label>
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={e => setInviteEmail(e.target.value)}
+              placeholder="staff@yourvenue.com"
+              required
+              className={inputClass}
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Role</label>
+            <div className="flex flex-col gap-2">
+              {ROLE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setInviteRole(opt.value)}
+                  className="flex items-start gap-3 px-4 py-3 rounded-xl text-left transition-all"
+                  style={{
+                    background: inviteRole === opt.value ? "#0a0a0a" : "rgba(0,0,0,0.02)",
+                    border: inviteRole === opt.value ? "1px solid #0a0a0a" : "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <div className="w-3.5 h-3.5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center"
+                    style={{ borderColor: inviteRole === opt.value ? "#fff" : "#aaa" }}>
+                    {inviteRole === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: inviteRole === opt.value ? "#fff" : "#0a0a0a" }}>{opt.label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: inviteRole === opt.value ? "#888" : "#777" }}>{opt.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+          {inviteError && <p className="text-sm" style={{ color: "#ef4444" }}>{inviteError}</p>}
+          {inviteSuccess && (
+            <div className="p-3 rounded-xl text-sm" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}>
+              <p className="font-medium mb-1" style={{ color: "#10b981" }}>Invitation sent!</p>
+              <p className="text-xs break-all" style={{ color: "#555" }}>Share this link if email doesn't arrive: <span className="font-mono">{inviteSuccess}</span></p>
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={inviting}
+            className="px-6 py-2.5 rounded-full text-sm font-semibold transition-all disabled:opacity-40 self-start"
+            style={{ background: "#0a0a0a", color: "#fff" }}
+          >
+            {inviting ? "Sending…" : "Send invitation"}
+          </button>
+        </form>
+      </div>
+
+      <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }} />
+
+      {/* Team list */}
+      <div>
+        <h2 className="text-[#0a0a0a] font-semibold text-lg mb-4">Your team</h2>
+        {loading ? (
+          <p className="text-sm" style={{ color: "#888" }}>Loading…</p>
+        ) : members.length === 0 ? (
+          <div className="p-6 rounded-2xl text-center" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.07)" }}>
+            <p className="text-sm font-medium text-[#0a0a0a] mb-1">No team members yet</p>
+            <p className="text-xs" style={{ color: "#888" }}>Invite your first team member above</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {members.map(m => (
+              <div key={m.id} className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(0,0,0,0.06)" }}>
+                  <span className="text-sm font-bold text-[#0a0a0a]">{(m.name ?? m.email).charAt(0).toUpperCase()}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-semibold text-[#0a0a0a] truncate">{m.name ?? m.email}</p>
+                    {statusBadge(m.status)}
+                  </div>
+                  <p className="text-xs truncate" style={{ color: "#777" }}>{m.name ? m.email : ""} · {ROLE_LABELS[m.role] ?? m.role}</p>
+                  {m.last_login_at && (
+                    <p className="text-[10px]" style={{ color: "#aaa" }}>
+                      Last login {new Date(m.last_login_at).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  {m.status === "active" && (
+                    <button onClick={() => handleStatusChange(m.id, "suspended")}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                      style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444" }}>
+                      Suspend
+                    </button>
+                  )}
+                  {m.status === "suspended" && (
+                    <button onClick={() => handleStatusChange(m.id, "active")}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                      style={{ background: "rgba(16,185,129,0.08)", color: "#10b981" }}>
+                      Reactivate
+                    </button>
+                  )}
+                  <button onClick={() => handleRemove(m.id)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                    style={{ background: "rgba(0,0,0,0.04)", color: "#aaa" }}
+                    title="Remove">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main ConfigTabs ───────────────────────────────────────────────────────────
 
 export default function ConfigTabs({ profile, userId, userEmail, organizerType }: { profile: Profile | null; userId: string; userEmail: string; organizerType?: string }) {
@@ -638,7 +901,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType }
             key={t}
             onClick={() => setTab(t)}
             className="px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap"
-            style={tab === t ? { color: "#0a0a0a", borderBottom: "2px solid #0a0a0a" } : { color: "rgba(0,0,0,0.3)" }}
+            style={tab === t ? { color: "#0a0a0a", borderBottom: "2px solid #0a0a0a" } : { color: "#666666" }}
           >
             {t}
           </button>
@@ -846,6 +1109,9 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType }
 
       {/* Security */}
       {tab === "Security" && <SecurityTab />}
+
+      {/* Team */}
+      {tab === "Team" && <TeamTab />}
 
       {/* Business details */}
       {tab === "Business details" && (

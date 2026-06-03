@@ -159,35 +159,35 @@ export default async function OrganizerDashboard() {
       {/* ── Hero: Gross Revenue ── */}
       <div className="flex items-center gap-0 mb-10 pb-8" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
         <div className="flex-1 min-w-0 pr-8" style={{ borderRight: "1px solid rgba(0,0,0,0.07)" }}>
-          <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-[0.2em] mb-3">Gross Revenue</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] mb-3" style={{ color: "#555" }}>Gross Revenue</p>
           <p className="font-[family-name:var(--font-bebas)] text-[72px] text-[#0a0a0a] leading-none mb-1">
             {heroFmt(grossRevenue, profileCurrency)}
           </p>
           {/* Breakdown subline */}
           <div className="flex items-center gap-3 mb-1">
-            <span className="text-[#0a0a0a]/35 text-xs">
+            <span className="text-xs" style={{ color: "#555" }}>
               Tickets: <span className="font-semibold">{heroFmt(ticketRevenue, profileCurrency)}</span>
             </span>
-            <span className="text-[#0a0a0a]/15">·</span>
-            <span className="text-[#0a0a0a]/35 text-xs">
+            <span style={{ color: "#aaa" }}>·</span>
+            <span className="text-xs" style={{ color: "#555" }}>
               Bar: <span className="font-semibold">{heroFmt(barRevenue, profileCurrency)}</span>
             </span>
           </div>
           {hasMixedCurrencies && (
-            <p className="text-[#0a0a0a]/20 text-xs mb-1">
+            <p className="text-xs mb-1" style={{ color: "#666" }}>
               {profileCurrency} only ·{" "}
               {currencies.filter((c) => c !== profileCurrency).map((c) =>
                 `${formatPrice(revenueByCurrency[c], c)} in ${c}`
               ).join(", ")} not included
             </p>
           )}
-          <p className="text-[#0a0a0a]/20 text-xs">All events · all time</p>
+          <p className="text-xs" style={{ color: "#666" }}>All events · all time</p>
         </div>
 
         <div className="flex items-center shrink-0">
           {miniStats.map((s) => (
             <div key={s.label} className="px-6" style={{ borderLeft: "1px solid rgba(0,0,0,0.07)" }}>
-              <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-2 whitespace-nowrap">{s.label}</p>
+              <p className="text-[10px] uppercase tracking-wider mb-2 whitespace-nowrap" style={{ color: "#555" }}>{s.label}</p>
               <p className="font-[family-name:var(--font-bebas)] text-4xl text-[#0a0a0a] leading-none">{s.value}</p>
             </div>
           ))}
@@ -203,7 +203,7 @@ export default async function OrganizerDashboard() {
           {/* Top buyers */}
           {bestCustomers.length > 0 && (
             <div className="rounded-2xl p-6" style={{ border: "1px solid rgba(0,0,0,0.07)", background: "#fff" }}>
-              <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-5">Top buyers</p>
+              <p className="text-[10px] uppercase tracking-wider mb-5" style={{ color: "#555" }}>Top buyers</p>
               <div className="flex flex-col gap-4">
                 {bestCustomers.map((c, i) => (
                   <div key={c.email} className="flex items-center gap-3">
@@ -213,7 +213,7 @@ export default async function OrganizerDashboard() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[#0a0a0a] text-xs font-semibold truncate">{c.name ?? c.email}</p>
-                      <p className="text-[#0a0a0a]/30 text-[10px]">{c.tickets} ticket{c.tickets !== 1 ? "s" : ""}</p>
+                      <p className="text-[10px]" style={{ color: "#666" }}>{c.tickets} ticket{c.tickets !== 1 ? "s" : ""}</p>
                     </div>
                     <span className="text-[#0a0a0a] text-sm font-bold shrink-0">
                       {formatPrice(c.spent, profileCurrency)}
@@ -226,7 +226,7 @@ export default async function OrganizerDashboard() {
 
           {/* Occupancy */}
           <div className="rounded-2xl p-6" style={{ border: "1px solid rgba(0,0,0,0.07)", background: "#fff" }}>
-            <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-5">Occupancy per event</p>
+            <p className="text-[10px] uppercase tracking-wider mb-5" style={{ color: "#555" }}>Occupancy per event</p>
             <div className="flex flex-col gap-5">
               {eventsData.slice(0, 5).map((e) => {
                 const sold = e.ticket_types.reduce((s, t) => s + t.sold_count, 0);
@@ -239,7 +239,7 @@ export default async function OrganizerDashboard() {
                         className="text-[#0a0a0a] text-xs font-semibold truncate flex-1 hover:opacity-60 transition-opacity">
                         {e.name}
                       </Link>
-                      <span className="text-[#0a0a0a]/30 text-[10px] ml-3 shrink-0">{pct}%</span>
+                      <span className="text-[10px] ml-3 shrink-0 font-medium" style={{ color: "#555" }}>{pct}%</span>
                     </div>
                     <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.06)" }}>
                       <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#0a0a0a" }} />
@@ -248,7 +248,7 @@ export default async function OrganizerDashboard() {
                 );
               })}
               {eventsData.length === 0 && (
-                <p className="text-[#0a0a0a]/20 text-sm text-center py-4">No events yet</p>
+                <p className="text-sm text-center py-4" style={{ color: "#777" }}>No events yet</p>
               )}
             </div>
           </div>
@@ -259,8 +259,8 @@ export default async function OrganizerDashboard() {
       {topProducts.length > 0 && (
         <div className="rounded-2xl p-6 mb-6" style={{ border: "1px solid rgba(0,0,0,0.07)", background: "#fff" }}>
           <div className="flex items-center justify-between mb-5">
-            <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider">Top bar products · last 28 days</p>
-            <Link href="/organizador/pos/ventas" className="text-[10px] text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 uppercase tracking-wider transition-colors">
+            <p className="text-[10px] uppercase tracking-wider" style={{ color: "#555" }}>Top bar products · last 28 days</p>
+            <Link href="/organizador/pos/ventas" className="text-[10px] uppercase tracking-wider transition-colors" style={{ color: "#666" }}>
               View all →
             </Link>
           </div>
@@ -275,7 +275,7 @@ export default async function OrganizerDashboard() {
                 >
                   <div
                     className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0"
-                    style={{ background: i === 0 ? "#0a0a0a" : "rgba(0,0,0,0.07)", color: i === 0 ? "#fff" : "rgba(0,0,0,0.4)" }}
+                    style={{ background: i === 0 ? "#0a0a0a" : "rgba(0,0,0,0.07)", color: i === 0 ? "#fff" : "#555" }}
                   >
                     {i + 1}
                   </div>
@@ -287,7 +287,7 @@ export default async function OrganizerDashboard() {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-[#0a0a0a] text-sm font-bold">{formatPrice(p.revenue, profileCurrency)}</p>
-                    <p className="text-[#0a0a0a]/25 text-[10px]">{p.units} units · {pct.toFixed(0)}%</p>
+                    <p className="text-[10px]" style={{ color: "#666" }}>{p.units} units · {pct.toFixed(0)}%</p>
                   </div>
                 </div>
               );

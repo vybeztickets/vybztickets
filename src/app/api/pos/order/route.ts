@@ -43,5 +43,42 @@ export async function POST(request: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Auto-deduct inventory for items linked with qty_per_sale > 0
+  try {
+    const itemIds = (items as { id: string; quantity: number }[]).map(i => i.id);
+    if (itemIds.length > 0) {
+      const { data: posProducts } = await (admin as any)
+        .from("pos_products")
+        .select("id, inventory_item_id, inventory_qty_per_sale")
+        .in("id", itemIds)
+        .not("inventory_item_id", "is", null)
+        .gt("inventory_qty_per_sale", 0);
+
+      const affectedItemIds: string[] = [];
+      for (const pp of posProducts ?? []) {
+        const soldQty = (items as { id: string; quantity: number }[]).find(i => i.id === pp.id)?.quantity ?? 1;
+        const deduct = Number(pp.inventory_qty_per_sale) * soldQty;
+        const { data: invItem } = await (admin as any).from("inventory_items").select("current_stock").eq("id", pp.inventory_item_id).single();
+        if (!invItem) continue;
+        const newStock = Math.max(0, Number(invItem.current_stock) - deduct);
+        await (admin as any).from("inventory_items").update({ current_stock: newStock }).eq("id", pp.inventory_item_id);
+        await (admin as any).from("inventory_movements").insert({
+          organizer_id: event.organizer_id,
+          item_id: pp.inventory_item_id,
+          type: "sale",
+          quantity_change: -deduct,
+          notes: `POS sale — order ${order.id}`,
+          pos_order_id: order.id,
+        });
+        affectedItemIds.push(pp.inventory_item_id);
+      }
+      if (affectedItemIds.length > 0) {
+        const { checkAndNotifyLowStock } = await import("@/lib/inventory-alerts");
+        checkAndNotifyLowStock(event.organizer_id, affectedItemIds).catch(() => {});
+      }
+    }
+  } catch {}
+
   return NextResponse.json({ order }, { status: 201 });
 }

@@ -23,6 +23,20 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
     redirect("/organizador/configuracion");
   }
 
+  const hasInventory = organizerType === "discoteca" || organizerType === "festival";
+  let lowStockCount = 0;
+  if (hasInventory) {
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    const admin = createAdminClient();
+    const { data: invItems } = await (admin as any)
+      .from("inventory_items")
+      .select("current_stock, par_level")
+      .eq("organizer_id", user.id)
+      .eq("is_active", true)
+      .gt("par_level", 0);
+    lowStockCount = (invItems as any[] ?? []).filter((i: any) => Number(i.current_stock) <= Number(i.par_level)).length;
+  }
+
   const role = p?.role as string | undefined;
   const isSuspended = role === "suspended";
   const isPending = role === "pending_activation";
@@ -34,6 +48,8 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
         userName={p?.full_name ?? user.email ?? ""}
         userEmail={p?.email ?? user.email ?? ""}
         avatarUrl={p?.avatar_url ?? null}
+        organizerType={organizerType as string | undefined}
+        lowStockCount={lowStockCount}
       />
       <div className="flex flex-col min-h-screen">
         {showBanner && <SuspendedBanner isPending={isPending} />}

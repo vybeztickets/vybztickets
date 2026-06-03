@@ -152,6 +152,11 @@ export default function PosApp() {
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [mixerProduct, setMixerProduct] = useState<Product | null>(null);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [posView, setPosView] = useState<"pos" | "stock">("pos");
+  const [stockItems, setStockItems] = useState<{ id: string; name: string; unit: string; current_stock: number; par_level: number }[]>([]);
+  const [stockQtys, setStockQtys] = useState<Record<string, string>>({});
+  const [stockSubmitting, setStockSubmitting] = useState(false);
+  const [stockSuccess, setStockSuccess] = useState(false);
   const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -195,6 +200,33 @@ export default function PosApp() {
   }, [session]);
 
   useEffect(() => { setActiveSubcategory("all"); }, [activeCategory]);
+
+  useEffect(() => {
+    if (!session || posView !== "stock") return;
+    fetch(`/api/pos/inventory?code=${session.code}&eventId=${session.eventId}`)
+      .then(r => r.json())
+      .then(d => setStockItems(d.items ?? []));
+  }, [session, posView]);
+
+  async function submitEmptyBottles() {
+    if (!session) return;
+    const lines = Object.entries(stockQtys).filter(([, v]) => Number(v) > 0);
+    if (lines.length === 0) return;
+    setStockSubmitting(true);
+    for (const [item_id, quantity] of lines) {
+      await fetch("/api/pos/inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: session.code, eventId: session.eventId, item_id, quantity: Number(quantity) }),
+      });
+    }
+    setStockQtys({});
+    setStockSubmitting(false);
+    setStockSuccess(true);
+    setTimeout(() => setStockSuccess(false), 3000);
+    fetch(`/api/pos/inventory?code=${session.code}&eventId=${session.eventId}`)
+      .then(r => r.json()).then(d => setStockItems(d.items ?? []));
+  }
 
   const presentCats = Array.from(new Set(products.map(p => p.category)));
   const orderedCats = CAT_ORDER.filter(c => presentCats.includes(c));
@@ -372,7 +404,21 @@ export default function PosApp() {
           })}
         </nav>
 
-        <div className="px-4 py-3" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div className="px-3 py-3 space-y-1" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+          <button
+            onClick={() => setPosView(posView === "stock" ? "pos" : "stock")}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+            style={{
+              background: posView === "stock" ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.05)",
+              color: posView === "stock" ? "#f59e0b" : "rgba(255,255,255,0.55)",
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+            </svg>
+            {posView === "stock" ? "Back to POS" : "Empty bottles"}
+          </button>
           <button onClick={toggleTheme}
             className="w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all"
             style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}>
@@ -399,7 +445,70 @@ export default function PosApp() {
 
       {/* ── Product area ─────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {successMsg && (
+
+        {/* ── Stock / Empty bottles view ─────────────────────────────────── */}
+        {posView === "stock" && (
+          <div className="flex-1 flex flex-col p-5 overflow-hidden">
+            <div className="flex items-center justify-between mb-4 shrink-0">
+              <div>
+                <p className="text-white font-semibold">Empty bottles</p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>Log spirits and mixers you finished tonight</p>
+              </div>
+              {stockSuccess && (
+                <span className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>Logged!</span>
+              )}
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+              {stockItems.length === 0 ? (
+                <div className="flex items-center justify-center h-40">
+                  <p style={{ color: "rgba(255,255,255,0.2)" }} className="text-sm">No spirits tracked yet — set up inventory from your dashboard</p>
+                </div>
+              ) : stockItems.map(item => {
+                const qty = Number(stockQtys[item.id] || 0);
+                const isLow = item.par_level > 0 && item.current_stock <= item.par_level;
+                return (
+                  <div key={item.id} className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ background: "rgba(255,255,255,0.05)", border: `1px solid ${isLow ? "rgba(239,68,68,0.25)" : "rgba(255,255,255,0.07)"}` }}>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-medium">{item.name}</p>
+                      <p className="text-xs" style={{ color: isLow ? "#ef4444" : "rgba(255,255,255,0.3)" }}>
+                        {item.current_stock} {item.unit}s in stock{isLow ? " — LOW" : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setStockQtys(p => ({ ...p, [item.id]: String(Math.max(0, qty - 1)) }))}
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                        style={{ background: qty > 0 ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)" }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                      </button>
+                      <span className="text-white font-bold w-5 text-center tabular-nums">{qty}</span>
+                      <button
+                        onClick={() => setStockQtys(p => ({ ...p, [item.id]: String(qty + 1) }))}
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                        style={{ background: "rgba(255,255,255,0.15)" }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {Object.values(stockQtys).some(v => Number(v) > 0) && (
+              <button
+                onClick={submitEmptyBottles}
+                disabled={stockSubmitting}
+                className="mt-4 w-full py-3.5 rounded-2xl font-semibold text-sm shrink-0 disabled:opacity-50 transition-all"
+                style={{ background: "#f59e0b", color: "#0a0a0a" }}
+              >
+                {stockSubmitting ? "Logging…" : `Log ${Object.values(stockQtys).reduce((s, v) => s + (Number(v) || 0), 0)} empty bottle${Object.values(stockQtys).reduce((s, v) => s + (Number(v) || 0), 0) !== 1 ? "s" : ""}`}
+              </button>
+            )}
+          </div>
+        )}
+
+        {posView === "pos" && successMsg && (
           <div
             className="mx-5 mt-4 px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 shrink-0"
             style={{ background: dark ? "rgba(16,185,129,0.12)" : "rgba(16,185,129,0.1)", color: "#10b981", border: "1px solid rgba(16,185,129,0.18)" }}
@@ -411,7 +520,7 @@ export default function PosApp() {
           </div>
         )}
 
-        {subcategories.length > 0 && (
+        {posView === "pos" && subcategories.length > 0 && (
           <div className="px-5 pt-4 pb-1 flex gap-2 overflow-x-auto shrink-0" style={{ scrollbarWidth: "none" }}>
             <button
               onClick={() => setActiveSubcategory("all")}
@@ -443,7 +552,7 @@ export default function PosApp() {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto p-5">
+        {posView === "pos" && <div className="flex-1 overflow-y-auto p-5">
           {loadingProducts ? (
             <div className="flex items-center justify-center h-40">
               <p className="text-sm" style={{ color: ct.textMuted }}>Loading products…</p>
@@ -464,7 +573,7 @@ export default function PosApp() {
               ))}
             </div>
           )}
-        </div>
+        </div>}
       </div>
 
       {/* ── Cart panel ───────────────────────────────────────────────────── */}
