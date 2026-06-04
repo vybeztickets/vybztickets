@@ -5,7 +5,7 @@ import ReportActions from "./ReportActions";
 const PLATFORM_FEE_B2B = 0.15;   // 15% service fee, always paid by buyer
 const PLATFORM_FEE_C2C = 0;      // C2C fee model TBD
 
-function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function fmt(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
 export default async function ReportePage({
   searchParams,
@@ -22,7 +22,7 @@ export default async function ReportePage({
   const prevMonthStart = new Date(year, month - 2, 1).toISOString();
   const prevMonthEnd = new Date(year, month - 1, 0, 23, 59, 59).toISOString();
 
-  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString("es-CR", { month: "long", year: "numeric" });
+  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   const db = createAdmin(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -99,7 +99,7 @@ export default async function ReportePage({
     return `${sign}${val.toFixed(1)}%`;
   }
 
-  const printDate = new Date().toLocaleDateString("es-CR", { day: "numeric", month: "long", year: "numeric" });
+  const printDate = new Date().toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
 
   return (
     <>
@@ -134,86 +134,86 @@ export default async function ReportePage({
         {/* Header */}
         <div className="section" style={{ borderBottom: "2px solid #0a0a0a", paddingBottom: 20, marginBottom: 28, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
           <div>
-            <p style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.25em", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>VYBZ TICKETS · REPORTE FINANCIERO</p>
+            <p style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.25em", color: "rgba(0,0,0,0.3)", marginBottom: 4 }}>VYBZ TICKETS · FINANCIAL REPORT</p>
             <h1 style={{ fontSize: 28, fontWeight: 900, textTransform: "uppercase", letterSpacing: -0.5, margin: 0 }}>
               {monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}
             </h1>
           </div>
           <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: 10, color: "rgba(0,0,0,0.4)", margin: 0 }}>Generado el {printDate}</p>
-            <p style={{ fontSize: 10, color: "rgba(0,0,0,0.3)", margin: "2px 0 0" }}>Uso interno · Confidencial</p>
+            <p style={{ fontSize: 10, color: "rgba(0,0,0,0.4)", margin: 0 }}>Generated on {printDate}</p>
+            <p style={{ fontSize: 10, color: "rgba(0,0,0,0.3)", margin: "2px 0 0" }}>Internal use · Confidential</p>
           </div>
         </div>
 
         {/* KPI Grid */}
         <div className="kpi-grid">
           <div className="kpi accent">
-            <div className="kpi-label">Revenue Bruto B2B</div>
+            <div className="kpi-label">Gross B2B Revenue</div>
             <div className="kpi-value">{fmt(grossB2B)}</div>
             <div className="kpi-sub">
-              {growthB2B !== null ? <span className={growthB2B >= 0 ? "growth-pos" : "growth-neg"} style={{ color: growthB2B >= 0 ? "#6ee7b7" : "#fca5a5" }}>{pct(growthB2B)} vs mes anterior</span> : "Primer mes de datos"}
+              {growthB2B !== null ? <span className={growthB2B >= 0 ? "growth-pos" : "growth-neg"} style={{ color: growthB2B >= 0 ? "#6ee7b7" : "#fca5a5" }}>{pct(growthB2B)} vs prior month</span> : "First month of data"}
             </div>
           </div>
           <div className="kpi">
-            <div className="kpi-label">Ingresos Vybz B2B</div>
+            <div className="kpi-label">Vybz B2B Revenue</div>
             <div className="kpi-value">{fmt(feeB2B)}</div>
-            <div className="kpi-sub">Service fee {(PLATFORM_FEE_B2B * 100).toFixed(0)}% · pagado por comprador (ONVO Pay)</div>
+            <div className="kpi-sub">Service fee {(PLATFORM_FEE_B2B * 100).toFixed(0)}% · paid by buyer (ONVO Pay)</div>
           </div>
           <div className="kpi">
-            <div className="kpi-label">Ingreso Estimado Total</div>
+            <div className="kpi-label">Total Estimated Revenue</div>
             <div className="kpi-value">{fmt(totalEstimatedRevenue)}</div>
             <div className="kpi-sub">B2B {fmt(feeB2B)} + C2C {fmt(feeC2C)}</div>
           </div>
           <div className="kpi">
-            <div className="kpi-label">Tickets Vendidos</div>
+            <div className="kpi-label">Tickets Sold</div>
             <div className="kpi-value">{soldTickets.length}</div>
-            <div className="kpi-sub">{refundedTickets.length} reembolsados · neto {fmt(netB2B)}</div>
+            <div className="kpi-sub">{refundedTickets.length} refunded · net {fmt(netB2B)}</div>
           </div>
           <div className="kpi">
-            <div className="kpi-label">Nuevas Cuentas</div>
+            <div className="kpi-label">New Accounts</div>
             <div className="kpi-value">{usersCount}</div>
-            <div className="kpi-sub">{usersGrowth !== null ? `${pct(usersGrowth)} vs mes anterior` : "Primer mes"}</div>
+            <div className="kpi-sub">{usersGrowth !== null ? `${pct(usersGrowth)} vs prior month` : "First month"}</div>
           </div>
           <div className="kpi">
-            <div className="kpi-label">Eventos Creados</div>
+            <div className="kpi-label">Events Created</div>
             <div className="kpi-value">{eventsCount}</div>
-            <div className="kpi-sub">{publishedEvents} publicados · {eventsGrowth !== null ? `${pct(eventsGrowth)} vs mes anterior` : "—"}</div>
+            <div className="kpi-sub">{publishedEvents} published · {eventsGrowth !== null ? `${pct(eventsGrowth)} vs prior month` : "—"}</div>
           </div>
         </div>
 
         {/* B2B Section */}
         <div className="section">
-          <div className="section-title">Ventas B2B</div>
+          <div className="section-title">B2B Sales</div>
           <table>
             <thead>
               <tr>
-                <th>Concepto</th>
-                <th style={{ textAlign: "right" }}>Importe</th>
+                <th>Item</th>
+                <th style={{ textAlign: "right" }}>Amount</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td>Revenue bruto (tickets vendidos)</td><td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(grossB2B)}</td></tr>
-              <tr><td>Reembolsos emitidos ({refundedTickets.length})</td><td style={{ textAlign: "right", color: "#dc2626" }}>−{fmt(refundedAmt)}</td></tr>
-              <tr style={{ background: "rgba(0,0,0,0.02)" }}><td style={{ fontWeight: 700 }}>Revenue neto B2B</td><td style={{ textAlign: "right", fontWeight: 700 }}>{fmt(netB2B)}</td></tr>
-              <tr><td>Comisión de plataforma ({(PLATFORM_FEE_B2B * 100).toFixed(0)}%) *</td><td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(feeB2B)}</td></tr>
+              <tr><td>Gross revenue (tickets sold)</td><td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(grossB2B)}</td></tr>
+              <tr><td>Refunds issued ({refundedTickets.length})</td><td style={{ textAlign: "right", color: "#dc2626" }}>−{fmt(refundedAmt)}</td></tr>
+              <tr style={{ background: "rgba(0,0,0,0.02)" }}><td style={{ fontWeight: 700 }}>Net B2B revenue</td><td style={{ textAlign: "right", fontWeight: 700 }}>{fmt(netB2B)}</td></tr>
+              <tr><td>Platform fee ({(PLATFORM_FEE_B2B * 100).toFixed(0)}%) *</td><td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(feeB2B)}</td></tr>
             </tbody>
           </table>
         </div>
 
         {/* C2C Section */}
         <div className="section">
-          <div className="section-title">Reventa C2C</div>
+          <div className="section-title">C2C Resale</div>
           <table>
             <thead>
               <tr>
-                <th>Concepto</th>
-                <th style={{ textAlign: "right" }}>Importe</th>
+                <th>Item</th>
+                <th style={{ textAlign: "right" }}>Amount</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td>Volumen C2C vendido</td><td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(grossC2C)}</td></tr>
-              <tr><td>Nuevos listings creados</td><td style={{ textAlign: "right" }}>{newListings}</td></tr>
-              <tr><td>Comisión C2C ({(PLATFORM_FEE_C2C * 100).toFixed(0)}%) *</td><td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(feeC2C)}</td></tr>
+              <tr><td>C2C volume sold</td><td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(grossC2C)}</td></tr>
+              <tr><td>New listings created</td><td style={{ textAlign: "right" }}>{newListings}</td></tr>
+              <tr><td>C2C fee ({(PLATFORM_FEE_C2C * 100).toFixed(0)}%) *</td><td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(feeC2C)}</td></tr>
             </tbody>
           </table>
         </div>
@@ -221,15 +221,15 @@ export default async function ReportePage({
         {/* Top Organizers */}
         {orgRevSorted.length > 0 && (
           <div className="section">
-            <div className="section-title">Top Organizadores del Mes</div>
+            <div className="section-title">Top Organizers of the Month</div>
             <table>
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Organizador</th>
+                  <th>Organizer</th>
                   <th style={{ textAlign: "right" }}>Revenue</th>
-                  <th style={{ textAlign: "right" }}>Fee Estimado</th>
-                  <th style={{ textAlign: "right" }}>% del Total</th>
+                  <th style={{ textAlign: "right" }}>Estimated fee</th>
+                  <th style={{ textAlign: "right" }}>% of total</th>
                 </tr>
               </thead>
               <tbody>
@@ -239,7 +239,7 @@ export default async function ReportePage({
                     <tr key={oid}>
                       <td style={{ color: "rgba(0,0,0,0.3)", fontWeight: 700 }}>{i + 1}</td>
                       <td>
-                        <div style={{ fontWeight: 600 }}>{p?.full_name ?? "Sin nombre"}</div>
+                        <div style={{ fontWeight: 600 }}>{p?.full_name ?? "No name"}</div>
                         <div style={{ fontSize: 10, color: "rgba(0,0,0,0.35)" }}>{p?.email}</div>
                       </td>
                       <td style={{ textAlign: "right", fontWeight: 600 }}>{fmt(rev)}</td>
@@ -256,14 +256,14 @@ export default async function ReportePage({
         {/* New Users */}
         {(newUsers ?? []).length > 0 && (
           <div className="section">
-            <div className="section-title">Nuevos usuarios ({usersCount})</div>
+            <div className="section-title">New users ({usersCount})</div>
             <table>
               <thead>
                 <tr>
-                  <th>Nombre</th>
+                  <th>Name</th>
                   <th>Email</th>
-                  <th>Rol</th>
-                  <th>Fecha registro</th>
+                  <th>Role</th>
+                  <th>Registration date</th>
                 </tr>
               </thead>
               <tbody>
@@ -272,10 +272,10 @@ export default async function ReportePage({
                     <td>{u.full_name ?? "—"}</td>
                     <td style={{ color: "rgba(0,0,0,0.5)" }}>{u.email}</td>
                     <td style={{ textTransform: "capitalize" }}>{u.role}</td>
-                    <td style={{ color: "rgba(0,0,0,0.4)" }}>{new Date(u.created_at).toLocaleDateString("es-CR")}</td>
+                    <td style={{ color: "rgba(0,0,0,0.4)" }}>{new Date(u.created_at).toLocaleDateString("en-US")}</td>
                   </tr>
                 ))}
-                {usersCount > 20 && <tr><td colSpan={4} style={{ color: "rgba(0,0,0,0.3)", fontStyle: "italic" }}>... y {usersCount - 20} más</td></tr>}
+                {usersCount > 20 && <tr><td colSpan={4} style={{ color: "rgba(0,0,0,0.3)", fontStyle: "italic" }}>... and {usersCount - 20} more</td></tr>}
               </tbody>
             </table>
           </div>
@@ -283,7 +283,7 @@ export default async function ReportePage({
 
         {/* Notes */}
         <div className="stripe-note">
-          * Service fee B2B: {(PLATFORM_FEE_B2B * 100).toFixed(0)}% sobre el precio base del ticket, siempre pagado por el comprador vía ONVO Pay. Modelo de cobro C2C en revisión — no incluido en este reporte. CAPEX y costos operativos no incluidos.
+          * B2B service fee: {(PLATFORM_FEE_B2B * 100).toFixed(0)}% on the base ticket price, always paid by the buyer via ONVO Pay. C2C fee model under review — not included in this report. CAPEX and operating costs not included.
         </div>
 
         <ReportActions />

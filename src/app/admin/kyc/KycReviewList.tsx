@@ -25,7 +25,7 @@ function DocImage({ url, label }: { url: string | null; label: string }) {
   if (!url) return (
     <div className="rounded-xl flex items-center justify-center h-32 text-xs text-[#0a0a0a]/25"
       style={{ background: "rgba(0,0,0,0.04)", border: "1px dashed rgba(0,0,0,0.1)" }}>
-      Sin imagen
+      No image
     </div>
   );
   return (
@@ -86,7 +86,7 @@ function RecordCard({ record, reviewerId, onDone }: { record: KycRecord; reviewe
         <div>
           <p className="text-[#0a0a0a] font-semibold text-sm">{record.full_name_on_id}</p>
           <p className="text-[#0a0a0a]/35 text-xs mt-0.5">
-            Cédula: {record.cedula_number} · Enviado: {new Date(record.submitted_at).toLocaleDateString("es-CR")}
+            ID: {record.cedula_number} · Submitted: {new Date(record.submitted_at).toLocaleDateString("en-US")}
           </p>
         </div>
         <span
@@ -96,29 +96,29 @@ function RecordCard({ record, reviewerId, onDone }: { record: KycRecord; reviewe
             color: record.status === "pending" ? "rgba(0,0,0,0.5)" : "#991b1b",
           }}
         >
-          {record.status === "pending" ? "Pendiente" : "Rechazado"}
+          {record.status === "pending" ? "Pending" : "Rejected"}
         </span>
       </div>
 
       {/* Documents */}
       <div className="px-6 py-5 grid grid-cols-3 gap-4">
-        <DocImage url={record.cedula_front_signed} label="Cédula frente" />
-        <DocImage url={record.cedula_back_signed} label="Cédula reverso" />
-        <DocImage url={record.selfie_signed} label="Selfie con cédula" />
+        <DocImage url={record.cedula_front_signed} label="ID Front" />
+        <DocImage url={record.cedula_back_signed} label="ID Back" />
+        <DocImage url={record.selfie_signed} label="Selfie with ID" />
       </div>
 
       {/* Payment info */}
       <div className="px-6 pb-4">
         <div className="rounded-xl p-3 flex gap-6" style={{ background: "rgba(0,0,0,0.03)" }}>
           <div>
-            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Método de cobro</p>
+            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Payment method</p>
             <p className="text-[#0a0a0a] text-xs font-semibold">
-              {record.payment_method === "sinpe_movil" ? "SINPE Móvil" : "Transferencia bancaria"}
+              {record.payment_method === "sinpe_movil" ? "SINPE Mobile" : "Bank Transfer"}
             </p>
           </div>
           {record.sinpe_phone && (
             <div>
-              <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Teléfono SINPE</p>
+              <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">SINPE Phone</p>
               <p className="text-[#0a0a0a] text-xs font-semibold">{record.sinpe_phone}</p>
             </div>
           )}
@@ -142,14 +142,14 @@ function RecordCard({ record, reviewerId, onDone }: { record: KycRecord; reviewe
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40"
               style={{ background: "#166534", color: "#fff" }}
             >
-              {loading === "approve" ? "Aprobando…" : "✓ Aprobar"}
+              {loading === "approve" ? "Approving…" : "✓ Approve"}
             </button>
             <button
               onClick={() => setShowReject(true)}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
               style={{ background: "rgba(200,0,0,0.08)", color: "#991b1b" }}
             >
-              ✕ Rechazar
+              ✕ Reject
             </button>
           </div>
         ) : (
@@ -157,7 +157,7 @@ function RecordCard({ record, reviewerId, onDone }: { record: KycRecord; reviewe
             <textarea
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Razón del rechazo (se le enviará al usuario)..."
+              placeholder="Rejection reason (will be sent to the user)..."
               rows={2}
               className="w-full px-3 py-2 rounded-xl text-sm text-[#0a0a0a] outline-none resize-none"
               style={{ background: "rgba(0,0,0,0.04)", border: "1.5px solid rgba(0,0,0,0.1)" }}
@@ -168,7 +168,7 @@ function RecordCard({ record, reviewerId, onDone }: { record: KycRecord; reviewe
                 className="flex-1 py-2 rounded-xl text-xs font-medium"
                 style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.5)" }}
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 onClick={handleReject}
@@ -176,7 +176,7 @@ function RecordCard({ record, reviewerId, onDone }: { record: KycRecord; reviewe
                 className="flex-1 py-2 rounded-xl text-xs font-semibold disabled:opacity-40"
                 style={{ background: "#991b1b", color: "#fff" }}
               >
-                {loading === "reject" ? "Rechazando…" : "Confirmar rechazo"}
+                {loading === "reject" ? "Rejecting…" : "Confirm rejection"}
               </button>
             </div>
           </div>

@@ -33,11 +33,11 @@ export default function ResendTicket({ eventId }: { eventId: string }) {
         <button
           onClick={() => setOpen(true)}
           className="text-xs transition-colors"
-          style={{ color: "rgba(0,0,0,0.25)" }}
-          onMouseEnter={e => (e.currentTarget.style.color = "rgba(0,0,0,0.45)")}
-          onMouseLeave={e => (e.currentTarget.style.color = "rgba(0,0,0,0.25)")}
+          style={{ color: "rgba(0,0,0,1)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "rgba(0,0,0,0.6)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "rgba(0,0,0,1)")}
         >
-          ¿Ya compraste? Reenviar mi entrada
+          Already purchased? Resend my ticket
         </button>
       </div>
     );
@@ -47,21 +47,21 @@ export default function ResendTicket({ eventId }: { eventId: string }) {
     <div className="mt-4">
       {status === "sent" ? (
         <p className="text-xs" style={{ color: "rgba(0,0,0,0.4)" }}>
-          Entrada reenviada a <span style={{ color: "#0a0a0a", fontWeight: 600 }}>{email}</span>
+          Ticket resent to <span style={{ color: "#0a0a0a", fontWeight: 600 }}>{email}</span>
         </p>
       ) : status === "used" ? (
         <p className="text-xs" style={{ color: "rgba(0,0,0,0.35)" }}>
-          Ya usaste tu reenvío para este evento.
+          You've already used your resend for this event.
         </p>
       ) : status === "notfound" ? (
         <p className="text-xs" style={{ color: "rgba(0,0,0,0.35)" }}>
-          No encontramos una entrada activa con ese email.
+          We couldn't find an active ticket with that email.
         </p>
       ) : (
         <div className="flex gap-2">
           <input
             type="email"
-            placeholder="tu@email.com"
+            placeholder="your@email.com"
             value={email}
             onChange={e => setEmail(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleResend()}
@@ -78,7 +78,7 @@ export default function ResendTicket({ eventId }: { eventId: string }) {
             className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-40"
             style={{ background: "#0a0a0a", color: "#fff" }}
           >
-            {status === "sending" ? "..." : "Enviar"}
+            {status === "sending" ? "..." : "Send"}
           </button>
         </div>
       )}

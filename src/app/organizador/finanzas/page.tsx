@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import FinanzasTabs from "./FinanzasTabs";
 
-export const metadata = { title: "Finanzas — Dashboard Vybz" };
+export const metadata = { title: "Finances — Dashboard Vybz" };
 
 export default async function FinanzasPage() {
   const supabase = await createClient();
@@ -75,12 +75,12 @@ export default async function FinanzasPage() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-[#0a0a0a]">Finanzas</h1>
+        <h1 className="text-3xl font-bold text-[#0a0a0a]">Finances</h1>
         <button
           className="px-4 py-2 rounded-xl text-sm font-semibold"
           style={{ background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.07)", color: "rgba(0,0,0,0.6)" }}
         >
-          Retirar fondos
+          Withdraw funds
         </button>
       </div>
       <FinanzasTabs

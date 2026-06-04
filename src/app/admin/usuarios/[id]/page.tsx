@@ -5,10 +5,10 @@ import ToggleAccount from "../../organizadores/ToggleAccount";
 
 function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 function fmtDate(d: string) {
-  return new Date(d).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 function fmtDateTime(d: string) {
-  return new Date(d).toLocaleString("es-CR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return new Date(d).toLocaleString("en-US", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
@@ -54,7 +54,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     <div className="p-8">
       <div className="mb-2">
         <Link href="/admin/usuarios" className="text-[#0a0a0a]/35 text-xs hover:text-[#0a0a0a] transition-colors">
-          ← Usuarios
+          ← Users
         </Link>
       </div>
 
@@ -62,10 +62,10 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       <div className="flex items-start justify-between mb-8 mt-4">
         <div>
           <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide" style={{ fontSize: "clamp(24px,3vw,36px)" }}>
-            {user.full_name ?? "Sin nombre"}
+            {user.full_name ?? "No name"}
           </h1>
           <p className="text-[#0a0a0a]/40 text-sm mt-1">{user.email}</p>
-          <p className="text-[#0a0a0a]/25 text-xs mt-0.5">Desde {fmtDate(user.created_at)}</p>
+          <p className="text-[#0a0a0a]/25 text-xs mt-0.5">Since {fmtDate(user.created_at)}</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[9px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-full" style={rc}>
@@ -80,8 +80,8 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {[
-          { label: "Tickets comprados", value: (tickets ?? []).length },
-          { label: "Total gastado", value: fmt(spent) },
+          { label: "Tickets purchased", value: (tickets ?? []).length },
+          { label: "Total spent", value: fmt(spent) },
           { label: "KYC", value: kycRecord ? kycRecord.status : "N/A" },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl p-5" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
@@ -95,25 +95,25 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       {kycRecord && (
         <div className="rounded-2xl p-5 mb-6 flex gap-8" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
           <div>
-            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Nombre en cédula</p>
+            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Name on ID</p>
             <p className="text-sm text-[#0a0a0a] font-medium">{kycRecord.full_name_on_id}</p>
           </div>
           <div>
-            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Cédula</p>
+            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">ID Number</p>
             <p className="text-sm text-[#0a0a0a] font-medium font-mono">{kycRecord.cedula_number}</p>
           </div>
           <div>
-            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Método de cobro</p>
+            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Payment Method</p>
             <p className="text-sm text-[#0a0a0a] font-medium">
-              {kycRecord.payment_method === "sinpe_movil" ? "SINPE Móvil" : kycRecord.payment_method === "bank_transfer" ? "Transferencia" : "—"}
+              {kycRecord.payment_method === "sinpe_movil" ? "SINPE Mobile" : kycRecord.payment_method === "bank_transfer" ? "Bank Transfer" : "—"}
             </p>
           </div>
           <div>
-            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Enviado</p>
+            <p className="text-[9px] uppercase tracking-wider text-[#0a0a0a]/30 mb-0.5">Submitted</p>
             <p className="text-sm text-[#0a0a0a]/60">{fmtDate(kycRecord.submitted_at)}</p>
           </div>
           <Link href="/admin/c2c/kyc" className="ml-auto text-xs text-[#0a0a0a]/35 hover:text-[#0a0a0a] transition-colors self-center">
-            Ver panel KYC →
+            View KYC panel →
           </Link>
         </div>
       )}
@@ -121,15 +121,15 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       {/* Ticket history */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
         <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-          <p className="text-[#0a0a0a] font-semibold text-sm">Historial de compras</p>
+          <p className="text-[#0a0a0a] font-semibold text-sm">Purchase history</p>
         </div>
         {(tickets ?? []).length === 0 ? (
-          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">Sin compras</p>
+          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">No purchases</p>
         ) : (
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-                {["Evento", "Precio", "Estado", "Fecha"].map((h) => (
+                {["Event", "Price", "Status", "Date"].map((h) => (
                   <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
                 ))}
               </tr>

@@ -24,7 +24,7 @@ export default async function TicketPage({ params }: { params: Promise<{ qrCode:
   return (
     <TicketCard
       ticket={ticket}
-      organizerName={(organizer?.full_name as string) ?? "Organizador"}
+      organizerName={(organizer?.full_name as string) ?? "Organizer"}
     />
   );
 }

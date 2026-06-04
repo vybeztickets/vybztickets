@@ -47,14 +47,14 @@ function TicketMockup() {
         </div>
 
         <div className="p-5">
-          <p className="text-white/25 text-[9px] uppercase tracking-widest mb-1">Sábado 12 Jul · 8:00pm</p>
+          <p className="text-white/25 text-[9px] uppercase tracking-widest mb-1">Saturday 12 Jul · 8:00pm</p>
           <p className="text-white font-semibold text-sm mb-4">Centro Cultural de Costa Rica</p>
 
           <div className="space-y-2.5 mb-5">
             {[
               { type: "General", price: "₡15.000", sold: 340, total: 500 },
               { type: "VIP", price: "₡35.000", sold: 78, total: 100 },
-              { type: "Mesa x6", price: "₡180.000", sold: 12, total: 20 },
+              { type: "Table x6", price: "₡180.000", sold: 12, total: 20 },
             ].map((t) => (
               <div
                 key={t.type}
@@ -63,7 +63,7 @@ function TicketMockup() {
               >
                 <div>
                   <p className="text-white text-xs font-semibold">{t.type}</p>
-                  <p className="text-white/30 text-[9px]">{t.sold}/{t.total} vendidos</p>
+                  <p className="text-white/30 text-[9px]">{t.sold}/{t.total} sold</p>
                 </div>
                 <div className="text-right">
                   <p className="text-white text-xs font-semibold">{t.price}</p>
@@ -86,14 +86,14 @@ function TicketMockup() {
             style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
           >
             <div>
-              <p className="text-white/25 text-[9px] uppercase tracking-wider">Ingresos</p>
+              <p className="text-white/25 text-[9px] uppercase tracking-wider">Revenue</p>
               <p className="font-[family-name:var(--font-bebas)] text-white text-2xl leading-none">₡8.38M</p>
             </div>
             <div
               className="px-4 py-2 rounded-full text-xs font-semibold text-white/60"
               style={{ border: "1px solid rgba(255,255,255,0.12)" }}
             >
-              Ver pedidos →
+              View orders →
             </div>
           </div>
         </div>
@@ -119,8 +119,8 @@ function TicketMockup() {
             </svg>
           </div>
           <div>
-            <p className="text-white text-[11px] font-semibold">QR enviado</p>
-            <p className="text-white/30 text-[9px]">al instante por email</p>
+            <p className="text-white text-[11px] font-semibold">QR sent</p>
+            <p className="text-white/30 text-[9px]">instantly by email</p>
           </div>
         </div>
       </div>
@@ -149,7 +149,7 @@ function ScannerMockup() {
         {/* scanner UI */}
         <div className="px-4 pb-6">
           <p className="text-white/30 text-[8px] uppercase tracking-widest text-center mb-3">
-            MI EVENTO · PUERTA PRINCIPAL
+            MY EVENT · MAIN ENTRANCE
           </p>
 
           {/* viewfinder */}
@@ -205,8 +205,8 @@ function ScannerMockup() {
               </svg>
             </div>
             <div>
-              <p className="text-white text-[11px] font-semibold">Entrada válida</p>
-              <p className="text-[9px]" style={{ color: "rgba(255,255,255,0.35)" }}>VIP · Acceso confirmado</p>
+              <p className="text-white text-[11px] font-semibold">Valid ticket</p>
+              <p className="text-[9px]" style={{ color: "rgba(255,255,255,0.35)" }}>VIP · Access confirmed</p>
             </div>
             <p className="text-[8px] ml-auto" style={{ color: "rgba(255,255,255,0.2)" }}>8:22pm</p>
           </div>
@@ -214,9 +214,9 @@ function ScannerMockup() {
           {/* stats row */}
           <div className="grid grid-cols-3 gap-2">
             {[
-              { n: "418", label: "Ingresados" },
-              { n: "82", label: "Restantes" },
-              { n: "2", label: "Puertas" },
+              { n: "418", label: "Checked in" },
+              { n: "82", label: "Remaining" },
+              { n: "2", label: "Doors" },
             ].map(({ n, label }) => (
               <div
                 key={label}
@@ -240,9 +240,9 @@ function ScannerMockup() {
           backdropFilter: "blur(12px)",
         }}
       >
-        <p className="text-white/25 text-[7px] uppercase tracking-wider mb-1">Tiempo promedio</p>
+        <p className="text-white/25 text-[7px] uppercase tracking-wider mb-1">Avg. time</p>
         <p className="font-[family-name:var(--font-bebas)] text-white text-2xl leading-none">0.4s</p>
-        <p className="text-white/25 text-[8px]">por escaneo</p>
+        <p className="text-white/25 text-[8px]">per scan</p>
       </div>
     </div>
   );
@@ -294,32 +294,32 @@ export default function PlatformSection() {
                 style={{ color: "rgba(255,255,255,0.25)" }}
               >
                 <span className="w-4 h-px" style={{ background: "rgba(255,255,255,0.2)" }} />
-                ANALÍTICA EN TIEMPO REAL
+                REAL-TIME ANALYTICS
               </p>
               <h2
                 className="font-[family-name:var(--font-bebas)] text-white leading-[0.9] tracking-wide mb-6"
                 style={{ fontSize: "clamp(44px,5.5vw,76px)" }}
               >
-                Sabés exactamente<br />
-                <span style={{ color: "rgba(255,255,255,0.2)" }}>cuánto estás</span><br />
-                <span style={{ color: "rgba(255,255,255,0.2)" }}>ganando.</span>
+                You know exactly<br />
+                <span style={{ color: "rgba(255,255,255,0.2)" }}>how much you're</span><br />
+                <span style={{ color: "rgba(255,255,255,0.2)" }}>earning.</span>
               </h2>
               <p className="text-white/40 text-base leading-relaxed mb-8 max-w-md">
-                Dashboard en tiempo real con ingresos, tickets vendidos y tendencias. Sin esperar reportes de fin de mes ni exportar CSVs.
+                Real-time dashboard with revenue, tickets sold and trends. No waiting for end-of-month reports or exporting CSVs.
               </p>
               <ul className="space-y-3 mb-10">
                 {[
-                  "Ingresos por evento y por tipo de entrada",
-                  "Gráfico de ventas por día, semana o mes",
-                  "Top compradores y embajadores",
-                  "Tasa de ocupación en tiempo real",
+                  "Revenue by event and ticket type",
+                  "Sales chart by day, week or month",
+                  "Top buyers and ambassadors",
+                  "Real-time occupancy rate",
                 ].map((t) => <CheckItem key={t} text={t} />)}
               </ul>
               <Link
                 href="/auth/login?redirectTo=/organizador"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold bg-white text-[#0a0a0a] hover:bg-white/90 transition-colors"
               >
-                Ver mi dashboard
+                View my dashboard
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <path d="M2 10L10 2M10 2H4M10 2V8"/>
                 </svg>
@@ -350,32 +350,32 @@ export default function PlatformSection() {
                 style={{ color: "rgba(0,0,0,0.25)" }}
               >
                 <span className="w-4 h-px" style={{ background: "rgba(0,0,0,0.2)" }} />
-                VENTA ONLINE
+                ONLINE SALES
               </p>
               <h2
                 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-[0.9] tracking-wide mb-6"
                 style={{ fontSize: "clamp(44px,5.5vw,76px)" }}
               >
-                De cero a ventas<br />
-                <span style={{ color: "rgba(0,0,0,0.18)" }}>en 5 minutos.</span>
+                Zero to sales<br />
+                <span style={{ color: "rgba(0,0,0,0.18)" }}>in 5 minutes.</span>
               </h2>
               <p className="text-[#0a0a0a]/45 text-base leading-relaxed mb-8 max-w-md">
-                Creá tu evento, configurá tipos de entrada con precios, aforos y fechas de venta, y empezá a cobrar. El QR llega al email del comprador en segundos.
+                Create your event, set up ticket types with prices, capacity and sale dates, and start collecting payments. The QR reaches the buyer's email in seconds.
               </p>
               <ul className="space-y-3 mb-10">
                 {[
-                  "General, VIP, mesas y asientos numerados",
-                  "QR único e intransferible por comprador",
-                  "Página de evento con mapa y galería automática",
-                  "Códigos de descuento con tracking de embajadores",
-                  "Venta por link o embed en tu propio sitio",
+                  "General, VIP, tables and numbered seats",
+                  "Unique non-transferable QR per buyer",
+                  "Event page with map and automatic gallery",
+                  "Discount codes with ambassador tracking",
+                  "Sell via link or embed on your own site",
                 ].map((t) => <CheckItemDark key={t} text={t} />)}
               </ul>
               <Link
                 href="/auth/login?redirectTo=/organizador/eventos/nuevo"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold bg-[#0a0a0a] text-white hover:bg-[#222] transition-colors"
               >
-                Crear evento gratis
+                Create event for free
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <path d="M2 10L10 2M10 2H4M10 2V8"/>
                 </svg>
@@ -396,25 +396,25 @@ export default function PlatformSection() {
                 style={{ color: "rgba(255,255,255,0.25)" }}
               >
                 <span className="w-4 h-px" style={{ background: "rgba(255,255,255,0.2)" }} />
-                DÍA DEL EVENTO
+                EVENT DAY
               </p>
               <h2
                 className="font-[family-name:var(--font-bebas)] text-white leading-[0.9] tracking-wide mb-6"
                 style={{ fontSize: "clamp(44px,5.5vw,76px)" }}
               >
-                La puerta,<br />
-                <span style={{ color: "rgba(255,255,255,0.2)" }}>sin caos.</span>
+                The door,<br />
+                <span style={{ color: "rgba(255,255,255,0.2)" }}>without chaos.</span>
               </h2>
               <p className="text-white/40 text-base leading-relaxed mb-8 max-w-md">
-                Escaneá QRs en tiempo real desde cualquier celular, sin apps que instalar. Controlá el aforo por puerta, vendé entradas en caja y monitoreá el ingreso en vivo.
+                Scan QRs in real time from any phone, no apps to install. Control capacity by door, sell tickets at the box office and monitor entry live.
               </p>
               <ul className="space-y-3 mb-10">
                 {[
-                  "Scanner QR directo desde el navegador",
-                  "Varios escáneres simultáneos con log de operador",
-                  "Cobro en puerta en efectivo o tarjeta",
-                  "Aforo en tiempo real por tipo de entrada",
-                  "Cierre de caja automático",
+                  "QR scanner directly from the browser",
+                  "Multiple simultaneous scanners with operator log",
+                  "Door payments in cash or card",
+                  "Real-time capacity by ticket type",
+                  "Automatic cash close",
                 ].map((t) => <CheckItem key={t} text={t} />)}
               </ul>
               <div
@@ -423,8 +423,8 @@ export default function PlatformSection() {
               >
                 {[
                   { n: "0s", label: "Setup" },
-                  { n: "∞", label: "Escáneres" },
-                  { n: "0.4s", label: "Por QR" },
+                  { n: "∞", label: "Scanners" },
+                  { n: "0.4s", label: "Per QR" },
                 ].map(({ n, label }) => (
                   <div key={label} className="text-center">
                     <p className="font-[family-name:var(--font-bebas)] text-white text-2xl leading-none">{n}</p>
@@ -451,26 +451,26 @@ export default function PlatformSection() {
               style={{ color: "rgba(255,255,255,0.25)" }}
             >
               <span className="w-4 h-px" style={{ background: "rgba(255,255,255,0.2)" }} />
-              DATOS & MARKETING
+              DATA & MARKETING
             </p>
             <h2
               className="font-[family-name:var(--font-bebas)] text-white leading-[0.9] tracking-wide mb-5"
               style={{ fontSize: "clamp(44px,5.5vw,76px)" }}
             >
-              Tus asistentes<br />
-              son tus datos.<br />
-              <span style={{ color: "rgba(255,255,255,0.2)" }}>Usálos.</span>
+              Your attendees<br />
+              are your data.<br />
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>Use them.</span>
             </h2>
             <p className="text-white/40 text-base leading-relaxed">
-              Cada compra genera un contacto verificado. Segmentá, enviá campañas y medí el resultado de cada acción de marketing.
+              Every purchase generates a verified contact. Segment, send campaigns and measure the result of each marketing action.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
             {[
               {
-                title: "Base de datos de asistentes",
-                desc: "Listado completo: nombre, email, teléfono, tipo de entrada y fecha de compra. Exportable en CSV.",
+                title: "Attendee database",
+                desc: "Full list: name, email, phone, ticket type and purchase date. Exportable as CSV.",
                 icon: (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
@@ -479,8 +479,8 @@ export default function PlatformSection() {
                 ),
               },
               {
-                title: "Emails masivos",
-                desc: "Enviá comunicaciones a todos tus compradores o segmentá por tipo de entrada directamente desde el panel.",
+                title: "Mass emails",
+                desc: "Send communications to all your buyers or segment by ticket type directly from the dashboard.",
                 icon: (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -489,8 +489,8 @@ export default function PlatformSection() {
                 ),
               },
               {
-                title: "Códigos de embajadores",
-                desc: "Cada embajador tiene su código único con reporte de ventas y comisión asignada automáticamente.",
+                title: "Ambassador codes",
+                desc: "Each ambassador has their unique code with sales report and automatically assigned commission.",
                 icon: (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -500,8 +500,8 @@ export default function PlatformSection() {
                 ),
               },
               {
-                title: "Estadísticas en tiempo real",
-                desc: "Gráficos de ventas por día, tipo de entrada y código de descuento. Siempre actualizados.",
+                title: "Real-time statistics",
+                desc: "Sales charts by day, ticket type and discount code. Always up to date.",
                 icon: (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -509,8 +509,8 @@ export default function PlatformSection() {
                 ),
               },
               {
-                title: "Pixel de Facebook & GA",
-                desc: "Conectá tu píxel para retargeting y medí el funnel completo de compra en Facebook, Instagram y Google.",
+                title: "Facebook Pixel & GA",
+                desc: "Connect your pixel for retargeting and measure the full purchase funnel on Facebook, Instagram and Google.",
                 icon: (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <circle cx="12" cy="12" r="10"/>
@@ -519,8 +519,8 @@ export default function PlatformSection() {
                 ),
               },
               {
-                title: "Destacar en portada",
-                desc: "Ponés tu evento en el carrusel de la homepage por $1 al día. El costo se descuenta del próximo retiro.",
+                title: "Feature on homepage",
+                desc: "Put your event in the homepage carousel for $1 a day. The cost is deducted from your next payout.",
                 icon: (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -551,14 +551,14 @@ export default function PlatformSection() {
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
           >
             <div>
-              <p className="text-white font-semibold text-lg mb-1">¿Listo para llenar tu próximo evento?</p>
-              <p className="text-white/30 text-sm">Creá tu cuenta gratis — sin tarjeta, sin mensualidad.</p>
+              <p className="text-white font-semibold text-lg mb-1">Ready to fill your next event?</p>
+              <p className="text-white/30 text-sm">Create your free account — no card, no subscription.</p>
             </div>
             <Link
               href="/auth/login?redirectTo=/organizador/eventos/nuevo"
               className="shrink-0 inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold bg-white text-[#0a0a0a] hover:bg-white/90 transition-colors"
             >
-              Empezar gratis
+              Start for free
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M2 10L10 2M10 2H4M10 2V8"/>
               </svg>

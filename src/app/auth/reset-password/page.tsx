@@ -51,22 +51,22 @@ export default function ResetPasswordPage() {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <h2 className="text-lg font-bold text-[#0a0a0a] mb-2">Revisá tu correo</h2>
+              <h2 className="text-lg font-bold text-[#0a0a0a] mb-2">Check your email</h2>
               <p className="text-sm text-[#0a0a0a]/50 mb-6 leading-relaxed">
-                Si ese email está registrado, vas a recibir un enlace para restablecer tu contraseña en los próximos minutos.
+                If that email is registered, you'll receive a link to reset your password in the next few minutes.
               </p>
               <a
                 href="/auth/login"
                 className="text-sm font-semibold text-[#0a0a0a]/40 hover:text-[#0a0a0a] transition-colors"
               >
-                Volver al inicio de sesión
+                Back to sign in
               </a>
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-bold text-[#0a0a0a] mb-2">Restablecer contraseña</h2>
+              <h2 className="text-xl font-bold text-[#0a0a0a] mb-2">Reset password</h2>
               <p className="text-sm text-[#0a0a0a]/40 mb-6">
-                Ingresá tu email y te enviamos un enlace para crear una nueva contraseña.
+                Enter your email and we'll send you a link to create a new password.
               </p>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -90,7 +90,7 @@ export default function ResetPasswordPage() {
                   className="w-full py-3 rounded-xl text-sm font-semibold mt-1 transition-colors disabled:opacity-40"
                   style={{ background: "#0a0a0a", color: "#fff" }}
                 >
-                  {loading ? "Enviando…" : "Enviar enlace"}
+                  {loading ? "Sending…" : "Send link"}
                 </button>
               </form>
 

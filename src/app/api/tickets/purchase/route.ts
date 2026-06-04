@@ -2,17 +2,29 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { sendTicketEmail } from "@/lib/send-ticket-email";
+import { isValidEmail, isValidUUID, isPositiveInt, isNonEmptyString } from "@/lib/validate";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
+  // 5 purchases per IP per minute
+  if (!checkRateLimit("purchase", getIP(request), 5, 60_000)) {
+    return rateLimitedResponse();
+  }
+
   const body = await request.json();
   const { eventId, ticketTypeId, quantity, buyerEmail, buyerName, buyerPhone, buyerNotes, paxCount, promoCode, discountPercent, marketingOptIn, perTicketData } = body;
 
-  if (!eventId || !ticketTypeId || !quantity || !buyerEmail) {
-    return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
+  if (!isValidUUID(eventId) || !isValidUUID(ticketTypeId)) {
+    return NextResponse.json({ error: "Invalid event or ticket type" }, { status: 400 });
   }
-
-  if (quantity < 1 || quantity > 10) {
-    return NextResponse.json({ error: "Cantidad inválida" }, { status: 400 });
+  if (!isValidEmail(buyerEmail)) {
+    return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+  }
+  if (!isNonEmptyString(buyerName)) {
+    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  }
+  if (!isPositiveInt(quantity, 10)) {
+    return NextResponse.json({ error: "Quantity must be between 1 and 10" }, { status: 400 });
   }
 
   const supabase = createAdminClient();
@@ -79,7 +91,7 @@ export async function POST(request: Request) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://vybztickets.vercel.app";
 
-    const formattedDate = new Date((event.date as string) + "T00:00:00").toLocaleDateString("es-CR", {
+    const formattedDate = new Date((event.date as string) + "T00:00:00").toLocaleDateString("en-US", {
       weekday: "long", month: "long", day: "numeric", year: "numeric",
     });
 

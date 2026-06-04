@@ -12,7 +12,7 @@ export default async function EntradasPage({ params }: { params: Promise<{ id: s
   const admin = createAdminClient();
   const { data: event } = await admin
     .from("events")
-    .select("id, name, venue_map_url")
+    .select("id, name")
     .eq("id", id)
     .eq("organizer_id", user.id)
     .single();
@@ -44,7 +44,7 @@ export default async function EntradasPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="p-8">
-      <EntradasManager eventId={id} ticketTypes={enriched} venueMapUrl={event?.venue_map_url ?? null} />
+      <EntradasManager eventId={id} ticketTypes={enriched} />
     </div>
   );
 }

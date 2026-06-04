@@ -72,16 +72,16 @@ export default async function AdminKycPage() {
             className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide"
             style={{ fontSize: "clamp(28px,3vw,40px)" }}
           >
-            Verificaciones KYC
+            KYC Verifications
           </h1>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {[
-            { label: "Pendientes", value: records.filter(r => r.status === "pending").length, color: "#0a0a0a" },
-            { label: "Aprobadas", value: approvedCount ?? 0, color: "#166534" },
-            { label: "Rechazadas", value: records.filter(r => r.status === "rejected").length, color: "#991b1b" },
+            { label: "Pending", value: records.filter(r => r.status === "pending").length, color: "#0a0a0a" },
+            { label: "Approved", value: approvedCount ?? 0, color: "#166534" },
+            { label: "Rejected", value: records.filter(r => r.status === "rejected").length, color: "#991b1b" },
           ].map((s) => (
             <div key={s.label} className="rounded-2xl p-5" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
               <p className="text-[#0a0a0a]/35 text-[10px] uppercase tracking-wider mb-1">{s.label}</p>
@@ -92,7 +92,7 @@ export default async function AdminKycPage() {
 
         {records.length === 0 ? (
           <div className="rounded-2xl p-16 text-center" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
-            <p className="text-[#0a0a0a]/30 text-sm">No hay verificaciones pendientes.</p>
+            <p className="text-[#0a0a0a]/30 text-sm">No pending verifications.</p>
           </div>
         ) : (
           <KycReviewList records={records} reviewerId={user.id} />

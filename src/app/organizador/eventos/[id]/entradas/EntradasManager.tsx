@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import ImageUploadField from "@/app/components/ImageUploadField";
+import ConfirmDialog from "@/app/components/ConfirmDialog";
 
 type TicketType = {
   id: string;
@@ -26,14 +26,14 @@ type TicketType = {
   totalRevenue: number;
 };
 
-function formatPrice(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function formatPrice(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
-type Tab = "stats" | "entradas" | "mapa";
-type FilterKey = "all" | "general" | "table" | "hidden";
+type Tab = "stats" | "entradas";
+type FilterKey = "all" | "general" | "hidden";
 
-const ZONE_COLORS = ["#3b6fd4", "#c4a050", "#5a8a6a", "#c45040", "#7a5a90", "#407a8a", "#d4704a", "#6a7a50"];
+const CHART_COLORS = ["#3b6fd4", "#c4a050", "#5a8a6a", "#c45040", "#7a5a90", "#407a8a", "#d4704a", "#6a7a50"];
 
-export default function EntradasManager({ eventId, ticketTypes: initial, venueMapUrl: initialMapUrl }: { eventId: string; ticketTypes: TicketType[]; venueMapUrl: string | null }) {
+export default function EntradasManager({ eventId, ticketTypes: initial }: { eventId: string; ticketTypes: TicketType[] }) {
   const router = useRouter();
   const [types, setTypes] = useState(initial);
   const [activeTab, setActiveTab] = useState<Tab>("stats");
@@ -42,10 +42,9 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
   const [error, setError] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
   const [editId, setEditId] = useState<string | null>(null);
-  const [venueMapUrl, setVenueMapUrl] = useState(initialMapUrl);
-  const [mapSaving, setMapSaving] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
+  const [confirmState, setConfirmState] = useState<{ message: string; fn: () => void } | null>(null);
 
   // Shared form fields
   const [fName, setFName] = useState("");
@@ -58,14 +57,10 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
   const [fSalesStart, setFSalesStart] = useState("");
   const [fSalesEnd, setFSalesEnd] = useState("");
   const [fEntryDeadline, setFEntryDeadline] = useState("");
-  const [fCapacity, setFCapacity] = useState("");
-  const [fZoneColor, setFZoneColor] = useState(ZONE_COLORS[0]);
-  const [fCategory, setFCategory] = useState<"general" | "table" | "seat">("general");
-
   function resetForm() {
     setFName(""); setFPrice(""); setFTotal(""); setFDesc(""); setFHidden(false);
     setFMin("1"); setFMax(""); setFSalesStart(""); setFSalesEnd(""); setFEntryDeadline("");
-    setFCapacity(""); setFZoneColor(ZONE_COLORS[0]); setFCategory("general"); setError("");
+    setError("");
   }
 
   function openEdit(tt: TicketType) {
@@ -80,14 +75,11 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
     setFSalesStart(tt.sales_start_date ?? "");
     setFSalesEnd(tt.sales_end_date ?? "");
     setFEntryDeadline(tt.entry_deadline ?? "");
-    setFCapacity(tt.capacity ? String(tt.capacity) : "");
-    setFZoneColor(tt.zone_color ?? ZONE_COLORS[0]);
-    setFCategory((tt.category as "general" | "table" | "seat") ?? "general");
     setEditError("");
   }
 
   async function handleCreate() {
-    if (!fName || fPrice === "") { setError("Nombre y precio son requeridos"); return; }
+    if (!fName || fPrice === "") { setError("Name and price are required"); return; }
     setSaving(true); setError("");
     try {
       const res = await fetch("/api/organizador/ticket-types", {
@@ -97,9 +89,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           eventId, name: fName, price: parseFloat(fPrice),
           total_available: fTotal ? parseInt(fTotal) : null,
           description: fDesc || null,
-          category: fCategory,
-          capacity: fCapacity ? parseInt(fCapacity) : null,
-          zone_color: fCategory !== "general" ? fZoneColor : null,
+          category: "general",
           is_hidden: fHidden,
           min_per_order: parseInt(fMin) || 1,
           max_per_order: fMax ? parseInt(fMax) : null,
@@ -113,7 +103,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
       setShowCreate(false); resetForm(); router.refresh();
       setTypes((prev) => [...prev, { ...data.ticketType, ingresados: 0, totalRevenue: 0 }]);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Error inesperado");
+      setError(e instanceof Error ? e.message : "Unexpected error");
     } finally { setSaving(false); }
   }
 
@@ -134,8 +124,6 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           sales_start_date: fSalesStart || null,
           sales_end_date: fSalesEnd || null,
           entry_deadline: fEntryDeadline || null,
-          capacity: fCapacity ? parseInt(fCapacity) : null,
-          zone_color: fZoneColor,
         }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Error"); }
@@ -146,12 +134,11 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
         description: fDesc || null, is_hidden: fHidden,
         min_per_order: parseInt(fMin) || 1,
         max_per_order: fMax ? parseInt(fMax) : null,
-        zone_color: fZoneColor,
         totalRevenue: t.sold_count * newPrice,
       } : t));
       setEditId(null);
     } catch (e: unknown) {
-      setEditError(e instanceof Error ? e.message : "Error inesperado");
+      setEditError(e instanceof Error ? e.message : "Unexpected error");
     } finally { setEditSaving(false); }
   }
 
@@ -164,90 +151,84 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
     });
   }
 
+  function handleDelete(tt: TicketType) {
+    setConfirmState({
+      message: `Delete "${tt.name}"? This cannot be undone.`,
+      fn: async () => {
+        setConfirmState(null);
+        setEditId(null);
+        await fetch(`/api/organizador/ticket-types/${tt.id}`, { method: "DELETE" });
+        setTypes((prev) => prev.filter((t) => t.id !== tt.id));
+      },
+    });
+  }
+
   const inputStyle = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" };
   const inputClass = "w-full px-3 py-2.5 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none";
 
-  const filteredTypes = types.filter((tt) => {
-    if (filter === "general") return !tt.category || tt.category === "general";
-    if (filter === "table") return tt.category === "table" || tt.category === "seat";
+  const generalTypes = types.filter((tt) => !tt.category || tt.category === "general");
+  const filteredTypes = generalTypes.filter((tt) => {
+    if (filter === "general") return true;
     if (filter === "hidden") return !!tt.is_hidden;
     return true;
   });
 
-  const totalSold = types.reduce((s, t) => s + t.sold_count, 0);
-  const totalRevenue = types.reduce((s, t) => s + t.totalRevenue, 0);
-  const totalIngresados = types.reduce((s, t) => s + t.ingresados, 0);
-  const pieData = types.filter((t) => t.sold_count > 0).map((t, i) => ({
-    name: t.name, value: t.sold_count, color: ZONE_COLORS[i % ZONE_COLORS.length],
+  const totalSold = generalTypes.reduce((s, t) => s + t.sold_count, 0);
+  const totalRevenue = generalTypes.reduce((s, t) => s + t.totalRevenue, 0);
+  const totalIngresados = generalTypes.reduce((s, t) => s + t.ingresados, 0);
+  const pieData = generalTypes.filter((t) => t.sold_count > 0).map((t, i) => ({
+    name: t.name, value: t.sold_count, color: CHART_COLORS[i % CHART_COLORS.length],
   }));
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: "stats", label: "Estadísticas" },
-    { key: "entradas", label: "Entradas" },
-    { key: "mapa", label: "Mapa de mesas" },
+    { key: "stats", label: "Statistics" },
+    { key: "entradas", label: "Tickets" },
   ];
 
   const formFields = (
     <>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Nombre *</label>
-        <input type="text" placeholder="Ej: Entrada General" value={fName} onChange={(e) => setFName(e.target.value)} className={inputClass} style={inputStyle} />
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Name *</label>
+        <input type="text" placeholder="E.g.: General Admission" value={fName} onChange={(e) => setFName(e.target.value)} className={inputClass} style={inputStyle} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Precio (₡) *</label>
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Price (₡) *</label>
           <input type="number" min="0" placeholder="15000" value={fPrice} onChange={(e) => setFPrice(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Cantidad disponible</label>
-          <input type="number" min="1" placeholder="Vacío = ilimitado" value={fTotal} onChange={(e) => setFTotal(e.target.value)} className={inputClass} style={inputStyle} />
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Available quantity</label>
+          <input type="number" min="1" placeholder="Empty = unlimited" value={fTotal} onChange={(e) => setFTotal(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Descripción</label>
-        <input type="text" placeholder="Descripción opcional" value={fDesc} onChange={(e) => setFDesc(e.target.value)} className={inputClass} style={inputStyle} />
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Description</label>
+        <input type="text" placeholder="Optional description" value={fDesc} onChange={(e) => setFDesc(e.target.value)} className={inputClass} style={inputStyle} />
       </div>
-      {fCategory !== "general" && (
-        <>
-          <div>
-            <label className="block text-[#0a0a0a]/40 text-xs mb-1">Capacidad de personas</label>
-            <input type="number" min="1" placeholder="Ej: 8" value={fCapacity} onChange={(e) => setFCapacity(e.target.value)} className={inputClass} style={inputStyle} />
-          </div>
-          <div>
-            <label className="block text-[#0a0a0a]/40 text-xs mb-2">Color de zona</label>
-            <div className="flex gap-2 flex-wrap pl-1" style={{ overflow: "visible" }}>
-              {ZONE_COLORS.map((c) => (
-                <button key={c} onClick={() => setFZoneColor(c)} className="w-7 h-7 rounded-full transition-all"
-                  style={{ background: c, boxShadow: fZoneColor === c ? `0 0 0 2px rgba(0,0,0,0.2), 0 0 0 4px ${c}` : "none" }} />
-              ))}
-            </div>
-          </div>
-        </>
-      )}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Mín. por pedido</label>
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Min. per order</label>
           <input type="number" min="1" value={fMin} onChange={(e) => setFMin(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Máx. por pedido</label>
-          <input type="number" min="1" placeholder="Sin límite" value={fMax} onChange={(e) => setFMax(e.target.value)} className={inputClass} style={inputStyle} />
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Max. per order</label>
+          <input type="number" min="1" placeholder="No limit" value={fMax} onChange={(e) => setFMax(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Inicio de venta</label>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Sales start</label>
         <input type="datetime-local" value={fSalesStart} onChange={(e) => setFSalesStart(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "light" }} />
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Fin de venta</label>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Sales end</label>
         <input type="datetime-local" value={fSalesEnd} onChange={(e) => setFSalesEnd(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "light" }} />
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Fecha límite de ingreso</label>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Entry deadline</label>
         <input type="datetime-local" value={fEntryDeadline} onChange={(e) => setFEntryDeadline(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "light" }} />
       </div>
       <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
-        <span className="text-[#0a0a0a]/50 text-xs">Entrada oculta (solo con link directo)</span>
+        <span className="text-[#0a0a0a]/50 text-xs">Hidden ticket (direct link only)</span>
         <button type="button" onClick={() => setFHidden(!fHidden)} className="relative w-9 h-5 rounded-full transition-colors shrink-0" style={{ background: fHidden ? "#0a0a0a" : "rgba(0,0,0,0.08)" }}>
           <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: fHidden ? "17px" : "2px" }} />
         </button>
@@ -280,7 +261,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
           style={{ background: "#0a0a0a", color: "#fff" }}
         >
-          <span>+</span> Entrada
+          <span>+</span> Ticket
         </button>
       </div>
 
@@ -288,13 +269,13 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
       {activeTab === "stats" && (
         <div>
           {types.length === 0 ? (
-            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">Sin entradas todavía</div>
+            <div className="py-16 text-center text-[#0a0a0a]/20 text-sm">No tickets yet</div>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-6 mb-6">
                 {/* Pie chart */}
                 <div className="rounded-2xl p-6" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                  <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Distribución de ventas</p>
+                  <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider mb-4">Sales distribution</p>
                   {pieData.length > 0 ? (
                     <div>
                       <ResponsiveContainer width="100%" height={220}>
@@ -316,7 +297,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                           <Tooltip
                             contentStyle={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8 }}
                             itemStyle={{ color: "#fff" }}
-                            formatter={(v: unknown) => [`${v} vendidas`, ""]}
+                            formatter={(v: unknown) => [`${v} sold`, ""]}
                           />
                           <Legend
                             iconType="circle"
@@ -327,16 +308,16 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                       </ResponsiveContainer>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center h-[220px] text-[#0a0a0a]/20 text-xs">Sin ventas aún</div>
+                    <div className="flex items-center justify-center h-[220px] text-[#0a0a0a]/20 text-xs">No sales yet</div>
                   )}
                 </div>
 
                 {/* Summary stats */}
                 <div className="grid grid-rows-3 gap-3">
                   {[
-                    { label: "Total vendidas", value: String(totalSold) },
-                    { label: "Ingresos totales", value: formatPrice(totalRevenue) },
-                    { label: "Asistentes ingresados", value: String(totalIngresados) },
+                    { label: "Total sold", value: String(totalSold) },
+                    { label: "Total revenue", value: formatPrice(totalRevenue) },
+                    { label: "Checked in", value: String(totalIngresados) },
                   ].map((s) => (
                     <div key={s.label} className="rounded-2xl px-5 flex items-center justify-between" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
                       <p className="text-[#0a0a0a]/40 text-xs">{s.label}</p>
@@ -349,7 +330,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
               {/* Progress bars per type */}
               <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
                 <div className="px-5 py-3" style={{ background: "rgba(0,0,0,0.03)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-                  <p className="text-[#0a0a0a]/30 text-xs uppercase tracking-wider font-semibold">Por tipo de entrada</p>
+                  <p className="text-[#0a0a0a]/30 text-xs uppercase tracking-wider font-semibold">By ticket type</p>
                 </div>
                 {types.map((tt, i) => {
                   const pct = tt.total_available >= 999999 ? 0 : Math.min(100, (tt.sold_count / tt.total_available) * 100);
@@ -363,8 +344,8 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                           <span className="text-[#0a0a0a]/30 text-xs">{formatPrice(tt.price)}</span>
                         </div>
                         <div className="flex items-center gap-4 text-xs text-[#0a0a0a]/40">
-                          <span><span className="text-[#0a0a0a] font-semibold">{tt.sold_count}</span> vendidas</span>
-                          <span><span className="text-[#0a0a0a] font-semibold">{tt.ingresados}</span> ingresados</span>
+                          <span><span className="text-[#0a0a0a] font-semibold">{tt.sold_count}</span> sold</span>
+                          <span><span className="text-[#0a0a0a] font-semibold">{tt.ingresados}</span> checked in</span>
                           <span className="text-[#0a0a0a]/60 font-semibold">{formatPrice(tt.totalRevenue)}</span>
                         </div>
                       </div>
@@ -375,8 +356,8 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                         <div className="h-1.5 rounded-full transition-all" style={{ width: `${ingPct}%`, background: "#5a8a6a" }} />
                       </div>
                       <div className="flex gap-4 mt-1.5">
-                        <span className="text-[10px] text-[#0a0a0a]/25">Vendidas {pct.toFixed(0)}%</span>
-                        <span className="text-[10px] text-[#0a0a0a]/40">Ingresados {ingPct.toFixed(0)}%</span>
+                        <span className="text-[10px] text-[#0a0a0a]/25">Sold {pct.toFixed(0)}%</span>
+                        <span className="text-[10px] text-[#0a0a0a]/40">Checked in {ingPct.toFixed(0)}%</span>
                       </div>
                     </div>
                   );
@@ -393,10 +374,8 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           <div className="flex items-center gap-3 mb-5">
             <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
               {([
-                { key: "all", label: "Todos" },
-                { key: "general", label: "Generales" },
-                { key: "table", label: "Mesas" },
-                { key: "hidden", label: "Oculto" },
+                { key: "all", label: "All" },
+                { key: "hidden", label: "Hidden" },
               ] as { key: FilterKey; label: string }[]).map((f) => (
                 <button
                   key={f.key}
@@ -416,19 +395,19 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
 
           {filteredTypes.length === 0 ? (
             <div className="rounded-2xl py-16 text-center" style={{ border: "1px dashed rgba(0,0,0,0.08)" }}>
-              <p className="text-[#0a0a0a]/20 text-sm">Sin entradas en este filtro</p>
+              <p className="text-[#0a0a0a]/20 text-sm">No tickets in this filter</p>
             </div>
           ) : (
             <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)" }}>
               <div
                 className="grid text-xs font-semibold uppercase tracking-wider px-5 py-3"
-                style={{ gridTemplateColumns: "1fr 90px 90px 130px 110px 36px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
+                style={{ gridTemplateColumns: "1fr 90px 90px 130px 60px 36px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
               >
-                <div>Entrada</div>
-                <div className="text-center">Vendidas</div>
-                <div className="text-center">Restante</div>
-                <div className="text-right">Ingresos</div>
-                <div className="text-center">Estado</div>
+                <div>Ticket</div>
+                <div className="text-center">Sold</div>
+                <div className="text-center">Remaining</div>
+                <div className="text-right">Revenue</div>
+                <div className="text-center">Status</div>
                 <div />
               </div>
 
@@ -438,7 +417,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                   <div
                     key={tt.id}
                     className="grid items-center px-5 py-4 transition-colors hover:bg-white/[0.02]"
-                    style={{ gridTemplateColumns: "1fr 90px 90px 130px 110px 36px", borderBottom: i < filteredTypes.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", opacity: tt.is_active ? 1 : 0.55 }}
+                    style={{ gridTemplateColumns: "1fr 90px 90px 130px 60px 36px", borderBottom: i < filteredTypes.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none", opacity: tt.is_active ? 1 : 0.55 }}
                   >
                     <div className="flex items-center gap-2.5">
                       {tt.zone_color && <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: tt.zone_color }} />}
@@ -446,10 +425,10 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                         <p className="text-[#0a0a0a] text-sm font-medium">{tt.name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.4)" }}>
-                            {tt.category === "table" ? "Mesa" : tt.category === "seat" ? "Asiento" : "General"}
+                            {tt.category === "table" ? "Table" : "General"}
                           </span>
                           <span className="text-[#0a0a0a]/30 text-xs">{formatPrice(tt.price)}</span>
-                          {tt.is_hidden && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>Oculta</span>}
+                          {tt.is_hidden && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>Hidden</span>}
                         </div>
                       </div>
                     </div>
@@ -469,26 +448,18 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
 
                     <div className="flex justify-center">
                       <button
+                        type="button"
                         onClick={() => toggleActive(tt)}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all"
-                        style={tt.is_active
-                          ? { background: "rgba(16,185,129,0.15)", color: "#10b981" }
-                          : { background: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.3)" }}
+                        className="relative w-9 h-5 rounded-full transition-colors"
+                        style={{ background: tt.is_active ? "#0a0a0a" : "rgba(0,0,0,0.08)" }}
                       >
-                        {tt.is_active ? (
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        ) : (
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                        )}
-                        {tt.is_active ? "Activa" : "Oculta"}
+                        <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: tt.is_active ? "17px" : "2px" }} />
                       </button>
                     </div>
 
                     <div className="flex justify-end">
-                      <button onClick={() => openEdit(tt)} className="text-[#0a0a0a]/20 hover:text-[#0a0a0a]/60 transition-colors">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
-                        </svg>
+                      <button onClick={() => openEdit(tt)} className="text-[#0a0a0a]/20 hover:text-[#0a0a0a]/60 transition-colors" title="Edit">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       </button>
                     </div>
                   </div>
@@ -499,29 +470,6 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
         </div>
       )}
 
-      {/* ── TAB: MAPA DE MESAS ── */}
-      {activeTab === "mapa" && (
-        <div>
-          <p className="text-[#0a0a0a]/40 text-xs mb-5">Sube la imagen del mapa de tu venue. Se mostrará en la página pública del evento antes de las mesas VIP.</p>
-          <ImageUploadField
-            label="Mapa de mesas"
-            value={venueMapUrl ?? ""}
-            onChange={async (url) => {
-              setVenueMapUrl(url);
-              setMapSaving(true);
-              await fetch(`/api/organizador/eventos/${eventId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ venue_map_url: url }),
-              });
-              setMapSaving(false);
-            }}
-            aspectRatio="16:9"
-          />
-          {mapSaving && <p className="text-[#0a0a0a]/30 text-xs mt-2">Guardando...</p>}
-          {venueMapUrl && !mapSaving && <p className="text-green-400/60 text-xs mt-2">Mapa guardado correctamente</p>}
-        </div>
-      )}
 
       {/* ── CREATE MODAL ── */}
       {showCreate && (
@@ -532,24 +480,10 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
         >
           <div className="w-full max-w-md rounded-2xl p-6" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-[#0a0a0a] font-bold text-lg">Nueva entrada</h3>
+              <h3 className="text-[#0a0a0a] font-bold text-lg">New ticket</h3>
               <button onClick={() => { setShowCreate(false); resetForm(); }} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
-            </div>
-            <div className="flex gap-2 mb-5">
-              {([{ key: "general", label: "General" }, { key: "table", label: "Mesa VIP" }, { key: "seat", label: "Asiento" }] as { key: "general" | "table" | "seat"; label: string }[]).map((t) => (
-                <button
-                  key={t.key}
-                  onClick={() => setFCategory(t.key)}
-                  className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
-                  style={fCategory === t.key
-                    ? { background: "#0a0a0a", color: "#fff" }
-                    : { background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)", border: "1px solid rgba(0,0,0,0.07)" }}
-                >
-                  {t.label}
-                </button>
-              ))}
             </div>
             <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1">
               {formFields}
@@ -560,7 +494,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-60 mt-1"
                 style={{ background: "#0a0a0a", color: "#fff" }}
               >
-                {saving ? "Creando..." : "Crear entrada"}
+                {saving ? "Creating..." : "Create ticket"}
               </button>
             </div>
           </div>
@@ -577,7 +511,7 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
           >
             <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
               <div>
-                <h3 className="text-[#0a0a0a] font-bold text-base">Editar entrada</h3>
+                <h3 className="text-[#0a0a0a] font-bold text-base">Edit ticket</h3>
                 <p className="text-[#0a0a0a]/30 text-xs mt-0.5">{types.find((t) => t.id === editId)?.name}</p>
               </div>
               <button onClick={() => setEditId(null)} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
@@ -588,18 +522,33 @@ export default function EntradasManager({ eventId, ticketTypes: initial, venueMa
               {formFields}
               {editError && <p className="text-red-400 text-xs">{editError}</p>}
             </div>
-            <div className="px-6 py-4" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
+            <div className="px-6 py-4 flex flex-col gap-2" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
               <button
                 onClick={handleUpdate}
                 disabled={editSaving}
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-60"
                 style={{ background: "#0a0a0a", color: "#fff" }}
               >
-                {editSaving ? "Guardando..." : "Actualizar entrada"}
+                {editSaving ? "Saving..." : "Update ticket"}
+              </button>
+              <button
+                onClick={() => { const tt = types.find((t) => t.id === editId); if (tt) handleDelete(tt); }}
+                className="w-full py-2.5 rounded-xl text-sm font-medium transition-colors"
+                style={{ color: "#ef4444" }}
+              >
+                Delete ticket
               </button>
             </div>
           </div>
         </>
+      )}
+
+      {confirmState && (
+        <ConfirmDialog
+          message={confirmState.message}
+          onConfirm={confirmState.fn}
+          onCancel={() => setConfirmState(null)}
+        />
       )}
     </div>
   );

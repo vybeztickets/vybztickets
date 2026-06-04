@@ -48,6 +48,7 @@ export default function FeaturedCarousel({ slides }: { slides: Slide[] }) {
           src={slide.bannerUrl}
           alt=""
           fill
+          priority
           className="object-cover"
           style={{ filter: "blur(32px) brightness(0.28)", transform: "scale(1.12)" }}
         />

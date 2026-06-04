@@ -1,0 +1,25 @@
+import PlatformNavbar from "../components/PlatformNavbar";
+import Hero from "../components/Hero";
+import MarqueeStrip from "../components/MarqueeStrip";
+import ScrollShowcase from "../components/ScrollShowcase";
+import PlatformSection from "../components/PlatformSection";
+import UpcomingEvents from "../components/UpcomingEvents";
+import Footer from "../components/Footer";
+import MeshBackground from "../components/MeshBackground";
+
+export const metadata = { title: "Vybz — Event Ticketing Platform" };
+
+export default function PlatformPage() {
+  return (
+    <div style={{ color: "#0a0a0a" }}>
+      <MeshBackground />
+      <PlatformNavbar />
+      <Hero />
+      <MarqueeStrip />
+      <ScrollShowcase />
+      <PlatformSection />
+      <UpcomingEvents />
+      <Footer />
+    </div>
+  );
+}

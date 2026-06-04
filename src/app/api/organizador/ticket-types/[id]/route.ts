@@ -13,8 +13,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const body = await request.json();
   const allowed = ["name", "price", "total_available", "description", "is_active", "is_hidden",
-    "category", "capacity", "zone_name", "zone_color", "min_per_order", "max_per_order",
-    "sales_start_date", "sales_end_date", "entry_deadline", "map_position_x", "map_position_y"];
+    "category", "capacity", "zone_name", "zone_color", "zone_id", "min_per_order", "max_per_order",
+    "sales_start_date", "sales_end_date", "entry_deadline", "map_position_x", "map_position_y",
+    "price_per_extra_person", "max_extra_people", "includes",
+    "deposit_enabled", "deposit_percent", "min_hours_before_event",
+    "deposit_refund_percent", "deposit_warning_text",
+    "table_color", "table_border_color", "table_text_color", "map_table_size",
+    "map_position_x", "map_position_y"];
   const updates: TicketTypeUpdate = {};
   for (const key of allowed) {
     if (key in body) (updates as Record<string, unknown>)[key] = body[key];

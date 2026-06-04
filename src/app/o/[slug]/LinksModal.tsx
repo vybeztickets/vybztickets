@@ -5,19 +5,11 @@ import { createPortal } from "react-dom";
 
 type Link = { name: string; url: string };
 
-function setPageBlur(on: boolean) {
-  const el = document.getElementById("org-page-content");
-  if (!el) return;
-  el.style.transition = "filter 0.2s ease";
-  el.style.filter = on ? "blur(8px)" : "";
-}
-
 export default function LinksModal({ links, organizerName }: { links: Link[]; organizerName: string }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
-  useEffect(() => { setPageBlur(open); return () => setPageBlur(false); }, [open]);
 
   function closeModal() { setOpen(false); }
 

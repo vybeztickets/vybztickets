@@ -17,8 +17,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { data: existing } = await admin.from("promo_links").select("organizer_id").eq("id", id).single();
   if (!existing || existing.organizer_id !== user.id) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
-  const allowed = ["promoter_name", "discount_percent", "ticket_type_id", "is_active", "max_uses", "is_guestlist"];
-  const updates: PromoLinkUpdate = {};
+  const allowed = ["promoter_name", "discount_percent", "ticket_type_id", "ticket_type_ids", "is_active", "max_uses", "is_guestlist"];
+  const updates: PromoLinkUpdate & { ticket_type_ids?: string[] | null } = {};
   for (const key of allowed) {
     if (key in body) (updates as Record<string, unknown>)[key] = body[key];
   }
@@ -26,7 +26,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     updates.is_guestlist = Number(updates.discount_percent) === 100;
   }
 
-  const { error } = await admin.from("promo_links").update(updates).eq("id", id);
+  const { error } = await (admin as any).from("promo_links").update(updates).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

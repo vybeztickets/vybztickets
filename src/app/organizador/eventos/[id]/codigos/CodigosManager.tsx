@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import ConfirmDialog from "@/app/components/ConfirmDialog";
 
 type TicketType = { id: string; name: string; price: number };
 type PromoCode = {
@@ -9,6 +10,7 @@ type PromoCode = {
   promoter_name: string | null;
   discount_percent: number;
   ticket_type_id: string | null;
+  ticket_type_ids?: string[] | null;
   is_active: boolean;
   max_uses: number | null;
   times_used: number;
@@ -17,10 +19,88 @@ type PromoCode = {
 };
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 const PAGE_SIZES = [10, 25, 50];
+
+function TicketMultiSelect({
+  value,
+  onChange,
+  ticketTypes,
+  inputClass,
+  inputStyle,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  ticketTypes: TicketType[];
+  inputClass: string;
+  inputStyle: React.CSSProperties;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  const label = value.length === 0
+    ? "All tickets"
+    : value.map(id => ticketTypes.find(t => t.id === id)?.name).filter(Boolean).join(", ");
+
+  function toggle(id: string) {
+    onChange(value.includes(id) ? value.filter(x => x !== id) : [...value, id]);
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className={inputClass + " flex items-center justify-between"}
+        style={inputStyle}
+      >
+        <span style={{ color: value.length === 0 ? "rgba(0,0,0,0.25)" : "#0a0a0a" }} className="truncate">{label}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 ml-2" style={{ transform: open ? "rotate(180deg)" : undefined }}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 w-full mt-1 rounded-xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.1)", boxShadow: "0 8px 24px rgba(0,0,0,0.1)" }}>
+          <div className="p-1">
+            <button
+              type="button"
+              onClick={() => { onChange([]); setOpen(false); }}
+              className="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors hover:bg-black/[0.04]"
+              style={{ color: value.length === 0 ? "#0a0a0a" : "rgba(0,0,0,0.4)", fontWeight: value.length === 0 ? 600 : 400 }}
+            >
+              All tickets
+            </button>
+            {ticketTypes.map(tt => (
+              <label key={tt.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-black/[0.04]">
+                <div
+                  className="w-4 h-4 rounded flex items-center justify-center shrink-0"
+                  style={{ border: value.includes(tt.id) ? "none" : "1.5px solid rgba(0,0,0,0.2)", background: value.includes(tt.id) ? "#0a0a0a" : "transparent" }}
+                >
+                  {value.includes(tt.id) && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                  )}
+                </div>
+                <input type="checkbox" checked={value.includes(tt.id)} onChange={() => toggle(tt.id)} className="sr-only" />
+                <span className="text-sm text-[#0a0a0a]">{tt.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function CodigosManager({
   eventId, initialCodes, ticketTypes,
@@ -37,16 +117,17 @@ export default function CodigosManager({
   const [copied, setCopied] = useState<string | null>(null);
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
+  const [confirmState, setConfirmState] = useState<{ message: string; fn: () => void } | null>(null);
 
   // Form
   const [fCode, setFCode] = useState("");
   const [fName, setFName] = useState("");
   const [fDiscount, setFDiscount] = useState("");
-  const [fTicketType, setFTicketType] = useState("");
+  const [fTicketTypes, setFTicketTypes] = useState<string[]>([]);
   const [fMaxUses, setFMaxUses] = useState("");
 
   function resetForm() {
-    setFCode(""); setFName(""); setFDiscount(""); setFTicketType(""); setFMaxUses(""); setError("");
+    setFCode(""); setFName(""); setFDiscount(""); setFTicketTypes([]); setFMaxUses(""); setError("");
   }
 
   function openEdit(c: PromoCode) {
@@ -54,13 +135,13 @@ export default function CodigosManager({
     setFCode(c.code);
     setFName(c.promoter_name ?? "");
     setFDiscount(String(c.discount_percent));
-    setFTicketType(c.ticket_type_id ?? "");
+    setFTicketTypes(c.ticket_type_ids ?? (c.ticket_type_id ? [c.ticket_type_id] : []));
     setFMaxUses(c.max_uses ? String(c.max_uses) : "");
     setError("");
   }
 
   async function handleCreate() {
-    if (!fCode || !fDiscount) { setError("Código y descuento son requeridos"); return; }
+    if (!fCode || !fDiscount) { setError("Code and discount are required"); return; }
     setSaving(true); setError("");
     try {
       const res = await fetch("/api/organizador/codigos", {
@@ -71,7 +152,8 @@ export default function CodigosManager({
           code: fCode,
           promoter_name: fName || "",
           discount_percent: parseFloat(fDiscount),
-          ticket_type_id: fTicketType || null,
+          ticket_type_ids: fTicketTypes.length > 0 ? fTicketTypes : null,
+          ticket_type_id: fTicketTypes.length === 1 ? fTicketTypes[0] : null,
           max_uses: fMaxUses ? parseInt(fMaxUses) : null,
         }),
       });
@@ -80,7 +162,7 @@ export default function CodigosManager({
       setCodes((prev) => [data, ...prev]);
       setShowCreate(false); resetForm();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Error inesperado");
+      setError(e instanceof Error ? e.message : "Unexpected error");
     } finally { setSaving(false); }
   }
 
@@ -95,7 +177,8 @@ export default function CodigosManager({
         body: JSON.stringify({
           promoter_name: fName || "",
           discount_percent: discountNum,
-          ticket_type_id: fTicketType || null,
+          ticket_type_ids: fTicketTypes.length > 0 ? fTicketTypes : null,
+          ticket_type_id: fTicketTypes.length === 1 ? fTicketTypes[0] : null,
           max_uses: fMaxUses ? parseInt(fMaxUses) : null,
           is_guestlist: discountNum === 100,
         }),
@@ -105,13 +188,14 @@ export default function CodigosManager({
         ...c,
         promoter_name: fName || "",
         discount_percent: discountNum,
-        ticket_type_id: fTicketType || null,
+        ticket_type_ids: fTicketTypes.length > 0 ? fTicketTypes : null,
+        ticket_type_id: fTicketTypes.length === 1 ? fTicketTypes[0] : null,
         max_uses: fMaxUses ? parseInt(fMaxUses) : null,
         is_guestlist: discountNum === 100,
       } : c));
       setEditId(null); resetForm();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Error inesperado");
+      setError(e instanceof Error ? e.message : "Unexpected error");
     } finally { setSaving(false); }
   }
 
@@ -124,10 +208,15 @@ export default function CodigosManager({
     });
   }
 
-  async function handleDelete(c: PromoCode) {
-    if (!confirm(`¿Eliminar el código "${c.code}"?`)) return;
-    await fetch(`/api/organizador/codigos/${c.id}`, { method: "DELETE" });
-    setCodes((prev) => prev.filter((x) => x.id !== c.id));
+  function handleDelete(c: PromoCode) {
+    setConfirmState({
+      message: `Delete the code "${c.code}"?`,
+      fn: async () => {
+        setConfirmState(null);
+        await fetch(`/api/organizador/codigos/${c.id}`, { method: "DELETE" });
+        setCodes((prev) => prev.filter((x) => x.id !== c.id));
+      },
+    });
   }
 
   function copyLink(c: PromoCode) {
@@ -142,48 +231,49 @@ export default function CodigosManager({
   const totalPages = Math.max(1, Math.ceil(codes.length / pageSize));
   const pageCodes = codes.slice((page - 1) * pageSize, page * pageSize);
 
-  const inputStyle = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" };
+  const inputStyle: React.CSSProperties = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.07)" };
   const inputClass = "w-full px-3 py-2.5 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none";
 
   const formFields = (
     <>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Código *</label>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Code *</label>
         <input
           type="text"
-          placeholder="Ej: VYBZ20"
+          placeholder="E.g.: VYBZ20"
           value={fCode}
           onChange={(e) => setFCode(e.target.value.toUpperCase())}
           className={inputClass}
           style={inputStyle}
           disabled={!!editId}
         />
-        <p className="text-[#0a0a0a]/20 text-[10px] mt-1">El comprador lo ingresa al momento de comprar</p>
+        <p className="text-[#0a0a0a]/20 text-[10px] mt-1">The buyer enters it at the time of purchase</p>
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Nombre / Alias</label>
-        <input type="text" placeholder="Ej: Embajador Nicola" value={fName} onChange={(e) => setFName(e.target.value)} className={inputClass} style={inputStyle} />
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Name / Alias</label>
+        <input type="text" placeholder="E.g.: Ambassador Nicola" value={fName} onChange={(e) => setFName(e.target.value)} className={inputClass} style={inputStyle} />
       </div>
       <div>
-        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Entrada aplicable</label>
-        <select value={fTicketType} onChange={(e) => setFTicketType(e.target.value)} className={inputClass} style={{ ...inputStyle, colorScheme: "light" }}>
-          <option value="">Todas las entradas</option>
-          {ticketTypes.map((tt) => (
-            <option key={tt.id} value={tt.id}>{tt.name}</option>
-          ))}
-        </select>
+        <label className="block text-[#0a0a0a]/40 text-xs mb-1">Applicable tickets</label>
+        <TicketMultiSelect
+          value={fTicketTypes}
+          onChange={setFTicketTypes}
+          ticketTypes={ticketTypes}
+          inputClass={inputClass}
+          inputStyle={inputStyle}
+        />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Descuento % *</label>
-          <input type="number" min="0" max="100" placeholder="Ej: 20" value={fDiscount} onChange={(e) => setFDiscount(e.target.value)} className={inputClass} style={inputStyle} />
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Discount % *</label>
+          <input type="number" min="0" max="100" placeholder="E.g.: 20" value={fDiscount} onChange={(e) => setFDiscount(e.target.value)} className={inputClass} style={inputStyle} />
           {fDiscount === "100" && (
-            <p className="text-purple-400 text-[10px] mt-1">100% = guestlist (no descuenta stock)</p>
+            <p className="text-purple-400 text-[10px] mt-1">100% = guestlist (does not deduct stock)</p>
           )}
         </div>
         <div>
-          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Límite de usos</label>
-          <input type="number" min="1" placeholder="Sin límite" value={fMaxUses} onChange={(e) => setFMaxUses(e.target.value)} className={inputClass} style={inputStyle} />
+          <label className="block text-[#0a0a0a]/40 text-xs mb-1">Usage limit</label>
+          <input type="number" min="1" placeholder="No limit" value={fMaxUses} onChange={(e) => setFMaxUses(e.target.value)} className={inputClass} style={inputStyle} />
         </div>
       </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
@@ -194,7 +284,7 @@ export default function CodigosManager({
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <p className="text-[#0a0a0a]/40 text-xs">{codes.length} código{codes.length !== 1 ? "s" : ""}</p>
+        <p className="text-[#0a0a0a]/40 text-xs">{codes.length} code{codes.length !== 1 ? "s" : ""}</p>
         <button
           onClick={() => { resetForm(); setShowCreate(true); }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
@@ -206,8 +296,8 @@ export default function CodigosManager({
 
       {codes.length === 0 ? (
         <div className="rounded-2xl py-16 text-center" style={{ border: "1px dashed rgba(0,0,0,0.08)" }}>
-          <p className="text-[#0a0a0a]/20 text-sm mb-1">Sin códigos de descuento</p>
-          <p className="text-[#0a0a0a]/10 text-xs">Crea códigos para embajadores o descuentos especiales</p>
+          <p className="text-[#0a0a0a]/20 text-sm mb-1">No promo codes yet</p>
+          <p className="text-[#0a0a0a]/10 text-xs">Create codes for ambassadors or special discounts</p>
         </div>
       ) : (
         <>
@@ -215,25 +305,28 @@ export default function CodigosManager({
             {/* Table header */}
             <div
               className="grid text-xs font-semibold uppercase tracking-wider px-5 py-3"
-              style={{ gridTemplateColumns: "36px 1fr 80px 1fr 130px 60px 80px 70px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
+              style={{ gridTemplateColumns: "36px 1fr 80px 1fr 130px 60px 80px 44px", background: "rgba(0,0,0,0.03)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
             >
               <div />
-              <div>Código</div>
-              <div className="text-center">Estado</div>
-              <div>Entrada</div>
-              <div>Creado el</div>
-              <div className="text-center">Usos</div>
-              <div className="text-center">Activo</div>
+              <div>Code</div>
+              <div className="text-center">Status</div>
+              <div>Ticket</div>
+              <div>Created</div>
+              <div className="text-center">Uses</div>
+              <div className="text-center">Active</div>
               <div />
             </div>
 
             {pageCodes.map((c, i) => {
-              const ttName = ticketTypes.find((t) => t.id === c.ticket_type_id)?.name;
+              const selectedIds = c.ticket_type_ids ?? (c.ticket_type_id ? [c.ticket_type_id] : []);
+              const ttLabel = selectedIds.length === 0
+                ? "All tickets"
+                : selectedIds.map(id => ticketTypes.find(t => t.id === id)?.name).filter(Boolean).join(", ");
               return (
                 <div
                   key={c.id}
                   className="grid items-center px-5 py-3.5 transition-colors hover:bg-white/[0.02]"
-                  style={{ gridTemplateColumns: "36px 1fr 80px 1fr 130px 60px 80px 70px", borderBottom: i < pageCodes.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}
+                  style={{ gridTemplateColumns: "36px 1fr 80px 1fr 130px 60px 80px 44px", borderBottom: i < pageCodes.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}
                 >
                   {/* Share */}
                   <button onClick={() => copyLink(c)} title="Copiar link" className="text-[#0a0a0a]/20 hover:text-[#0a0a0a] transition-colors">
@@ -255,13 +348,13 @@ export default function CodigosManager({
                   <div className="flex items-center justify-center gap-1.5">
                     <div className="w-2 h-2 rounded-full" style={{ background: c.is_active ? "#10b981" : "rgba(0,0,0,0.15)" }} />
                     <span className="text-xs" style={{ color: c.is_active ? "#10b981" : "rgba(0,0,0,0.3)" }}>
-                      {c.is_active ? "Activo" : "Inactivo"}
+                      {c.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>
 
-                  {/* Ticket type */}
-                  <div>
-                    <span className="text-[#0a0a0a]/50 text-xs">{ttName ?? "Todas"}</span>
+                  {/* Ticket type(s) */}
+                  <div className="truncate pr-2">
+                    <span className="text-[#0a0a0a]/50 text-xs">{ttLabel}</span>
                     {!c.is_guestlist && <span className="text-[#0a0a0a]/30 text-xs ml-2">–{c.discount_percent}%</span>}
                   </div>
 
@@ -287,15 +380,9 @@ export default function CodigosManager({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => openEdit(c)} className="p-1.5 text-[#0a0a0a]/20 hover:text-[#0a0a0a]/60 transition-colors">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                    </button>
-                    <button onClick={() => handleDelete(c)} className="p-1.5 text-red-500/30 hover:text-red-500 transition-colors">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                        <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                      </svg>
+                  <div className="flex items-center justify-end">
+                    <button onClick={() => openEdit(c)} className="p-1.5 text-[#0a0a0a]/20 hover:text-[#0a0a0a]/60 transition-colors" title="Edit">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
                   </div>
                 </div>
@@ -306,7 +393,7 @@ export default function CodigosManager({
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2">
-              <span className="text-[#0a0a0a]/25 text-xs">Filas por página:</span>
+              <span className="text-[#0a0a0a]/25 text-xs">Rows per page:</span>
               <select
                 value={pageSize}
                 onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
@@ -315,7 +402,7 @@ export default function CodigosManager({
               >
                 {PAGE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              <span className="text-[#0a0a0a]/25 text-xs">Mostrando {Math.min((page - 1) * pageSize + 1, codes.length)}–{Math.min(page * pageSize, codes.length)} de {codes.length}</span>
+              <span className="text-[#0a0a0a]/25 text-xs">Showing {Math.min((page - 1) * pageSize + 1, codes.length)}–{Math.min(page * pageSize, codes.length)} of {codes.length}</span>
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 rounded-lg text-[#0a0a0a]/30 disabled:opacity-20 hover:text-[#0a0a0a]/60 transition-colors">
@@ -348,7 +435,7 @@ export default function CodigosManager({
         >
           <div className="w-full max-w-md rounded-2xl p-6" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-[#0a0a0a] font-bold text-lg">Nuevo código</h3>
+              <h3 className="text-[#0a0a0a] font-bold text-lg">New code</h3>
               <button onClick={() => { setShowCreate(false); resetForm(); }} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
@@ -361,7 +448,7 @@ export default function CodigosManager({
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-60 mt-1"
                 style={{ background: "#0a0a0a", color: "#fff" }}
               >
-                {saving ? "Creando..." : "Crear código"}
+                {saving ? "Creating..." : "Create code"}
               </button>
             </div>
           </div>
@@ -374,7 +461,7 @@ export default function CodigosManager({
           <div className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => { setEditId(null); resetForm(); }} />
           <div className="fixed right-0 top-0 h-full z-50 flex flex-col" style={{ width: 400, background: "#fff", borderLeft: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-              <h3 className="text-[#0a0a0a] font-bold text-base">Editar código</h3>
+              <h3 className="text-[#0a0a0a] font-bold text-base">Edit code</h3>
               <button onClick={() => { setEditId(null); resetForm(); }} className="text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
@@ -382,18 +469,33 @@ export default function CodigosManager({
             <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-3">
               {formFields}
             </div>
-            <div className="px-6 py-4" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
+            <div className="px-6 py-4 flex flex-col gap-2" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
               <button
                 onClick={handleUpdate}
                 disabled={saving}
                 className="w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-60"
                 style={{ background: "#0a0a0a", color: "#fff" }}
               >
-                {saving ? "Guardando..." : "Actualizar código"}
+                {saving ? "Saving..." : "Update code"}
+              </button>
+              <button
+                onClick={() => { const c = codes.find(x => x.id === editId); if (c) { setEditId(null); resetForm(); handleDelete(c); } }}
+                className="w-full py-2.5 rounded-xl text-sm font-medium transition-colors"
+                style={{ color: "#ef4444", background: "transparent" }}
+              >
+                Delete code
               </button>
             </div>
           </div>
         </>
+      )}
+
+      {confirmState && (
+        <ConfirmDialog
+          message={confirmState.message}
+          onConfirm={confirmState.fn}
+          onCancel={() => setConfirmState(null)}
+        />
       )}
     </div>
   );

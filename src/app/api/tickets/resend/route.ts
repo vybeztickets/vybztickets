@@ -1,10 +1,19 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTicketEmail } from "@/lib/send-ticket-email";
 import { NextResponse } from "next/server";
+import { isValidEmail, isValidUUID } from "@/lib/validate";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
+  // 3 resend requests per IP per 5 minutes
+  if (!checkRateLimit("resend-public", getIP(request), 3, 5 * 60_000)) {
+    return rateLimitedResponse();
+  }
+
   const { eventId, email } = await request.json();
-  if (!eventId || !email) return NextResponse.json({ error: "Faltan datos" }, { status: 400 });
+  if (!isValidUUID(eventId) || !isValidEmail(email)) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
 
   const normalizedEmail = email.toLowerCase().trim();
   const admin = createAdminClient();
@@ -35,7 +44,7 @@ export async function POST(request: Request) {
     .single();
 
   const d = new Date((event as any).date + "T00:00:00");
-  const formattedDate = d.toLocaleDateString("es-CR", {
+  const formattedDate = d.toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric", year: "numeric",
   });
 

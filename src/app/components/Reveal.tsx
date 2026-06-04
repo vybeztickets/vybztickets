@@ -26,16 +26,16 @@ export default function Reveal({
           obs.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.05, rootMargin: "120px 0px" }
     );
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
   const initial: Record<string, string> = {
-    up: "translateY(28px)",
-    left: "translateX(-32px)",
-    right: "translateX(32px)",
+    up: "translateY(16px)",
+    left: "translateX(-20px)",
+    right: "translateX(20px)",
     none: "translateY(0)",
   };
 
@@ -46,7 +46,7 @@ export default function Reveal({
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translate(0,0)" : initial[direction],
-        transition: `opacity 0.75s cubic-bezier(0.22,1,0.36,1) ${delay}ms, transform 0.75s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
+        transition: `opacity 0.45s cubic-bezier(0.22,1,0.36,1) ${delay}ms, transform 0.45s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
       }}
     >
       {children}

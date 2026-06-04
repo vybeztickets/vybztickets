@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ConfirmDialog from "@/app/components/ConfirmDialog";
 
 import { formatPrice } from "@/lib/currency";
 
@@ -12,18 +13,18 @@ type Event = {
   venue: string; city: string; currency?: string; ticket_types: TicketType[]; is_visible?: boolean;
 };
 function formatDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 const FILTERS = [
-  { key: "all", label: "Todos" },
-  { key: "upcoming", label: "Próximos" },
-  { key: "past", label: "Pasados" },
-  { key: "hidden", label: "Ocultos" },
+  { key: "all", label: "All" },
+  { key: "upcoming", label: "Upcoming" },
+  { key: "past", label: "Past" },
+  { key: "hidden", label: "Hidden" },
 ];
 
 const STATUS_LABEL: Record<string, string> = {
-  published: "Publicado", draft: "Borrador", cancelled: "Cancelado", completed: "Concluido",
+  published: "Published", draft: "Draft", cancelled: "Cancelled", completed: "Completed",
 };
 const STATUS_DOT: Record<string, string> = {
   published: "#10b981", draft: "#f59e0b", cancelled: "#ef4444", completed: "#9ca3af",
@@ -34,6 +35,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
   const [activeFilters, setActiveFilters] = useState<string[]>(["all"]);
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmState, setConfirmState] = useState<{ message: string; fn: () => void } | null>(null);
   const [visibility, setVisibility] = useState<Record<string, boolean>>(
     Object.fromEntries(events.map((e) => [e.id, e.is_visible !== false]))
   );
@@ -53,17 +55,23 @@ export default function EventsTable({ events }: { events: Event[] }) {
     });
   }
 
-  async function deleteEvent(id: string, name: string, e: React.MouseEvent) {
+  function deleteEvent(id: string, name: string, e: React.MouseEvent) {
     e.preventDefault();
-    if (!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
-    setDeleting(id);
-    const res = await fetch(`/api/organizador/eventos/${id}`, { method: "DELETE" });
-    setDeleting(null);
-    if (!res.ok) {
-      const body = await res.json();
-      alert(`No se pudo eliminar: ${body.error}`);
-    }
-    router.refresh();
+    setConfirmState({
+      message: `Delete "${name}"? This action cannot be undone.`,
+      fn: async () => {
+        setConfirmState(null);
+        setDeleting(id);
+        const res = await fetch(`/api/organizador/eventos/${id}`, { method: "DELETE" });
+        setDeleting(null);
+        if (!res.ok) {
+          const body = await res.json();
+          setConfirmState({ message: `Could not delete: ${body.error}`, fn: () => setConfirmState(null) });
+          return;
+        }
+        router.refresh();
+      },
+    });
   }
 
   const today = new Date();
@@ -121,7 +129,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
           </svg>
           <input
             type="text"
-            placeholder="Buscar eventos..."
+            placeholder="Search events..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-8 pr-4 py-2 rounded-xl text-xs focus:outline-none"
@@ -139,14 +147,14 @@ export default function EventsTable({ events }: { events: Event[] }) {
       {filtered.length === 0 ? (
         <div className="py-24 text-center">
           <p className="font-[family-name:var(--font-bebas)] text-4xl text-[#0a0a0a]/10 mb-3">
-            {search ? "SIN RESULTADOS" : "SIN EVENTOS"}
+            {search ? "NO RESULTS" : "NO EVENTS"}
           </p>
           {!search && (
             <Link
               href="/organizador/eventos/nuevo"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold bg-[#0a0a0a] text-white hover:bg-[#222] transition-colors"
             >
-              + Crear evento
+              + Create event
             </Link>
           )}
         </div>
@@ -193,11 +201,11 @@ export default function EventsTable({ events }: { events: Event[] }) {
                   {/* Revenue */}
                   <div className="flex items-end justify-between mb-1 mt-auto">
                     <div>
-                      <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-0.5">Ingresos</p>
+                      <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-0.5">Revenue</p>
                       <p className="text-[#0a0a0a] font-bold text-xl leading-none">{formatPrice(revenue, event.currency ?? "CRC")}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-0.5">Entradas</p>
+                      <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-0.5">Tickets</p>
                       <p className="text-[#0a0a0a] font-bold text-xl leading-none">{sold}<span className="text-[#0a0a0a]/20 text-sm font-normal">/{total}</span></p>
                     </div>
                   </div>
@@ -217,7 +225,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                   <div className="flex items-center gap-2 pt-3" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                     <button
                       onClick={(e) => toggleVisibility(event.id, e)}
-                      title={isVis ? "Visible — click para ocultar" : "Oculto — click para publicar"}
+                      title={isVis ? "Visible — click to hide" : "Hidden — click to publish"}
                       className="flex items-center gap-1.5 text-[10px] font-semibold transition-colors px-2.5 py-1.5 rounded-lg"
                       style={{
                         color: isVis ? "#059669" : "#dc2626",
@@ -235,7 +243,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                           <line x1="1" y1="1" x2="23" y2="23" />
                         </svg>
                       )}
-                      {isVis ? "Visible" : "Oculto"}
+                      {isVis ? "Visible" : "Hidden"}
                     </button>
 
                     <div className="flex-1" />
@@ -257,7 +265,7 @@ export default function EventsTable({ events }: { events: Event[] }) {
                           <path d="M10 11v6" /><path d="M14 11v6" />
                         </svg>
                       )}
-                      Eliminar
+                      Delete
                     </button>
 
                     <span className="text-[#0a0a0a]/25 text-sm">→</span>
@@ -267,6 +275,14 @@ export default function EventsTable({ events }: { events: Event[] }) {
             );
           })}
         </div>
+      )}
+
+      {confirmState && (
+        <ConfirmDialog
+          message={confirmState.message}
+          onConfirm={confirmState.fn}
+          onCancel={() => setConfirmState(null)}
+        />
       )}
     </div>
   );

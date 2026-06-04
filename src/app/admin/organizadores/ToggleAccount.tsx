@@ -42,7 +42,7 @@ export default function ToggleAccount({ userId, role }: { userId: string; role: 
           className="text-xs font-semibold px-3 py-1.5 rounded-full transition-colors disabled:opacity-40"
           style={{ background: "rgba(0,140,0,0.1)", color: "#166534" }}
         >
-          {loading ? "…" : "Activar"}
+          {loading ? "…" : "Activate"}
         </button>
         <button
           onClick={() => setRole(false)}
@@ -50,7 +50,7 @@ export default function ToggleAccount({ userId, role }: { userId: string; role: 
           className="text-xs font-semibold px-3 py-1.5 rounded-full transition-colors disabled:opacity-40"
           style={{ background: "rgba(200,0,0,0.08)", color: "#991b1b" }}
         >
-          {loading ? "…" : "Rechazar"}
+          {loading ? "…" : "Reject"}
         </button>
       </div>
     );
@@ -63,7 +63,7 @@ export default function ToggleAccount({ userId, role }: { userId: string; role: 
       disabled={loading || isAdmin}
       className="relative w-11 h-6 rounded-full transition-colors disabled:opacity-40"
       style={{ background: isActive ? "#0a0a0a" : "rgba(0,0,0,0.12)" }}
-      title={isAdmin ? "Cuenta admin" : isActive ? "Suspender cuenta" : "Activar cuenta"}
+      title={isAdmin ? "Admin account" : isActive ? "Suspend account" : "Activate account"}
     >
       <span
         className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all"

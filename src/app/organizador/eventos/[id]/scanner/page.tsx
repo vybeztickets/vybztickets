@@ -21,7 +21,7 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="p-8">
-      <p className="text-[#0a0a0a]/30 text-xs uppercase tracking-widest mb-2">Scanner de entrada</p>
+      <p className="text-[#0a0a0a]/30 text-xs uppercase tracking-widest mb-2">Entry scanner</p>
       <h1 className="font-[family-name:var(--font-bebas)] text-4xl tracking-wide text-white mb-1">{event.name}</h1>
       <p className="text-[#0a0a0a]/30 text-sm mb-8">{event.venue}, {event.city}</p>
       <div className="max-w-lg">

@@ -1,30 +1,21 @@
 import Link from "next/link";
 
-const LINKS: Record<string, { label: string; href: string }[]> = {
-  Eventos: [
-    { label: "Festival", href: "/eventos?category=Festival" },
-    { label: "Música", href: "/eventos?category=Música" },
-    { label: "Tecnología", href: "/eventos?category=Tecnología" },
-    { label: "Deportes", href: "/eventos?category=Deportes" },
-    { label: "Entretenimiento", href: "/eventos?category=Entretenimiento" },
+const LINKS: Record<string, { label: string; href: string; newTab?: boolean }[]> = {
+  Events: [
+    { label: "All events", href: "/eventos" },
+    { label: "This week", href: "/eventos?filter=week" },
+    { label: "This month", href: "/eventos?filter=month" },
   ],
-  Reventa: [
-    { label: "Comprar tickets", href: "/reventa" },
-    { label: "Vender tickets", href: "/auth/login?redirectTo=/revendedor/nueva-venta" },
-    { label: "Cómo funciona", href: "/reventa" },
-    { label: "Verificación KYC", href: "/auth/login?redirectTo=/revendedor/verificacion" },
+  Organizers: [
+    { label: "Create event", href: "/organizador/eventos/nuevo", newTab: true },
+    { label: "Dashboard", href: "/organizador", newTab: true },
   ],
-  Organizadores: [
-    { label: "Crear evento", href: "/organizador/eventos/nuevo" },
-    { label: "Panel de control", href: "/organizador" },
-    { label: "Ver plataforma", href: "/organizadores" },
-    { label: "Todos los eventos", href: "/eventos" },
-  ],
-  "Mi cuenta": [
-    { label: "Mis tickets", href: "/mis-tickets" },
-    { label: "Iniciar sesión", href: "/auth/login" },
-    { label: "Términos de uso", href: "/terminos" },
-    { label: "Privacidad", href: "/privacidad" },
+  "My account": [
+    { label: "Sign in", href: "/auth/login" },
+    { label: "My tickets", href: "/transfer", newTab: true },
+    { label: "Transfer a ticket", href: "/transfer", newTab: true },
+    { label: "Terms of use", href: "/terminos" },
+    { label: "Privacy", href: "/privacidad" },
   ],
 };
 
@@ -35,20 +26,13 @@ const SOCIALS = [
   { label: "YT", href: "https://youtube.com/@vybztickets" },
 ];
 
-export default function Footer({ variant = "default" }: { variant?: "default" | "reventa" }) {
-  const cta = variant === "reventa"
-    ? {
-        title: "¿Tenés entradas que no vas a usar?",
-        desc: "Vendelas de forma segura con escrow. El comprador paga al instante.",
-        primary: { href: "/auth/login?redirectTo=/revendedor/nueva-venta", label: "Vender mis entradas →" },
-        secondary: { href: "/reventa", label: "Ver mercado" },
-      }
-    : {
-        title: "¿Organizas un evento?",
-        desc: "Vende entradas con la plataforma más completa en eventos.",
-        primary: { href: "/organizadores", label: "Comenzar gratis →" },
-        secondary: { href: "/organizadores", label: "Hablar con ventas" },
-      };
+export default function Footer() {
+  const cta = {
+    title: "Hosting an event?",
+    desc: "Sell tickets with the most complete event platform.",
+    primary: { href: "/organizador", label: "Start for free" },
+    secondary: { href: "mailto:hola@vybztickets.com", label: "Talk to sales" },
+  };
 
   return (
     <footer style={{ background: "#0a0a0a" }}>
@@ -59,22 +43,24 @@ export default function Footer({ variant = "default" }: { variant?: "default" | 
             <h3 className="font-[family-name:var(--font-bebas)] text-4xl md:text-5xl text-white tracking-wide mb-1">
               {cta.title}
             </h3>
-            <p className="text-white/25 text-sm">{cta.desc}</p>
+            <p className="text-white text-sm">{cta.desc}</p>
           </div>
           <div className="flex gap-3 shrink-0">
-            <Link
+            <a
               href={cta.primary.href}
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-white text-[#0a0a0a] text-sm font-semibold px-6 py-3 rounded-full hover:bg-white/90 transition-colors inline-block"
             >
               {cta.primary.label}
-            </Link>
-            <Link
+            </a>
+            <a
               href={cta.secondary.href}
-              className="text-white/40 hover:text-white text-sm px-6 py-3 rounded-full transition-colors"
-              style={{ border: "1px solid rgba(255,255,255,0.1)" }}
+              className="text-white hover:text-white/80 text-sm px-6 py-3 rounded-full transition-colors"
+              style={{ border: "1px solid rgba(255,255,255,0.8)" }}
             >
               {cta.secondary.label}
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -90,8 +76,8 @@ export default function Footer({ variant = "default" }: { variant?: "default" | 
             >
               VYBZ
             </Link>
-            <p className="text-white/20 text-xs leading-relaxed mb-5">
-              Costa Rica&apos;s premier ticket platform. Buy, sell and discover events across Latin America.
+            <p className="text-white text-xs leading-relaxed mb-5">
+              The easiest way to buy and sell tickets for live events.
             </p>
             <div className="flex gap-2.5">
               {SOCIALS.map((s) => (
@@ -100,8 +86,8 @@ export default function Footer({ variant = "default" }: { variant?: "default" | 
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center text-white/25 hover:text-white/60 transition-all text-[9px] font-bold rounded-lg"
-                  style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                  className="w-8 h-8 flex items-center justify-center text-white hover:text-white/70 transition-all text-[9px] font-bold rounded-lg"
+                  style={{ border: "1px solid rgba(255,255,255,0.6)" }}
                 >
                   {s.label}
                 </a>
@@ -112,13 +98,24 @@ export default function Footer({ variant = "default" }: { variant?: "default" | 
           {/* Links */}
           {Object.entries(LINKS).map(([col, items]) => (
             <div key={col}>
-              <p className="text-white/40 text-[10px] font-semibold tracking-[0.18em] uppercase mb-4">{col}</p>
+              <p className="text-white text-[10px] font-semibold tracking-[0.18em] uppercase mb-4">{col}</p>
               <ul className="space-y-2.5">
                 {items.map((item) => (
                   <li key={item.label}>
-                    <Link href={item.href} className="text-white/20 hover:text-white/50 text-sm transition-colors">
-                      {item.label}
-                    </Link>
+                    {item.newTab ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-white hover:text-white/70 text-sm transition-colors"
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <Link href={item.href} className="text-white hover:text-white/70 text-sm transition-colors">
+                        {item.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -130,13 +127,13 @@ export default function Footer({ variant = "default" }: { variant?: "default" | 
       {/* Bottom bar */}
       <div className="px-6 py-5" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-white/15 text-xs">
-            © {new Date().getFullYear()} Vybz Tickets. Todos los derechos reservados.
+          <p className="text-white text-xs">
+            © {new Date().getFullYear()} Vybz Tickets. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/terminos" className="text-white/15 hover:text-white/35 text-xs transition-colors">Términos</Link>
-            <Link href="/privacidad" className="text-white/15 hover:text-white/35 text-xs transition-colors">Privacidad</Link>
-            <Link href="/privacidad" className="text-white/15 hover:text-white/35 text-xs transition-colors">Cookies</Link>
+            <Link href="/terminos" className="text-white hover:text-white/35 text-xs transition-colors">Terms</Link>
+            <Link href="/privacidad" className="text-white hover:text-white/35 text-xs transition-colors">Privacy</Link>
+            <Link href="/privacidad" className="text-white hover:text-white/35 text-xs transition-colors">Cookies</Link>
           </div>
         </div>
       </div>

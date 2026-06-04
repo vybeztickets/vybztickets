@@ -15,26 +15,26 @@ type Org = {
 };
 
 const ROLE_STYLE: Record<string, { bg: string; color: string; label: string }> = {
-  organizer:          { bg: "rgba(0,140,0,0.1)",    color: "#166534", label: "Activo" },
-  suspended:          { bg: "rgba(200,0,0,0.08)",   color: "#991b1b", label: "Suspendido" },
-  pending_activation: { bg: "rgba(180,83,9,0.12)",  color: "#b45309", label: "Pendiente" },
+  organizer:          { bg: "rgba(0,140,0,0.1)",    color: "#166534", label: "Active" },
+  suspended:          { bg: "rgba(200,0,0,0.08)",   color: "#991b1b", label: "Suspended" },
+  pending_activation: { bg: "rgba(180,83,9,0.12)",  color: "#b45309", label: "Pending" },
 };
 
-const STATUSES = ["Todos", "organizer", "pending_activation", "suspended"];
+const STATUSES = ["All", "organizer", "pending_activation", "suspended"];
 
 function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 
 export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs: Org[]; total: number; pendingCount: number }) {
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("Todos");
-  const [country, setCountry] = useState("Todos");
+  const [status, setStatus] = useState("All");
+  const [country, setCountry] = useState("All");
 
-  const countries = ["Todos", ...Array.from(new Set(orgs.map(o => o.country).filter(Boolean) as string[])).sort()];
+  const countries = ["All", ...Array.from(new Set(orgs.map(o => o.country).filter(Boolean) as string[])).sort()];
 
   const filtered = orgs.filter(o => {
     const matchQ = !q || [o.full_name, o.email].some(v => v?.toLowerCase().includes(q.toLowerCase()));
-    const matchStatus = status === "Todos" || o.role === status;
-    const matchCountry = country === "Todos" || o.country === country;
+    const matchStatus = status === "All" || o.role === status;
+    const matchCountry = country === "All" || o.country === country;
     return matchQ && matchStatus && matchCountry;
   });
 
@@ -47,7 +47,7 @@ export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs
           </svg>
           <input
             type="text"
-            placeholder="Buscar por nombre o email…"
+            placeholder="Search by name or email…"
             value={q}
             onChange={e => setQ(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none"
@@ -58,23 +58,23 @@ export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs
           className="px-3 py-2.5 rounded-xl text-sm focus:outline-none"
           style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}>
           {STATUSES.map(s => <option key={s} value={s}>
-            {s === "Todos" ? "Todos los estados" : s === "pending_activation" ? "Pendiente" : s === "organizer" ? "Activo" : s === "suspended" ? "Suspendido" : s}
+            {s === "All" ? "All statuses" : s === "pending_activation" ? "Pending" : s === "organizer" ? "Active" : s === "suspended" ? "Suspended" : s}
           </option>)}
         </select>
         {countries.length > 1 && (
           <select value={country} onChange={e => setCountry(e.target.value)}
             className="px-3 py-2.5 rounded-xl text-sm focus:outline-none"
             style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}>
-            {countries.map(c => <option key={c} value={c}>{c === "Todos" ? "Todos los países" : c}</option>)}
+            {countries.map(c => <option key={c} value={c}>{c === "All" ? "All countries" : c}</option>)}
           </select>
         )}
       </div>
 
       <p className="text-[#0a0a0a]/30 text-xs mb-3">
-        {filtered.length} de {total} organizadores
+        {filtered.length} of {total} organizers
         {pendingCount > 0 && (
           <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "rgba(180,83,9,0.12)", color: "#b45309" }}>
-            {pendingCount} pendiente{pendingCount > 1 ? "s" : ""}
+            {pendingCount} pending
           </span>
         )}
       </p>
@@ -83,14 +83,14 @@ export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-              {["Organizador", "País", "Eventos", "Revenue", "Estado", "Cuenta", "Alertas", ""].map(h => (
+              {["Organizer", "Country", "Events", "Revenue", "Status", "Account", "Alerts", ""].map(h => (
                 <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">Sin resultados</td></tr>
+              <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">No results</td></tr>
             ) : filtered.map(o => {
               const rs = ROLE_STYLE[o.role] ?? ROLE_STYLE.organizer;
               const isPending = o.role === "pending_activation";
@@ -99,7 +99,7 @@ export default function OrganizadoresTable({ orgs, total, pendingCount }: { orgs
                   style={{ borderBottom: "1px solid rgba(0,0,0,0.04)", background: isPending ? "rgba(180,83,9,0.03)" : undefined }}
                   className="hover:bg-black/[0.01]">
                   <td className="px-6 py-4">
-                    <p className="text-[#0a0a0a] font-medium text-sm">{o.full_name ?? "Sin nombre"}</p>
+                    <p className="text-[#0a0a0a] font-medium text-sm">{o.full_name ?? "No name"}</p>
                     <p className="text-[#0a0a0a]/35 text-xs">{o.email}</p>
                   </td>
                   <td className="px-6 py-4 text-xs text-[#0a0a0a]/50">{o.country ?? "—"}</td>

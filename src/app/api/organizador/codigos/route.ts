@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const body = await request.json();
-  const { eventId, code, promoter_name, discount_percent, ticket_type_id, max_uses } = body;
+  const { eventId, code, promoter_name, discount_percent, ticket_type_id, ticket_type_ids, max_uses } = body;
   if (!eventId || !code) return NextResponse.json({ error: "eventId y código son requeridos" }, { status: 400 });
 
   const admin = createAdminClient();
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   if (existing) return NextResponse.json({ error: "Ya existe un código con ese nombre para este evento" }, { status: 409 });
 
   const discountNum = Number(discount_percent) || 0;
-  const { data: created, error } = await admin
+  const { data: created, error } = await (admin as any)
     .from("promo_links")
     .insert({
       event_id: eventId,
@@ -52,6 +52,7 @@ export async function POST(request: Request) {
       promoter_name: promoter_name || "",
       discount_percent: discountNum,
       ticket_type_id: ticket_type_id || null,
+      ticket_type_ids: ticket_type_ids ?? null,
       max_uses: max_uses ? Number(max_uses) : null,
       is_active: true,
       times_used: 0,

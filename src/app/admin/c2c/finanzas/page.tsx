@@ -2,7 +2,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import Link from "next/link";
 import ReporteButtonC2C from "../ReporteButtonC2C";
 
-function fmt(n: number) { return "₡" + n.toLocaleString("es-CR"); }
+function fmt(n: number) { return "₡" + n.toLocaleString("en-US"); }
 
 export default async function AdminFinanzasC2CPage() {
   const db = createAdmin(
@@ -34,7 +34,7 @@ export default async function AdminFinanzasC2CPage() {
     const prof = profileMap.get(sid);
     const s = sellerMap.get(sid) ?? {
       seller_id: sid,
-      name: prof?.full_name ?? "Sin nombre",
+      name: prof?.full_name ?? "No name",
       email: prof?.email ?? "",
       sold: 0,
       volume: 0,
@@ -51,7 +51,7 @@ export default async function AdminFinanzasC2CPage() {
   for (const l of sold) {
     const d = new Date(l.created_at);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleDateString("es-CR", { month: "short" });
+    const label = d.toLocaleDateString("en-US", { month: "short" });
     const m = monthMap.get(key) ?? { label, volume: 0, count: 0 };
     m.volume += l.asking_price ?? 0;
     m.count++;
@@ -62,7 +62,7 @@ export default async function AdminFinanzasC2CPage() {
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleDateString("es-CR", { month: "short" });
+    const label = d.toLocaleDateString("en-US", { month: "short" });
     months.push(monthMap.get(key) ?? { label, volume: 0, count: 0 });
   }
   const maxMonth = Math.max(...months.map(m => m.volume), 1);
@@ -73,9 +73,9 @@ export default async function AdminFinanzasC2CPage() {
         <div>
           <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-black/30 mb-1">✦ C2C · Reventa</p>
           <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] leading-none tracking-wide" style={{ fontSize: "clamp(28px,3vw,40px)" }}>
-            Finanzas C2C
+            C2C Finance
           </h1>
-          <p className="text-[#0a0a0a]/35 text-sm mt-1">Modelo de cobro en definición — mostrando volumen de reventas</p>
+          <p className="text-[#0a0a0a]/35 text-sm mt-1">Fee model TBD — showing resale volume</p>
         </div>
         <ReporteButtonC2C />
       </div>
@@ -83,38 +83,38 @@ export default async function AdminFinanzasC2CPage() {
       {/* KPIs */}
       <div className="grid grid-cols-4 gap-4 mb-8">
         <div className="rounded-2xl p-5" style={{ background: "#0a0a0a" }}>
-          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-white/35">Volumen C2C vendido</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-white/35">C2C Volume Sold</p>
           <p className="font-[family-name:var(--font-bebas)] text-3xl leading-none mb-1 text-white">{fmt(totalVolume)}</p>
-          <p className="text-[10px] text-white/25">{sold.length} reventas completadas</p>
+          <p className="text-[10px] text-white/25">{sold.length} completed resales</p>
         </div>
         <div className="rounded-2xl p-5" style={{ background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.15)" }}>
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#4338ca" }}>Ingresos Vybz C2C</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#4338ca" }}>Vybz C2C Revenue</p>
             <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-full" style={{ background: "rgba(99,102,241,0.15)", color: "#4338ca" }}>TBD</span>
           </div>
           <p className="font-[family-name:var(--font-bebas)] text-3xl leading-none mb-1" style={{ color: "#312e81" }}>—</p>
-          <p className="text-[10px]" style={{ color: "rgba(67,56,202,0.5)" }}>fee por definir</p>
+          <p className="text-[10px]" style={{ color: "rgba(67,56,202,0.5)" }}>fee TBD</p>
         </div>
         <div className="rounded-2xl p-5" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
-          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#0a0a0a]/35">Listings activos</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#0a0a0a]/35">Active listings</p>
           <p className="font-[family-name:var(--font-bebas)] text-3xl leading-none mb-1 text-[#0a0a0a]">{active.length}</p>
-          <p className="text-[10px] text-[#0a0a0a]/30">en reventa ahora</p>
+          <p className="text-[10px] text-[#0a0a0a]/30">currently for resale</p>
         </div>
         <div className="rounded-2xl p-5" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
           <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#0a0a0a]/35">Total listings</p>
           <p className="font-[family-name:var(--font-bebas)] text-3xl leading-none mb-1 text-[#0a0a0a]">{totalListings}</p>
-          <p className="text-[10px] text-[#0a0a0a]/30">{sortedSellers.length} revendedores activos</p>
+          <p className="text-[10px] text-[#0a0a0a]/30">{sortedSellers.length} active resellers</p>
         </div>
       </div>
 
       {/* Opciones de cobro */}
       <div className="rounded-2xl p-6 mb-8" style={{ background: "rgba(99,102,241,0.04)", border: "1px dashed rgba(99,102,241,0.2)" }}>
-        <p className="text-[10px] font-bold uppercase tracking-[0.15em] mb-3" style={{ color: "#4338ca" }}>Modelos de cobro en consideración</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.15em] mb-3" style={{ color: "#4338ca" }}>Fee models under consideration</p>
         <div className="grid grid-cols-3 gap-4">
           {[
-            { title: "% sobre precio de reventa", desc: "Ej. 5–10% de cada transacción C2C completada. Escalable con el volumen." },
-            { title: "Fee fijo por transacción", desc: "Ej. ₡500–₡1000 por reventa. Predecible, mejor para tickets de bajo precio." },
-            { title: "Combo: fijo + %", desc: "Fee base + porcentaje. Cubre costos y escala con el precio de reventa." },
+            { title: "% of resale price", desc: "E.g. 5–10% of each completed C2C transaction. Scales with volume." },
+            { title: "Fixed fee per transaction", desc: "E.g. ₡500–₡1000 per resale. Predictable, better for low-price tickets." },
+            { title: "Combo: fixed + %", desc: "Base fee + percentage. Covers costs and scales with resale price." },
           ].map(o => (
             <div key={o.title} className="rounded-xl p-4" style={{ background: "rgba(99,102,241,0.06)" }}>
               <p className="text-sm font-semibold text-[#0a0a0a] mb-1">{o.title}</p>
@@ -126,8 +126,8 @@ export default async function AdminFinanzasC2CPage() {
 
       {/* Monthly chart */}
       <div className="rounded-2xl p-6 mb-8" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
-        <p className="text-[#0a0a0a] font-semibold text-sm mb-1">Volumen C2C mensual</p>
-        <p className="text-[#0a0a0a]/35 text-xs mb-5">reventas completadas por mes</p>
+        <p className="text-[#0a0a0a] font-semibold text-sm mb-1">Monthly C2C Volume</p>
+        <p className="text-[#0a0a0a]/35 text-xs mb-5">completed resales per month</p>
         <div className="flex items-end gap-3 h-32">
           {months.map((m) => (
             <div key={m.label} className="flex-1 flex flex-col items-center gap-1">
@@ -142,16 +142,16 @@ export default async function AdminFinanzasC2CPage() {
       {/* Per-seller breakdown */}
       <div className="rounded-2xl overflow-hidden mb-6" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
         <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-          <p className="text-[#0a0a0a] font-semibold text-sm">Top revendedores</p>
-          <Link href="/admin/c2c/revendedores" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">Ver todos →</Link>
+          <p className="text-[#0a0a0a] font-semibold text-sm">Top resellers</p>
+          <Link href="/admin/c2c/revendedores" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">View all →</Link>
         </div>
         {sortedSellers.length === 0 ? (
-          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">Sin reventas completadas</p>
+          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">No completed resales</p>
         ) : (
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-                {["Revendedor", "Reventas completadas", "Volumen total", "% del total", ""].map((h) => (
+                {["Reseller", "Completed resales", "Total volume", "% of total", ""].map((h) => (
                   <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
                 ))}
               </tr>
@@ -188,16 +188,16 @@ export default async function AdminFinanzasC2CPage() {
       {/* Active listings table */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
         <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-          <p className="text-[#0a0a0a] font-semibold text-sm">Listings activos</p>
-          <Link href="/admin/c2c/listings" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">Ver todos →</Link>
+          <p className="text-[#0a0a0a] font-semibold text-sm">Active listings</p>
+          <Link href="/admin/c2c/listings" className="text-[#0a0a0a]/35 hover:text-[#0a0a0a] text-xs transition-colors font-medium">View all →</Link>
         </div>
         {active.length === 0 ? (
-          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">No hay listings activos</p>
+          <p className="text-[#0a0a0a]/25 text-sm p-8 text-center">No active listings</p>
         ) : (
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-                {["Revendedor", "Precio", "Fecha", ""].map((h) => (
+                {["Reseller", "Price", "Date", ""].map((h) => (
                   <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
                 ))}
               </tr>
@@ -208,15 +208,15 @@ export default async function AdminFinanzasC2CPage() {
                 return (
                   <tr key={l.id} style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }} className="hover:bg-black/[0.01]">
                     <td className="px-6 py-4">
-                      <p className="text-[#0a0a0a] text-sm">{prof?.full_name ?? "Sin nombre"}</p>
+                      <p className="text-[#0a0a0a] text-sm">{prof?.full_name ?? "No name"}</p>
                       <p className="text-[#0a0a0a]/35 text-xs">{prof?.email}</p>
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-[#0a0a0a]">{fmt(l.asking_price ?? 0)}</td>
                     <td className="px-6 py-4 text-xs text-[#0a0a0a]/40">
-                      {new Date(l.created_at).toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" })}
+                      {new Date(l.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className="text-[9px] font-bold uppercase px-2 py-1 rounded-full" style={{ background: "rgba(99,102,241,0.1)", color: "#4338ca" }}>Activo</span>
+                      <span className="text-[9px] font-bold uppercase px-2 py-1 rounded-full" style={{ background: "rgba(99,102,241,0.1)", color: "#4338ca" }}>Active</span>
                     </td>
                   </tr>
                 );

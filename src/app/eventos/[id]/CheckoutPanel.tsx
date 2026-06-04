@@ -18,6 +18,19 @@ type TicketType = {
   capacity?: number | null;
   zone_name?: string | null;
   zone_color?: string | null;
+  zone_id?: string | null;
+  map_position_x?: number | null;
+  map_position_y?: number | null;
+  table_color?: string | null;
+  table_border_color?: string | null;
+  table_text_color?: string | null;
+  map_table_size?: string | null;
+  price_per_extra_person?: number | null;
+  max_extra_people?: number | null;
+  deposit_enabled?: boolean | null;
+  deposit_percent?: number | null;
+  deposit_refund_percent?: number | null;
+  deposit_warning_text?: string | null;
 };
 
 const CURRENCY_SYMBOL: Record<string, string> = {
@@ -25,9 +38,9 @@ const CURRENCY_SYMBOL: Record<string, string> = {
 };
 
 function formatPrice(n: number, currency = "CRC") {
-  if (n === 0) return "Gratis";
+  if (n === 0) return "Free";
   const sym = CURRENCY_SYMBOL[currency] ?? currency;
-  const locale = currency === "CRC" ? "es-CR" : "en-US";
+  const locale = "en-US";
   const decimals = currency === "CRC" ? 0 : 2;
   return sym + n.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
@@ -58,11 +71,23 @@ export default function CheckoutPanel({
 }) {
   const activeTypes = ticketTypes.filter((t) => t.is_active && !t.is_hidden && t.total_available - t.sold_count > 0);
   const generalTypes = activeTypes.filter((t) => !t.category || t.category === "general");
-  const tableTypes = activeTypes.filter((t) => t.category === "table" || t.category === "seat");
+  const tableTypes = activeTypes.filter((t) => t.category === "table" && t.zone_id);
+
+  const [expandedZoneIds, setExpandedZoneIds] = useState<Set<string>>(new Set());
+  const tableRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  function toggleZoneId(id: string) {
+    setExpandedZoneIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  }
+  function scrollToTable(t: TicketType) {
+    if (!t.zone_id) return;
+    setExpandedZoneIds(prev => { const next = new Set(prev); next.add(t.zone_id!); return next; });
+    setTimeout(() => tableRowRefs.current[t.id]?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
+  }
 
   const [selectedId, setSelectedId] = useState<string>("");
   const [qty, setQty] = useState(1);
   const [paxCount, setPaxCount] = useState(1);
+  const [useDeposit, setUseDeposit] = useState(false);
 
   const [email, setEmail] = useState("");
   const [emailConfirm, setEmailConfirm] = useState("");
@@ -87,17 +112,27 @@ export default function CheckoutPanel({
   const onvoInitialized = useRef(false);
 
   const selected = activeTypes.find((t) => t.id === selectedId);
-  const isTable = selected?.category === "table" || selected?.category === "seat";
+  const isTable = selected?.category === "table";
   const maxQty = selected ? Math.min(selected.total_available - selected.sold_count, 10) : 1;
   const maxPax = selected?.capacity ?? 20;
 
   const promoValid = promoApplied && (promoApplied.ticketTypeId === null || promoApplied.ticketTypeId === selectedId);
   const discountPct = promoValid ? promoApplied!.discount : 0;
-  const basePrice = selected ? selected.price * (isTable ? 1 : qty) : 0;
+
+  const extraPaxCount = isTable && selected?.capacity && paxCount > selected.capacity && selected.price_per_extra_person
+    ? Math.min(paxCount - selected.capacity, selected.max_extra_people ?? 0)
+    : 0;
+  const extraPaxFee = extraPaxCount * (selected?.price_per_extra_person ?? 0);
+
+  const basePrice = selected ? selected.price * (isTable ? 1 : qty) + extraPaxFee : 0;
   const discountAmount = Math.round(basePrice * discountPct / 100);
   const subtotal = basePrice - discountAmount;
   const serviceFee = Math.round(subtotal * platformFeePercent / 100);
-  const total = subtotal + serviceFee;
+  const fullTotal = subtotal + serviceFee;
+
+  const depositPct = (selected?.deposit_enabled && selected?.deposit_percent) ? selected.deposit_percent : 0;
+  const depositAmount = depositPct > 0 ? Math.ceil(fullTotal * depositPct / 100) : 0;
+  const total = (isTable && useDeposit && depositAmount > 0) ? depositAmount : fullTotal;
 
   async function applyPromo() {
     if (!promoCode.trim()) return;
@@ -118,10 +153,11 @@ export default function CheckoutPanel({
   function selectTicket(id: string) {
     setSelectedId(id);
     const t = activeTypes.find((x) => x.id === id);
-    if (t?.category === "table" || t?.category === "seat") {
+    if (t?.category === "table") {
       setPaxCount(t?.capacity ?? 1);
       setPerTicket([]);
       setSameEmail(true);
+      setUseDeposit(false);
     } else {
       setQty(1);
     }
@@ -253,7 +289,7 @@ export default function CheckoutPanel({
   if (activeTypes.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-[#0a0a0a]/30">Tickets agotados</p>
+        <p className="text-sm text-[#0a0a0a]/30">Tickets sold out</p>
       </div>
     );
   }
@@ -276,12 +312,12 @@ export default function CheckoutPanel({
             </svg>
           </div>
           <p className="text-white font-bold text-xl mb-1">
-            {isTable ? "¡Reserva confirmada!" : "¡Compra exitosa!"}
+            {isTable ? "Reservation confirmed!" : "Purchase successful!"}
           </p>
           <p className="text-white/40 text-sm">
             {isTable
-              ? `${selected?.name} · ${paxCount} persona${paxCount !== 1 ? "s" : ""}`
-              : `${qty} entrada${qty > 1 ? "s" : ""} · ${eventName}`}
+              ? `${selected?.name} · ${paxCount} person${paxCount !== 1 ? "s" : ""}`
+              : `${qty} ticket${qty > 1 ? "s" : ""} · ${eventName}`}
           </p>
         </div>
 
@@ -295,9 +331,9 @@ export default function CheckoutPanel({
             <polyline points="22,6 12,13 2,6"/>
           </svg>
           <p className="text-sm" style={{ color: "rgba(0,0,0,0.55)" }}>
-            Tus entradas fueron enviadas a{" "}
+            Your tickets were sent to{" "}
             <span className="font-semibold text-[#0a0a0a]">{email}</span>
-            {" "}— revisá tu bandeja de entrada (y spam).
+            {" "}— check your inbox (and spam).
           </p>
         </div>
 
@@ -311,7 +347,7 @@ export default function CheckoutPanel({
                 style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}
               >
                 <p className="text-[#0a0a0a]/40 text-[10px] uppercase tracking-wider mb-3">
-                  {purchasedQRs.length > 1 ? `Entrada ${i + 1} de ${purchasedQRs.length}` : "Tu entrada"}
+                  {purchasedQRs.length > 1 ? `Ticket ${i + 1} of ${purchasedQRs.length}` : "Your ticket"}
                 </p>
                 <div className="p-4 rounded-2xl bg-white border border-black/08">
                   <QRCode value={qr} size={150} />
@@ -326,7 +362,7 @@ export default function CheckoutPanel({
                   className="mt-4 flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold transition-all"
                   style={{ background: "#0a0a0a", color: "#fff" }}
                 >
-                  Ver entrada completa →
+                  View full ticket →
                 </a>
               </div>
             ))}
@@ -340,7 +376,7 @@ export default function CheckoutPanel({
             style={{ background: "#f7f7f7", border: "1px solid rgba(0,0,0,0.06)" }}
           >
             <p className="text-[#0a0a0a]/35 text-[9px] uppercase tracking-widest font-semibold mb-2">
-              Mensaje del organizador
+              Message from organizer
             </p>
             <p className="text-[#0a0a0a]/65 text-sm leading-relaxed whitespace-pre-line">
               {postPurchaseMessage}
@@ -352,7 +388,7 @@ export default function CheckoutPanel({
         {termsConditions && (
           <div className="mb-5" style={{ borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 16 }}>
             <p className="text-[#0a0a0a]/30 text-[9px] uppercase tracking-widest font-semibold mb-2">
-              Términos y condiciones del evento
+              Event terms and conditions
             </p>
             <p className="text-[#0a0a0a]/35 text-xs leading-relaxed whitespace-pre-line">
               {termsConditions}
@@ -364,7 +400,7 @@ export default function CheckoutPanel({
           onClick={() => { setStep("select"); setSelectedId(""); setPurchasedQRs([]); }}
           className="text-[#0a0a0a]/30 text-xs hover:text-[#0a0a0a]/60 transition-colors"
         >
-          ← Volver al evento
+          ← Back to event
         </button>
       </div>
     );
@@ -377,7 +413,7 @@ export default function CheckoutPanel({
         <button type="button" onClick={() => setStep("details")}
           className="flex items-center gap-1.5 text-[#0a0a0a]/35 text-xs mb-5 hover:text-[#0a0a0a] transition-colors">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          Volver
+          Back
         </button>
 
         <div className="mb-4">
@@ -385,7 +421,7 @@ export default function CheckoutPanel({
             holderName={name}
             eventName={eventName}
           />
-          <p className="text-center text-[#0a0a0a]/20 text-[9px] mt-2">Click para ver reverso</p>
+          <p className="text-center text-[#0a0a0a]/20 text-[9px] mt-2">Click to see back</p>
         </div>
 
         <div className="p-4 rounded-xl mb-5" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
@@ -410,7 +446,7 @@ export default function CheckoutPanel({
         <button type="button" onClick={() => setStep("select")}
           className="flex items-center gap-1.5 text-[#0a0a0a]/35 text-xs mb-5 hover:text-[#0a0a0a] transition-colors">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          Volver
+          Back
         </button>
 
         {/* Summary */}
@@ -426,9 +462,9 @@ export default function CheckoutPanel({
         </div>
 
         <form onSubmit={handlePurchase} className="flex flex-col gap-3">
-          <input type="text" placeholder="Nombre completo *" value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} style={inputStyle} />
+          <input type="text" placeholder="Full name *" value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} style={inputStyle} />
           <input type="email" placeholder="Email *" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} style={inputStyle} />
-          <input type="email" placeholder="Confirma tu email *" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required className={inputClass}
+          <input type="email" placeholder="Confirm your email *" value={emailConfirm} onChange={(e) => setEmailConfirm(e.target.value)} required className={inputClass}
             style={{ ...inputStyle, border: emailConfirm && email !== emailConfirm ? "1px solid rgba(239,68,68,0.4)" : "1px solid rgba(0,0,0,0.08)" }} />
           <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
             <select
@@ -452,7 +488,7 @@ export default function CheckoutPanel({
             </select>
             <input
               type="tel"
-              placeholder="Teléfono *"
+              placeholder="Phone *"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
@@ -464,7 +500,7 @@ export default function CheckoutPanel({
           {/* Multi-email toggle — general tickets */}
           {!isTable && qty >= 2 && (
             <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-              <span className="text-[#0a0a0a]/50 text-sm">Enviar todas al mismo correo</span>
+              <span className="text-[#0a0a0a]/50 text-sm">Send all to the same email</span>
               <button type="button" onClick={() => {
                 const next = !sameEmail;
                 setSameEmail(next);
@@ -480,8 +516,8 @@ export default function CheckoutPanel({
             <div className="flex flex-col gap-3">
               {Array.from({ length: qty }, (_, i) => (
                 <div key={i} className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                  <p className="text-[#0a0a0a]/40 text-xs font-semibold">Entrada {i + 1}</p>
-                  <input type="text" placeholder={`Nombre${i === 0 ? " (tú)" : ""}`}
+                  <p className="text-[#0a0a0a]/40 text-xs font-semibold">Ticket {i + 1}</p>
+                  <input type="text" placeholder={`Name${i === 0 ? " (you)" : ""}`}
                     value={perTicket[i]?.name ?? (i === 0 ? name : "")}
                     onChange={(e) => updatePerTicket(i, "name", e.target.value)}
                     className={inputClass} style={inputStyle} />
@@ -494,21 +530,31 @@ export default function CheckoutPanel({
             </div>
           )}
 
-          {/* Mesa: pax counter + optional per-person emails */}
+          {/* Table: pax counter + optional per-person emails */}
           {isTable && (
             <>
               <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                <span className="text-[#0a0a0a]/50 text-sm">¿Cuántas personas?</span>
+                <span className="text-[#0a0a0a]/50 text-sm">How many people?</span>
                 <div className="flex items-center gap-3">
                   <button type="button" onClick={() => { setPaxCount(Math.max(1, paxCount - 1)); setPerTicket([]); }} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>−</button>
                   <span className="text-[#0a0a0a] font-semibold w-4 text-center">{paxCount}</span>
-                  <button type="button" onClick={() => { setPaxCount(Math.min(maxPax, paxCount + 1)); setPerTicket([]); }} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>+</button>
+                  <button type="button" onClick={() => { setPaxCount(Math.min(maxPax + (selected?.max_extra_people ?? 0), paxCount + 1)); setPerTicket([]); }} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>+</button>
                 </div>
               </div>
 
+              {/* Extra person fee info */}
+              {extraPaxCount > 0 && (
+                <div className="px-4 py-3 rounded-xl" style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)" }}>
+                  <p className="text-xs font-semibold text-amber-700 mb-1">Extra guests</p>
+                  <p className="text-xs text-[#0a0a0a]/50">
+                    {extraPaxCount} extra guest{extraPaxCount !== 1 ? "s" : ""} × {formatPrice(selected?.price_per_extra_person ?? 0, currency)} = <span className="font-semibold text-[#0a0a0a]/70">+{formatPrice(extraPaxFee, currency)}</span>
+                  </p>
+                </div>
+              )}
+
               {paxCount >= 2 && (
                 <label className="flex items-center justify-between p-3 rounded-xl cursor-pointer" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                  <span className="text-[#0a0a0a]/50 text-sm">Enviar a correos distintos</span>
+                  <span className="text-[#0a0a0a]/50 text-sm">Send to different emails</span>
                   <button type="button" onClick={() => {
                     const next = !sameEmail;
                     setSameEmail(next);
@@ -526,8 +572,8 @@ export default function CheckoutPanel({
                 <div className="flex flex-col gap-3">
                   {Array.from({ length: paxCount }, (_, i) => (
                     <div key={i} className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.07)" }}>
-                      <p className="text-[#0a0a0a]/40 text-xs font-semibold">Persona {i + 1}{i === 0 ? " (tú)" : ""}</p>
-                      <input type="text" placeholder="Nombre"
+                      <p className="text-[#0a0a0a]/40 text-xs font-semibold">Person {i + 1}{i === 0 ? " (you)" : ""}</p>
+                      <input type="text" placeholder="Name"
                         value={perTicket[i]?.name ?? (i === 0 ? name : "")}
                         onChange={(e) => updatePerTicket(i, "name", e.target.value)}
                         className={inputClass} style={inputStyle} />
@@ -544,7 +590,7 @@ export default function CheckoutPanel({
 
           {!isTable && (
             <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
-              <span className="text-[#0a0a0a]/50 text-sm">Cantidad</span>
+              <span className="text-[#0a0a0a]/50 text-sm">Quantity</span>
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="w-8 h-8 rounded-full flex items-center justify-center text-[#0a0a0a]" style={{ background: "rgba(0,0,0,0.07)" }}>−</button>
                 <span className="text-[#0a0a0a] font-semibold w-4 text-center">{qty}</span>
@@ -554,25 +600,58 @@ export default function CheckoutPanel({
           )}
 
           {isTable && (
-            <textarea placeholder="Observaciones (opcional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
-              className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none resize-none" style={inputStyle} />
+            <>
+              {/* Deposit / financing option */}
+              {selected?.deposit_enabled && depositPct > 0 && (
+                <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+                  <label className="flex items-start gap-3 p-4 cursor-pointer" style={{ background: useDeposit ? "rgba(0,0,0,0.03)" : "transparent" }}>
+                    <button type="button" onClick={() => setUseDeposit(!useDeposit)}
+                      className="relative mt-0.5 w-9 h-5 rounded-full shrink-0 transition-colors"
+                      style={{ background: useDeposit ? "#0a0a0a" : "rgba(0,0,0,0.1)" }}>
+                      <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: useDeposit ? "17px" : "2px" }} />
+                    </button>
+                    <div>
+                      <p className="text-[#0a0a0a]/70 text-sm font-medium">Pagar con depósito ({depositPct}%)</p>
+                      <p className="text-[#0a0a0a]/35 text-xs mt-0.5">
+                        Paga ahora {formatPrice(depositAmount, currency)} y el resto en el evento
+                      </p>
+                    </div>
+                  </label>
+                  {useDeposit && selected.deposit_warning_text && (
+                    <div className="px-4 pb-3">
+                      <p className="text-xs text-amber-700/80 leading-relaxed">{selected.deposit_warning_text}</p>
+                    </div>
+                  )}
+                  {useDeposit && selected.deposit_refund_percent != null && (
+                    <div className="px-4 pb-3">
+                      <p className="text-xs text-[#0a0a0a]/30 leading-relaxed">
+                        Reembolso del depósito: {selected.deposit_refund_percent}%
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
+                className="w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none resize-none" style={inputStyle} />
+            </>
           )}
 
-          {!showPromo ? (
+          {!isTable && !showPromo ? (
             <button type="button" onClick={() => setShowPromo(true)} className="text-left text-[#0a0a0a]/30 text-xs hover:text-[#0a0a0a]/50 transition-colors py-1">
-              + ¿Tienes un código de descuento?
+              + Have a discount code?
             </button>
-          ) : (
+          ) : !isTable ? (
             <div className="flex flex-col gap-1.5">
               <div className="flex gap-2">
-                <input type="text" placeholder="Código de descuento" value={promoCode}
+                <input type="text" placeholder="Discount code" value={promoCode}
                   onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoApplied(null); setPromoError(""); }}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyPromo())}
                   className="flex-1 px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/25 focus:outline-none uppercase" style={inputStyle} />
                 <button type="button" onClick={applyPromo} disabled={promoLoading || !promoCode.trim()}
                   className="px-4 py-3 rounded-xl text-sm font-semibold disabled:opacity-40 transition-all"
                   style={{ background: promoApplied && promoValid ? "rgba(16,185,129,0.1)" : "rgba(0,0,0,0.07)", color: promoApplied && promoValid ? "#059669" : "rgba(0,0,0,0.6)" }}>
-                  {promoLoading ? "..." : promoApplied && promoValid ? "✓" : "Aplicar"}
+                  {promoLoading ? "..." : promoApplied && promoValid ? "✓" : "Apply"}
                 </button>
                 <button type="button" onClick={() => { setShowPromo(false); setPromoCode(""); setPromoApplied(null); setPromoError(""); }}
                   className="px-3 py-3 rounded-xl text-[#0a0a0a]/30 hover:text-[#0a0a0a]/60 transition-colors" style={{ background: "rgba(0,0,0,0.04)" }}>
@@ -580,10 +659,10 @@ export default function CheckoutPanel({
                 </button>
               </div>
               {promoError && <p className="text-red-500 text-xs pl-1">{promoError}</p>}
-              {promoApplied && promoValid && <p className="text-green-600 text-xs pl-1">{promoApplied.discount === 100 ? "Guestlist aplicado — entrada gratis" : `${promoApplied.discount}% de descuento aplicado`}</p>}
-              {promoApplied && !promoValid && <p className="text-yellow-600/70 text-xs pl-1">Este código no aplica para la entrada seleccionada</p>}
+              {promoApplied && promoValid && <p className="text-green-600 text-xs pl-1">{promoApplied.discount === 100 ? "Guestlist applied — free ticket" : `${promoApplied.discount}% discount applied`}</p>}
+              {promoApplied && !promoValid && <p className="text-yellow-600/70 text-xs pl-1">This code does not apply to the selected ticket</p>}
             </div>
-          )}
+          ) : null}
 
           <label className="flex items-start gap-3 cursor-pointer">
             <button type="button" onClick={() => setMarketingOptIn(!marketingOptIn)}
@@ -603,8 +682,14 @@ export default function CheckoutPanel({
           <div className="py-3 flex flex-col gap-1.5" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
             <div className="flex items-center justify-between">
               <span className="text-[#0a0a0a]/30 text-xs">Subtotal</span>
-              <span className="text-[#0a0a0a]/40 text-xs">{formatPrice(basePrice, currency)}</span>
+              <span className="text-[#0a0a0a]/40 text-xs">{formatPrice(selected?.price ? selected.price * (isTable ? 1 : qty) : 0, currency)}</span>
             </div>
+            {extraPaxFee > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-[#0a0a0a]/30 text-xs">Extra guests ({extraPaxCount}×)</span>
+                <span className="text-[#0a0a0a]/40 text-xs">+{formatPrice(extraPaxFee, currency)}</span>
+              </div>
+            )}
             {discountAmount > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-green-600 text-xs">Descuento ({discountPct}%)</span>
@@ -617,8 +702,20 @@ export default function CheckoutPanel({
                 <span className="text-[#0a0a0a]/40 text-xs">{formatPrice(serviceFee, currency)}</span>
               </div>
             )}
+            {isTable && useDeposit && depositAmount > 0 && (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#0a0a0a]/30 text-xs">Total completo</span>
+                  <span className="text-[#0a0a0a]/35 text-xs line-through">{formatPrice(fullTotal, currency)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-amber-700 text-xs font-medium">Depósito ({depositPct}%)</span>
+                  <span className="text-amber-700 text-xs font-medium">{formatPrice(depositAmount, currency)}</span>
+                </div>
+              </>
+            )}
             <div className="flex items-center justify-between pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
-              <span className="text-[#0a0a0a]/40 text-sm">Total</span>
+              <span className="text-[#0a0a0a]/40 text-sm">{isTable && useDeposit && depositAmount > 0 ? "A pagar ahora" : "Total"}</span>
               <span className="text-[#0a0a0a] font-bold text-xl">{formatPrice(total, currency)}</span>
             </div>
           </div>
@@ -659,7 +756,7 @@ export default function CheckoutPanel({
                         </span>
                       )}
                     </div>
-                    {t.description && <p className="text-[#0a0a0a]/35 text-xs truncate">{t.description}</p>}
+                    {t.description && <p className="text-[#0a0a0a]/80 text-xs truncate">{t.description}</p>}
                     <p className="text-[#0a0a0a] font-bold text-base mt-1">{formatPrice(t.price, currency)}</p>
                   </div>
                   <button onClick={() => selectTicket(t.id)}
@@ -673,51 +770,130 @@ export default function CheckoutPanel({
         </div>
       )}
 
-      {tableTypes.length > 0 && (
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-5 rounded-full bg-[#0a0a0a]" />
-            <p className="text-[#0a0a0a] font-semibold text-sm">Mesas VIP</p>
-          </div>
-
-          {venueMapUrl && (
-            <div className="rounded-2xl overflow-hidden mb-4" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
-              <Image src={venueMapUrl} alt="Mapa de mesas" width={800} height={500} className="w-full object-cover" />
+      {tableTypes.length > 0 && (() => {
+        const zoneMap = new Map<string, { name: string; color: string; tables: typeof tableTypes }>();
+        tableTypes.forEach(t => {
+          const key = t.zone_id || "";
+          if (!zoneMap.has(key)) zoneMap.set(key, { name: t.zone_name || "VIP", color: t.zone_color || "#888", tables: [] });
+          zoneMap.get(key)!.tables.push(t);
+        });
+        const groups = Array.from(zoneMap.entries());
+        return (
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-1 h-5 rounded-full bg-[#0a0a0a]" />
+              <p className="text-[#0a0a0a] font-semibold text-sm">Mesas VIP</p>
             </div>
-          )}
-
-          <div className="flex flex-col gap-2">
-            {tableTypes.map((t) => {
-              const avail = t.total_available - t.sold_count;
+            {venueMapUrl && (() => {
+              const overlayTables = tableTypes.filter(t => t.map_position_x != null && t.map_position_y != null);
+              const mapSizes: Record<string, number> = { small: 18, medium: 26, large: 34 };
               return (
-                <div key={t.id} className="flex items-center justify-between p-4 rounded-xl transition-all"
-                  style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)" }}>
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    {t.zone_color && <div className="w-3 h-3 rounded-full mt-1 shrink-0" style={{ background: t.zone_color }} />}
-                    <div className="min-w-0">
-                      <p className="text-[#0a0a0a] font-semibold text-sm">{t.name}</p>
-                      {t.capacity && <p className="text-[#0a0a0a]/35 text-xs">Hasta {t.capacity} personas</p>}
-                      {t.description && <p className="text-[#0a0a0a]/30 text-xs truncate">{t.description}</p>}
-                      <p className="text-[#0a0a0a] font-bold text-base mt-1">desde {formatPrice(t.price, currency)}</p>
-                      {avail <= 0 ? (
-                        <p className="text-red-500/60 text-xs">Agotada</p>
-                      ) : avail <= 5 ? (
-                        <p className="text-amber-600/70 text-xs">{avail} disponible{avail !== 1 ? "s" : ""}</p>
-                      ) : null}
-                    </div>
+                <div className="rounded-2xl overflow-hidden mb-4" style={{ border: "1px solid rgba(0,0,0,0.08)", background: "rgba(0,0,0,0.03)", position: "relative", width: "100%", paddingTop: "60%" }}>
+                  <div style={{ position: "absolute", inset: 0 }}>
+                    <Image src={venueMapUrl} alt="Mapa de mesas" width={800} height={480} className="w-full h-full" style={{ objectFit: "contain" }} />
+                    {overlayTables.map(t => {
+                      const sz = mapSizes[t.map_table_size ?? "medium"] ?? 26;
+                      const fill = t.table_color || t.zone_color || "#888";
+                      const avail = t.total_available - t.sold_count;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => scrollToTable(t)}
+                          style={{
+                            position: "absolute",
+                            left: `${t.map_position_x}%`,
+                            top: `${t.map_position_y}%`,
+                            width: sz, height: sz,
+                            transform: "translate(-50%, -50%)",
+                            background: fill,
+                            border: t.table_border_color ? `2px solid ${t.table_border_color}` : "none",
+                            color: t.table_text_color || "#fff",
+                            borderRadius: 6,
+                            fontSize: sz >= 30 ? 11 : 9,
+                            fontWeight: "bold",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            opacity: avail <= 0 ? 0.35 : 1,
+                            zIndex: 10,
+                            cursor: "pointer",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                          }}
+                        >
+                          {t.name}
+                        </button>
+                      );
+                    })}
                   </div>
-                  {avail > 0 && (
-                    <button onClick={() => selectTicket(t.id)}
-                      className="ml-4 w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-[#0a0a0a] hover:bg-black/80">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                    </button>
-                  )}
                 </div>
               );
-            })}
+            })()}
+            <div className="flex flex-col gap-2">
+              {groups.map(([zoneId, group]) => {
+                const isOpen = expandedZoneIds.has(zoneId);
+                return (
+                  <div key={zoneId} className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+                    <button onClick={() => toggleZoneId(zoneId)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left"
+                      style={{ background: "rgba(0,0,0,0.02)" }}>
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ background: group.color }} />
+                      <span className="text-[#0a0a0a] font-semibold text-sm flex-1">{group.name}</span>
+                      <span className="text-[#0a0a0a]/30 text-xs">{group.tables.length} mesa{group.tables.length !== 1 ? "s" : ""}</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                        style={{ color: "rgba(0,0,0,0.3)", transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s", flexShrink: 0 }}>
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </button>
+                    {isOpen && (
+                      <div className="flex flex-col" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                        {group.tables.map((t, i) => {
+                          const avail = t.total_available - t.sold_count;
+                          return (
+                            <div
+                              key={t.id}
+                              ref={el => { tableRowRefs.current[t.id] = el; }}
+                              className="flex items-center justify-between px-4 py-3"
+                              style={{ borderBottom: i < group.tables.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none" }}
+                            >
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                  <p className="text-[#0a0a0a] font-semibold text-sm">Mesa {t.name}</p>
+                                  {t.deposit_enabled && t.deposit_percent && (
+                                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded" style={{ background: "rgba(251,191,36,0.12)", color: "#b45309" }}>
+                                      Depósito {t.deposit_percent}%
+                                    </span>
+                                  )}
+                                </div>
+                                {t.capacity && (
+                                  <p className="text-[#0a0a0a]/35 text-xs">
+                                    Hasta {t.capacity} personas
+                                    {t.price_per_extra_person ? ` · +${formatPrice(t.price_per_extra_person, currency)}/persona extra` : ""}
+                                  </p>
+                                )}
+                                <p className="text-[#0a0a0a] font-bold text-base mt-0.5">desde {formatPrice(t.price, currency)}</p>
+                                {avail <= 0 ? (
+                                  <p className="text-red-500/60 text-xs">Agotada</p>
+                                ) : avail <= 5 ? (
+                                  <p className="text-amber-600/70 text-xs">{avail} disponible{avail !== 1 ? "s" : ""}</p>
+                                ) : null}
+                              </div>
+                              {avail > 0 && (
+                                <button onClick={() => selectTicket(t.id)}
+                                  className="ml-4 w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-[#0a0a0a] hover:bg-black/80">
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

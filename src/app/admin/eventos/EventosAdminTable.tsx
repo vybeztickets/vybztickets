@@ -19,7 +19,7 @@ type EventRow = {
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  published: "Activo", draft: "Borrador", cancelled: "Cancelado", ended: "Finalizado",
+  published: "Active", draft: "Draft", cancelled: "Cancelled", ended: "Ended",
 };
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   published: { bg: "rgba(0,140,0,0.1)", color: "#166534" },
@@ -28,11 +28,11 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   ended: { bg: "rgba(0,0,0,0.06)", color: "rgba(0,0,0,0.4)" },
 };
 
-const STATUSES = ["Todos", "published", "draft", "ended", "cancelled"];
+const STATUSES = ["All", "published", "draft", "ended", "cancelled"];
 
 function fmt(n: number) { return "$" + n.toLocaleString("en-US"); }
 function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function EventosAdminTable({ events, stats }: {
@@ -40,11 +40,11 @@ export default function EventosAdminTable({ events, stats }: {
   stats: { active: number; finalized: number; totalRevenue: number; totalTickets: number; vybzFee: number };
 }) {
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("Todos");
+  const [status, setStatus] = useState("All");
 
   const filtered = events.filter(e => {
     const matchQ = !q || [e.name, e.city, e.orgName, e.orgEmail, e.category].some(v => v?.toLowerCase().includes(q.toLowerCase()));
-    const matchStatus = status === "Todos" || e.status === status;
+    const matchStatus = status === "All" || e.status === status;
     return matchQ && matchStatus;
   });
 
@@ -53,10 +53,10 @@ export default function EventosAdminTable({ events, stats }: {
       {/* Summary */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Activos", value: stats.active.toString(), color: "#166534", bg: "rgba(0,140,0,0.07)", border: "rgba(0,140,0,0.15)" },
-          { label: "Finalizados", value: stats.finalized.toString(), color: "rgba(0,0,0,0.45)", bg: "#fff", border: "rgba(0,0,0,0.07)" },
-          { label: "Revenue total", value: fmt(stats.totalRevenue), color: "#0a0a0a", bg: "#fff", border: "rgba(0,0,0,0.07)", sub: `${stats.totalTickets} tickets` },
-          { label: "Ingresos Vybz", value: fmt(stats.vybzFee), color: "#047857", bg: "rgba(16,185,129,0.06)", border: "rgba(16,185,129,0.2)" },
+          { label: "Active", value: stats.active.toString(), color: "#166534", bg: "rgba(0,140,0,0.07)", border: "rgba(0,140,0,0.15)" },
+          { label: "Ended", value: stats.finalized.toString(), color: "rgba(0,0,0,0.45)", bg: "#fff", border: "rgba(0,0,0,0.07)" },
+          { label: "Total Revenue", value: fmt(stats.totalRevenue), color: "#0a0a0a", bg: "#fff", border: "rgba(0,0,0,0.07)", sub: `${stats.totalTickets} tickets` },
+          { label: "Vybz Revenue", value: fmt(stats.vybzFee), color: "#047857", bg: "rgba(16,185,129,0.06)", border: "rgba(16,185,129,0.2)" },
         ].map(s => (
           <div key={s.label} className="rounded-2xl p-4" style={{ background: s.bg, border: `1px solid ${s.border}` }}>
             <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "rgba(0,0,0,0.3)" }}>{s.label}</p>
@@ -74,7 +74,7 @@ export default function EventosAdminTable({ events, stats }: {
           </svg>
           <input
             type="text"
-            placeholder="Buscar evento, ciudad, organizador…"
+            placeholder="Search event, city, organizer…"
             value={q}
             onChange={e => setQ(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none"
@@ -84,24 +84,24 @@ export default function EventosAdminTable({ events, stats }: {
         <select value={status} onChange={e => setStatus(e.target.value)}
           className="px-3 py-2.5 rounded-xl text-sm focus:outline-none"
           style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.08)", color: "#0a0a0a" }}>
-          {STATUSES.map(s => <option key={s} value={s}>{s === "Todos" ? "Todos los estados" : STATUS_LABEL[s] ?? s}</option>)}
+          {STATUSES.map(s => <option key={s} value={s}>{s === "All" ? "All statuses" : STATUS_LABEL[s] ?? s}</option>)}
         </select>
       </div>
 
-      <p className="text-[#0a0a0a]/30 text-xs mb-3">{filtered.length} de {events.length} eventos</p>
+      <p className="text-[#0a0a0a]/30 text-xs mb-3">{filtered.length} of {events.length} events</p>
 
       <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.07)" }}>
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
-              {["Evento", "Organizador", "Fecha", "Estado", "Tickets", "Revenue", "Vybz fee", ""].map(h => (
+              {["Event", "Organizer", "Date", "Status", "Tickets", "Revenue", "Vybz fee", ""].map(h => (
                 <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-[#0a0a0a]/30">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">Sin resultados</td></tr>
+              <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-[#0a0a0a]/25">No results</td></tr>
             ) : filtered.map(e => {
               const sc = STATUS_COLORS[e.status] ?? STATUS_COLORS.draft;
               return (
@@ -116,7 +116,7 @@ export default function EventosAdminTable({ events, stats }: {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-[#0a0a0a] text-xs">{e.orgName ?? "Sin nombre"}</p>
+                    <p className="text-[#0a0a0a] text-xs">{e.orgName ?? "No name"}</p>
                     <p className="text-[#0a0a0a]/35 text-[10px]">{e.orgEmail}</p>
                   </td>
                   <td className="px-6 py-4 text-[#0a0a0a]/50 text-xs whitespace-nowrap">{fmtDate(e.date)}</td>

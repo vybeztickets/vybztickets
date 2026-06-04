@@ -90,12 +90,13 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
       </div>
 
       {/* Profile header card */}
-      <div className="max-w-4xl mx-auto w-full px-6 relative" style={{ marginTop: -60 }}>
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 relative" style={{ marginTop: -60 }}>
         <div
-          className="rounded-3xl p-6 mb-8"
+          className="rounded-3xl p-5 sm:p-6 mb-8"
           style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 8px 40px rgba(0,0,0,0.08)" }}
         >
-          <div className="flex items-start gap-5">
+          {/* Top row: avatar + (desktop: name+meta) + actions */}
+          <div className="flex items-start gap-4 sm:gap-5">
             {/* Avatar */}
             <div
               className="w-20 h-20 rounded-2xl overflow-hidden shrink-0"
@@ -110,22 +111,18 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
               )}
             </div>
 
-            {/* Name + meta */}
-            <div className="flex-1 min-w-0 pt-1">
+            {/* Name + meta — desktop only in this row */}
+            <div className="flex-1 min-w-0 pt-1 hidden sm:block">
               <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-[#0a0a0a] leading-none mb-1">
                 {org.full_name}
               </h1>
               <div className="flex items-center gap-3 flex-wrap">
-                {org.country && (
-                  <span className="text-[#0a0a0a]/40 text-sm">{org.country}</span>
-                )}
+                {org.country && <span className="text-[#0a0a0a]/40 text-sm">{org.country}</span>}
                 {followerCount > 0 && (
-                  <span className="text-[#0a0a0a]/30 text-sm">
-                    {followerCount} {followerCount === 1 ? "seguidor" : "seguidores"}
-                  </span>
+                  <span className="text-[#0a0a0a]/30 text-sm">{followerCount} {followerCount === 1 ? "follower" : "followers"}</span>
                 )}
                 {upcoming.length > 0 && (
-                  <span className="text-[#0a0a0a]/30 text-sm">{upcoming.length} evento{upcoming.length !== 1 ? "s" : ""} próximo{upcoming.length !== 1 ? "s" : ""}</span>
+                  <span className="text-[#0a0a0a]/30 text-sm">{upcoming.length} upcoming event{upcoming.length !== 1 ? "s" : ""}</span>
                 )}
               </div>
               {org.description && (
@@ -133,8 +130,8 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
               )}
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0 pt-1">
+            {/* Actions — always here, push to right on mobile with ml-auto */}
+            <div className="flex items-center gap-2 shrink-0 pt-1 ml-auto sm:ml-0">
               {org.instagram_url && (
                 <a
                   href={org.instagram_url.startsWith("http") ? org.instagram_url : `https://instagram.com/${org.instagram_url.replace("@", "")}`}
@@ -154,12 +151,31 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
               <FollowButton slug={effectiveSlug} organizerId={org.id} initialFollowing={isFollowing} isLoggedIn={!!user} />
             </div>
           </div>
+
+          {/* Name + meta — mobile only, full width below avatar row */}
+          <div className="mt-4 sm:hidden">
+            <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-[#0a0a0a] leading-none mb-1">
+              {org.full_name}
+            </h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              {org.country && <span className="text-[#0a0a0a]/40 text-sm">{org.country}</span>}
+              {followerCount > 0 && (
+                <span className="text-[#0a0a0a]/30 text-sm">{followerCount} {followerCount === 1 ? "follower" : "followers"}</span>
+              )}
+              {upcoming.length > 0 && (
+                <span className="text-[#0a0a0a]/30 text-sm">{upcoming.length} upcoming event{upcoming.length !== 1 ? "s" : ""}</span>
+              )}
+            </div>
+            {org.description && (
+              <p className="text-[#0a0a0a]/55 text-sm leading-relaxed mt-2.5">{org.description}</p>
+            )}
+          </div>
         </div>
 
         {/* Upcoming events */}
         {upcoming.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-[#0a0a0a]/50 text-xs font-bold uppercase tracking-wider mb-5">Próximos eventos</h2>
+            <h2 className="text-[#0a0a0a]/50 text-xs font-bold uppercase tracking-wider mb-5">Upcoming events</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {upcoming.map((event: any) => (
                 <EventCard key={event.id} event={event} />
@@ -171,7 +187,7 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
         {/* Past events */}
         {past.length > 0 && (
           <section className="mb-16">
-            <h2 className="text-[#0a0a0a]/50 text-xs font-bold uppercase tracking-wider mb-5">Eventos pasados</h2>
+            <h2 className="text-[#0a0a0a]/50 text-xs font-bold uppercase tracking-wider mb-5">Past events</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {past.map((event: any) => (
                 <EventCard key={event.id} event={event} isPast />
@@ -182,7 +198,7 @@ export default async function OrganizerProfilePage({ params }: { params: Promise
 
         {upcoming.length === 0 && past.length === 0 && (
           <div className="py-20 text-center">
-            <p className="text-[#0a0a0a]/20 text-sm">Sin eventos publicados todavía</p>
+            <p className="text-[#0a0a0a]/20 text-sm">No published events yet</p>
           </div>
         )}
       </div>
@@ -197,7 +213,7 @@ function EventCard({ event, isPast }: { event: any; isPast?: boolean }) {
   const minPrice = activeTickets.length
     ? Math.min(...activeTickets.map((t: any) => t.price))
     : null;
-  const date = new Date(event.date + "T00:00:00").toLocaleDateString("es-CR", {
+  const date = new Date(event.date + "T00:00:00").toLocaleDateString("en-US", {
     day: "numeric", month: "short",
   });
 
@@ -228,7 +244,7 @@ function EventCard({ event, isPast }: { event: any; isPast?: boolean }) {
           <p className="text-[#0a0a0a] text-sm font-semibold leading-tight line-clamp-2 group-hover:opacity-60 transition-opacity">{event.name}</p>
           <p className="text-[#0a0a0a]/35 text-xs mt-1">{event.venue}</p>
           {minPrice !== null && !isPast && (
-            <p className="text-[#0a0a0a]/50 text-xs mt-0.5">Desde ${minPrice.toLocaleString("en-US")}</p>
+            <p className="text-[#0a0a0a]/50 text-xs mt-0.5">From ${minPrice.toLocaleString("en-US")}</p>
           )}
         </div>
       </div>
