@@ -13,77 +13,50 @@ export async function GET(request: Request) {
 
   const admin = createAdminClient();
 
-  // All active items for inventory value
   const { data: items } = await (admin as any)
     .from("inventory_items")
-    .select("id, name, category, current_stock, cost_per_unit")
+    .select("id, name, category, unit, current_stock, cost_per_unit")
     .eq("organizer_id", user.id)
     .eq("is_active", true);
 
-  // Movements that consumed stock
   const { data: movements } = await (admin as any)
     .from("inventory_movements")
-    .select("item_id, type, quantity_change, unit_cost, created_at")
+    .select("item_id, quantity_change, created_at")
     .eq("organizer_id", user.id)
-    .in("type", ["sale", "empty_bottle", "waste"])
-    .lt("quantity_change", 0)
     .gte("created_at", since);
 
   const itemMap = Object.fromEntries((items ?? []).map((i: any) => [i.id, i]));
 
-  // Inventory value = current stock × cost per unit
+  // Inventory value
   let inventoryValue = 0;
-  const valueByCategory: Record<string, number> = {};
   for (const item of items ?? []) {
-    if (!item.cost_per_unit) continue;
-    const val = Number(item.current_stock) * Number(item.cost_per_unit);
-    inventoryValue += val;
-    valueByCategory[item.category] = (valueByCategory[item.category] ?? 0) + val;
+    if (item.cost_per_unit) inventoryValue += Number(item.current_stock) * Number(item.cost_per_unit);
   }
 
-  // COGS = consumed qty × cost per unit (from movement or item default)
-  let cogs = 0;
-  const cogsByCategory: Record<string, number> = {};
-  const cogsByItem: Record<string, { name: string; category: string; qty: number; cost: number }> = {};
+  // Per-item in/out
+  const flowByItem: Record<string, { totalIn: number; totalOut: number }> = {};
+  let totalIn = 0;
+  let totalOut = 0;
 
   for (const m of movements ?? []) {
-    const item = itemMap[m.item_id];
-    const costPerUnit = m.unit_cost ?? item?.cost_per_unit ?? 0;
-    if (!costPerUnit) continue;
-    const consumed = Math.abs(Number(m.quantity_change));
-    const cost = consumed * Number(costPerUnit);
-    const category = item?.category ?? "other";
-    cogs += cost;
-    cogsByCategory[category] = (cogsByCategory[category] ?? 0) + cost;
-    if (!cogsByItem[m.item_id]) {
-      cogsByItem[m.item_id] = { name: item?.name ?? m.item_id, category, qty: 0, cost: 0 };
-    }
-    cogsByItem[m.item_id].qty += consumed;
-    cogsByItem[m.item_id].cost += cost;
+    const qty = Number(m.quantity_change);
+    if (!flowByItem[m.item_id]) flowByItem[m.item_id] = { totalIn: 0, totalOut: 0 };
+    if (qty > 0) { flowByItem[m.item_id].totalIn += qty; totalIn += qty; }
+    else { flowByItem[m.item_id].totalOut += Math.abs(qty); totalOut += Math.abs(qty); }
   }
 
-  // Bar revenue in same period for pour cost %
-  const { data: posOrders } = await (admin as any)
-    .from("pos_orders")
-    .select("total")
-    .eq("organizer_id", user.id)
-    .gte("created_at", since);
+  const itemFlow = (items ?? [])
+    .filter((i: any) => flowByItem[i.id])
+    .map((i: any) => ({
+      id: i.id,
+      name: i.name,
+      unit: i.unit,
+      category: i.category,
+      totalIn: flowByItem[i.id]?.totalIn ?? 0,
+      totalOut: flowByItem[i.id]?.totalOut ?? 0,
+      netChange: (flowByItem[i.id]?.totalIn ?? 0) - (flowByItem[i.id]?.totalOut ?? 0),
+    }))
+    .sort((a: any, b: any) => (b.totalIn + b.totalOut) - (a.totalIn + a.totalOut));
 
-  const barRevenue = (posOrders ?? []).reduce((s: number, o: any) => s + Number(o.total), 0);
-  const pourCostPct = barRevenue > 0 ? (cogs / barRevenue) * 100 : null;
-
-  const topConsumed = Object.values(cogsByItem)
-    .sort((a, b) => b.cost - a.cost)
-    .slice(0, 10);
-
-  return NextResponse.json({
-    days,
-    inventoryValue,
-    valueByCategory,
-    cogs,
-    cogsByCategory,
-    topConsumed,
-    barRevenue,
-    pourCostPct,
-  });
+  return NextResponse.json({ days, inventoryValue, totalIn, totalOut, itemFlow });
 }

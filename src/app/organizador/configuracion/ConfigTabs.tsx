@@ -82,13 +82,29 @@ const ORG_TYPE_OPTIONS: { value: OrgType; label: string; description: string; fe
   },
 ];
 
-function StatusTab({ role, organizerType: initialType }: { role: string; organizerType?: string }) {
+function StatusTab({ role, organizerType: initialType, inventoryEnabled: initialInventoryEnabled }: { role: string; organizerType?: string; inventoryEnabled?: boolean }) {
   const [requesting, setRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
   const [error, setError] = useState("");
   const [selectedType, setSelectedType] = useState<OrgType | null>((initialType as OrgType) ?? null);
   const [typeSaving, setTypeSaving] = useState(false);
   const [typeSaved, setTypeSaved] = useState(false);
+  const [inventoryEnabled, setInventoryEnabled] = useState(initialInventoryEnabled ?? false);
+  const [moduleSaving, setModuleSaving] = useState(false);
+
+  const canHaveInventory = selectedType === "discoteca" || selectedType === "festival";
+
+  async function handleToggleInventory(enabled: boolean) {
+    setInventoryEnabled(enabled);
+    setModuleSaving(true);
+    await fetch("/api/organizador/set-organizer-type", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ organizer_type: selectedType, inventory_enabled: enabled }),
+    });
+    setModuleSaving(false);
+    window.location.reload();
+  }
 
   async function handleSaveType() {
     if (!selectedType) return;
@@ -212,6 +228,43 @@ function StatusTab({ role, organizerType: initialType }: { role: string; organiz
           )}
         </div>
       </div>
+
+      {/* Modules — only for discoteca/festival */}
+      {canHaveInventory && (
+        <>
+          <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }} />
+          <div>
+            <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Modules</h2>
+            <p className="text-sm mb-4" style={{ color: "#888" }}>Enable or disable optional features for your account.</p>
+            <div className="p-5 rounded-2xl flex items-center justify-between gap-4" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  <p className="text-sm font-semibold text-[#0a0a0a]">Inventory management</p>
+                  {moduleSaving && <span className="text-xs" style={{ color: "#888" }}>Saving…</span>}
+                </div>
+                <p className="text-xs" style={{ color: "#888" }}>
+                  Track stock levels, manage suppliers, run physical counts, purchase orders and financial reports.
+                  {!inventoryEnabled && " Only available for Discoteca and Festival accounts."}
+                </p>
+              </div>
+              {/* Toggle */}
+              <button
+                type="button"
+                onClick={() => handleToggleInventory(!inventoryEnabled)}
+                disabled={moduleSaving}
+                className="relative shrink-0 w-11 h-6 rounded-full transition-colors disabled:opacity-50"
+                style={{ background: inventoryEnabled ? "#0a0a0a" : "rgba(0,0,0,0.15)" }}
+              >
+                <span
+                  className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform"
+                  style={{ transform: inventoryEnabled ? "translateX(20px)" : "translateX(0)" }}
+                />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }} />
 
@@ -749,7 +802,7 @@ function TeamTab() {
 
 // ── Main ConfigTabs ───────────────────────────────────────────────────────────
 
-export default function ConfigTabs({ profile, userId, userEmail, organizerType }: { profile: Profile | null; userId: string; userEmail: string; organizerType?: string }) {
+export default function ConfigTabs({ profile, userId, userEmail, organizerType, inventoryEnabled }: { profile: Profile | null; userId: string; userEmail: string; organizerType?: string; inventoryEnabled?: boolean }) {
   const [tab, setTab] = useState("Status");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -910,7 +963,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType }
 
       {/* Status */}
       {tab === "Status" && (
-        <StatusTab role={profile?.role ?? "organizer"} organizerType={organizerType} />
+        <StatusTab role={profile?.role ?? "organizer"} organizerType={organizerType} inventoryEnabled={inventoryEnabled} />
       )}
 
       {/* Profile */}

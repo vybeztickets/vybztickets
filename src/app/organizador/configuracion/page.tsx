@@ -13,7 +13,9 @@ export default async function ConfiguracionPage() {
   const admin = createAdminClient();
   const { data: profile } = await admin.from("profiles").select("*").eq("id", user.id).single();
 
-  const organizerType = ((profile as any)?.business_details as Record<string, unknown> | null)?.organizer_type as string | undefined;
+  const bizDetails = ((profile as any)?.business_details as Record<string, unknown> | null);
+  const organizerType = bizDetails?.organizer_type as string | undefined;
+  const inventoryEnabled = (bizDetails?.inventory_enabled as boolean | undefined) ?? false;
 
   return (
     <div className="p-8">
@@ -23,6 +25,7 @@ export default async function ConfiguracionPage() {
         userId={user.id}
         userEmail={user.email ?? ""}
         organizerType={organizerType}
+        inventoryEnabled={inventoryEnabled}
       />
     </div>
   );

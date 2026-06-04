@@ -98,9 +98,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   .status-badge { display: inline-block; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-left: 12px; vertical-align: middle; background: #e8e8e8; color: #555; }
   .status-received { background: #dcfce7; color: #166534; }
   .footer { margin-top: 48px; text-align: center; font-size: 11px; color: #ccc; }
+  @page { margin: 0; size: A4; }
   @media print {
     body { padding: 32px; }
-    @page { margin: 0.5in; }
   }
 </style>
 </head>

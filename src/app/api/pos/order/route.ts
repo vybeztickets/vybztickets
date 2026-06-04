@@ -1,6 +1,21 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
+const OZ_ML = 29.5735;
+const DASH_ML = 0.625;
+const SPLASH_ML = 5;
+
+function ingredientToBottles(qty: number, unit: string, unitSizeMl: number | null): number {
+  if (!unitSizeMl || unitSizeMl <= 0) return 0;
+  let ml = 0;
+  if (unit === "oz") ml = qty * OZ_ML;
+  else if (unit === "ml") ml = qty;
+  else if (unit === "dash") ml = qty * DASH_ML;
+  else if (unit === "splash") ml = qty * SPLASH_ML;
+  else return 0; // "each" handled separately
+  return ml / unitSizeMl;
+}
+
 export async function POST(request: Request) {
   const body = await request.json();
   const { code, eventId, items, total, paymentMethod } = body;
@@ -44,39 +59,100 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Auto-deduct inventory for items linked with qty_per_sale > 0
+  // ── Auto-deduct inventory ─────────────────────────────────────────────────
   try {
-    const itemIds = (items as { id: string; quantity: number }[]).map(i => i.id);
-    if (itemIds.length > 0) {
-      const { data: posProducts } = await (admin as any)
-        .from("pos_products")
-        .select("id, inventory_item_id, inventory_qty_per_sale")
-        .in("id", itemIds)
-        .not("inventory_item_id", "is", null)
-        .gt("inventory_qty_per_sale", 0);
+    const soldItems = items as { id: string; quantity: number }[];
+    const productIds = soldItems.map(i => i.id);
 
-      const affectedItemIds: string[] = [];
-      for (const pp of posProducts ?? []) {
-        const soldQty = (items as { id: string; quantity: number }[]).find(i => i.id === pp.id)?.quantity ?? 1;
-        const deduct = Number(pp.inventory_qty_per_sale) * soldQty;
-        const { data: invItem } = await (admin as any).from("inventory_items").select("current_stock").eq("id", pp.inventory_item_id).single();
-        if (!invItem) continue;
-        const newStock = Math.max(0, Number(invItem.current_stock) - deduct);
-        await (admin as any).from("inventory_items").update({ current_stock: newStock }).eq("id", pp.inventory_item_id);
-        await (admin as any).from("inventory_movements").insert({
-          organizer_id: event.organizer_id,
-          item_id: pp.inventory_item_id,
-          type: "sale",
-          quantity_change: -deduct,
-          notes: `POS sale — order ${order.id}`,
-          pos_order_id: order.id,
-        });
-        affectedItemIds.push(pp.inventory_item_id);
+    // Fetch pos_products with ingredients + simple link
+    const { data: posProducts } = await (admin as any)
+      .from("pos_products")
+      .select("id, inventory_item_id, inventory_qty_per_sale, ingredients")
+      .in("id", productIds);
+
+    if (!posProducts?.length) {
+      return NextResponse.json({ order }, { status: 201 });
+    }
+
+    // Collect all inventory item ids we need
+    const allInventoryItemIds = new Set<string>();
+    for (const pp of posProducts) {
+      if (pp.inventory_item_id) allInventoryItemIds.add(pp.inventory_item_id);
+      for (const ing of (pp.ingredients ?? [])) {
+        if (ing.item_id) allInventoryItemIds.add(ing.item_id);
       }
-      if (affectedItemIds.length > 0) {
-        const { checkAndNotifyLowStock } = await import("@/lib/inventory-alerts");
-        checkAndNotifyLowStock(event.organizer_id, affectedItemIds).catch(() => {});
+    }
+
+    if (allInventoryItemIds.size === 0) {
+      return NextResponse.json({ order }, { status: 201 });
+    }
+
+    // Fetch inventory items for unit_size_ml and current_stock
+    const { data: invItems } = await (admin as any)
+      .from("inventory_items")
+      .select("id, current_stock, unit_size_ml, unit")
+      .in("id", Array.from(allInventoryItemIds));
+
+    const invMap = new Map((invItems ?? []).map((i: any) => [i.id, i]));
+
+    // Build deduction map: item_id → total bottles to deduct
+    const deductions = new Map<string, number>();
+
+    for (const pp of posProducts) {
+      const soldQty = soldItems.find(i => i.id === pp.id)?.quantity ?? 1;
+
+      // Simple item link
+      if (pp.inventory_item_id && Number(pp.inventory_qty_per_sale) > 0) {
+        const current = deductions.get(pp.inventory_item_id) ?? 0;
+        deductions.set(pp.inventory_item_id, current + Number(pp.inventory_qty_per_sale) * soldQty);
       }
+
+      // Recipe ingredients
+      for (const ing of (pp.ingredients ?? [])) {
+        if (!ing.item_id) continue;
+        const invItem = invMap.get(ing.item_id);
+        let deductQty = 0;
+
+        if (ing.unit === "each") {
+          deductQty = ing.qty * soldQty;
+        } else {
+          deductQty = ingredientToBottles(ing.qty * soldQty, ing.unit, invItem?.unit_size_ml ?? null);
+        }
+
+        if (deductQty > 0) {
+          const current = deductions.get(ing.item_id) ?? 0;
+          deductions.set(ing.item_id, current + deductQty);
+        }
+      }
+    }
+
+    // Apply deductions + create movements
+    const affectedIds: string[] = [];
+    const movementInserts: any[] = [];
+
+    for (const [itemId, deductQty] of deductions.entries()) {
+      const invItem = invMap.get(itemId);
+      if (!invItem) continue;
+      const newStock = Math.max(0, Number(invItem.current_stock) - deductQty);
+      await (admin as any).from("inventory_items").update({ current_stock: newStock }).eq("id", itemId);
+      movementInserts.push({
+        organizer_id: event.organizer_id,
+        item_id: itemId,
+        type: "sale",
+        quantity_change: -deductQty,
+        notes: `POS sale — order ${order.id}`,
+        pos_order_id: order.id,
+      });
+      affectedIds.push(itemId);
+    }
+
+    if (movementInserts.length > 0) {
+      await (admin as any).from("inventory_movements").insert(movementInserts);
+    }
+
+    if (affectedIds.length > 0) {
+      const { checkAndNotifyLowStock } = await import("@/lib/inventory-alerts");
+      checkAndNotifyLowStock(event.organizer_id, affectedIds).catch(() => {});
     }
   } catch {}
 

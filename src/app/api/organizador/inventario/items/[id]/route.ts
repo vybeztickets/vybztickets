@@ -14,7 +14,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { data: item } = await (admin as any).from("inventory_items").select("id").eq("id", id).eq("organizer_id", user.id).single();
   if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const allowed = ["name", "category", "unit", "unit_size_ml", "par_level", "max_stock", "cost_per_unit", "supplier_id", "barcode", "current_stock"];
+  const allowed = ["name", "category", "unit", "unit_size_ml", "par_level", "max_stock", "cost_per_unit", "supplier_id", "barcode", "current_stock", "full_bottle_weight_g", "empty_bottle_weight_g"];
   const updates: Record<string, unknown> = {};
   for (const k of allowed) { if (k in body) updates[k] = body[k]; }
 

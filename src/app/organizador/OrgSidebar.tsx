@@ -105,20 +105,21 @@ export default function OrgSidebar({
   userEmail,
   avatarUrl,
   organizerType,
+  inventoryEnabled = false,
   lowStockCount = 0,
 }: {
   userName: string;
   userEmail: string;
   avatarUrl: string | null;
   organizerType?: string;
+  inventoryEnabled?: boolean;
   lowStockCount?: number;
 }) {
   const pathname = usePathname();
   const eventId = getEventId(pathname);
   const [eventName, setEventName] = useState("");
   const isPosSection = pathname.startsWith("/organizador/pos");
-  const hasInventory = organizerType === "discoteca" || organizerType === "festival";
-  const MAIN_NAV = BASE_NAV.filter(item => !("inventoryOnly" in item) || hasInventory);
+  const MAIN_NAV = BASE_NAV.filter(item => !("inventoryOnly" in item) || inventoryEnabled);
 
   useEffect(() => {
     if (!eventId) { setEventName(""); return; }

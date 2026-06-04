@@ -25,7 +25,21 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const { name, price, category = "other", currency = "USD", subcategory = null, has_mixer = false, mixers = [] } = body;
+  const {
+    name,
+    price,
+    category = "other",
+    currency = "USD",
+    subcategory = null,
+    has_mixer = false,
+    mixers = [],
+    chief_product_id = null,
+    product_type = null,
+    product_category = null,
+    ingredients = [],
+    inventory_item_id = null,
+    inventory_qty_per_sale = null,
+  } = body;
 
   if (!name || typeof name !== "string" || !name.trim())
     return NextResponse.json({ error: "Name required" }, { status: 400 });
@@ -35,7 +49,23 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   const { data, error } = await (admin as any)
     .from("pos_products")
-    .insert({ organizer_id: user.id, name: name.trim(), price, category, currency, subcategory, has_mixer, mixers, is_active: true })
+    .insert({
+      organizer_id: user.id,
+      name: name.trim(),
+      price,
+      category,
+      currency,
+      subcategory,
+      has_mixer,
+      mixers,
+      is_active: true,
+      chief_product_id,
+      product_type,
+      product_category,
+      ingredients,
+      inventory_item_id,
+      inventory_qty_per_sale,
+    })
     .select()
     .single();
 

@@ -8,13 +8,34 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const admin = createAdminClient();
-  const { data } = await (admin as any)
+  const { data: counts } = await (admin as any)
     .from("inventory_counts")
     .select("*")
     .eq("organizer_id", user.id)
     .order("started_at", { ascending: false })
     .limit(20);
-  return NextResponse.json({ counts: data ?? [] });
+
+  if (!counts?.length) return NextResponse.json({ counts: [] });
+
+  const countIds = counts.map((c: { id: string }) => c.id);
+  const { data: countItems } = await (admin as any)
+    .from("inventory_count_items")
+    .select("count_id, expected_qty, actual_qty")
+    .in("count_id", countIds);
+
+  const varianceMap: Record<string, { total: number; withVariance: number; netVariance: number }> = {};
+  for (const item of (countItems ?? [])) {
+    if (!varianceMap[item.count_id]) varianceMap[item.count_id] = { total: 0, withVariance: 0, netVariance: 0 };
+    const v = varianceMap[item.count_id];
+    v.total++;
+    if (item.actual_qty != null && item.actual_qty !== item.expected_qty) {
+      v.withVariance++;
+      v.netVariance += (item.actual_qty - item.expected_qty);
+    }
+  }
+
+  const countsWithVariance = counts.map((c: { id: string }) => ({ ...c, variance_summary: varianceMap[c.id] ?? null }));
+  return NextResponse.json({ counts: countsWithVariance });
 }
 
 export async function POST(request: Request) {

@@ -18,14 +18,18 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
   const p = profile as any;
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") ?? "";
-  const organizerType = (p?.business_details as Record<string, unknown> | null)?.organizer_type;
+  const bizDetails = (p?.business_details as Record<string, unknown> | null);
+  const organizerType = bizDetails?.organizer_type;
+  const inventoryEnabled = (bizDetails?.inventory_enabled as boolean | undefined) ?? false;
+
   if (!organizerType && !pathname.startsWith("/organizador/configuracion")) {
     redirect("/organizador/configuracion");
   }
 
-  const hasInventory = organizerType === "discoteca" || organizerType === "festival";
+  const canHaveInventory = organizerType === "discoteca" || organizerType === "festival";
+  const showInventory = canHaveInventory && inventoryEnabled;
   let lowStockCount = 0;
-  if (hasInventory) {
+  if (showInventory) {
     const { createAdminClient } = await import("@/lib/supabase/admin");
     const admin = createAdminClient();
     const { data: invItems } = await (admin as any)
@@ -49,6 +53,7 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
         userEmail={p?.email ?? user.email ?? ""}
         avatarUrl={p?.avatar_url ?? null}
         organizerType={organizerType as string | undefined}
+        inventoryEnabled={showInventory}
         lowStockCount={lowStockCount}
       />
       <div className="flex flex-col min-h-screen">

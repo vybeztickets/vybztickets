@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const { organizer_type } = body;
+  const { organizer_type, inventory_enabled } = body;
 
   if (!VALID_TYPES.includes(organizer_type)) {
     return NextResponse.json({ error: "Invalid type" }, { status: 400 });
@@ -20,9 +20,14 @@ export async function POST(request: Request) {
   const { data: existing } = await (admin as any).from("profiles").select("business_details").eq("id", user.id).single();
   const current = (existing?.business_details as Record<string, unknown>) ?? {};
 
+  const updates: Record<string, unknown> = { ...current, organizer_type };
+  if (typeof inventory_enabled === "boolean") updates.inventory_enabled = inventory_enabled;
+  // If switching to organizador type, always disable inventory
+  if (organizer_type === "organizador") updates.inventory_enabled = false;
+
   const { error } = await (admin as any)
     .from("profiles")
-    .update({ business_details: { ...current, organizer_type } })
+    .update({ business_details: updates })
     .eq("id", user.id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
