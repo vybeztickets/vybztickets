@@ -296,6 +296,7 @@ export default function PosProductsPage() {
 
   function closeModal() {
     setShowModal(false);
+    setEditId(null);
   }
 
   // ── Ingredient row management ───────────────────────────────────────────────
@@ -823,7 +824,7 @@ export default function PosProductsPage() {
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 flex flex-col gap-4" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-[#0a0a0a]">{editItemId ? "Edit item" : "Add item"}</h2>
-              <button onClick={() => setShowItemModal(false)} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }}>
+              <button onClick={() => { setShowItemModal(false); setEditItemId(null); }} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -870,6 +871,11 @@ export default function PosProductsPage() {
               </div>
               <div className="pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
                 <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "#888" }}>Inventory link (optional)</p>
+                {inventoryItems.length === 0 ? (
+                  <p className="text-xs py-2" style={{ color: "#aaa" }}>
+                    Set up inventory to link items and auto-deduct stock on each sale.
+                  </p>
+                ) : (
                 <div className="flex flex-col gap-2">
                   <select
                     value={itemForm.inventory_item_id}
@@ -896,10 +902,11 @@ export default function PosProductsPage() {
                     </div>
                   )}
                 </div>
+                )}
               </div>
               {itemError && <p className="text-xs text-[#dc2626]">{itemError}</p>}
               <div className="flex gap-2 pt-1">
-                <button type="button" onClick={() => setShowItemModal(false)} className="flex-1 py-2.5 rounded-full text-sm font-semibold" style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }}>Cancel</button>
+                <button type="button" onClick={() => { setShowItemModal(false); setEditItemId(null); }} className="flex-1 py-2.5 rounded-full text-sm font-semibold" style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }}>Cancel</button>
                 <button type="submit" disabled={itemSaving} className="flex-1 py-2.5 rounded-full text-sm font-semibold disabled:opacity-40" style={{ background: "#0a0a0a", color: "#fff" }}>
                   {itemSaving ? "Saving…" : editItemId ? "Save changes" : "Add item"}
                 </button>

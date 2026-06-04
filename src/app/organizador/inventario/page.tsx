@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 type InventoryItem = {
   id: string; name: string; category: string; unit: string;
   current_stock: number; par_level: number; max_stock: number | null; cost_per_unit: number | null;
+  unit_size_ml?: number | null;
   supplier_id: string | null;
   full_bottle_weight_g?: number | null;
   empty_bottle_weight_g?: number | null;
@@ -241,7 +242,7 @@ function StockTab() {
             </div>
           </div>
           {/* Keg presets */}
-          {(form.unit === "keg" || form.category === "cervezas") && (
+          {form.unit === "keg" && (
             <div className="p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.07)" }}>
               <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "#888" }}>Keg presets — auto-fill weights & capacity</p>
               <div className="flex flex-wrap gap-2">
@@ -348,7 +349,7 @@ function StockTab() {
                         </button>
                         <button onClick={() => {
                           setEditItem(item); setShowAdd(false);
-                          setForm({ name: item.name, category: item.category, unit: item.unit, unit_size_ml: "", par_level: String(item.par_level), max_stock: String(item.max_stock ?? ""), cost_per_unit: String(item.cost_per_unit ?? ""), supplier_id: item.supplier_id ?? "", current_stock: String(item.current_stock), full_bottle_weight_g: String(item.full_bottle_weight_g ?? ""), empty_bottle_weight_g: String(item.empty_bottle_weight_g ?? "") });
+                          setForm({ name: item.name, category: item.category, unit: item.unit, unit_size_ml: item.unit_size_ml != null ? String(item.unit_size_ml) : "", par_level: String(item.par_level), max_stock: String(item.max_stock ?? ""), cost_per_unit: String(item.cost_per_unit ?? ""), supplier_id: item.supplier_id ?? "", current_stock: String(item.current_stock), full_bottle_weight_g: String(item.full_bottle_weight_g ?? ""), empty_bottle_weight_g: String(item.empty_bottle_weight_g ?? "") });
                           setParRecommendation(null);
                           fetch(`/api/organizador/inventario/items/${item.id}/weekly-usage`).then(r => r.json()).then(d => { if (d.weeklyUsage > 0) setParRecommendation(d); });
                           setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
@@ -866,6 +867,8 @@ function CountsTab() {
     const initActuals: Record<string, string> = {};
     (res.items ?? []).forEach((ci: CountItem) => { initActuals[ci.id] = ci.actual_qty != null ? String(ci.actual_qty) : String(ci.expected_qty); });
     setLocalActuals(initActuals);
+    setPartialWeights({});
+    setPartialActive({});
   }
 
   async function startCount() {

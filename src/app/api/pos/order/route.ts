@@ -93,7 +93,9 @@ export async function POST(request: Request) {
       .select("id, current_stock, unit_size_ml, unit")
       .in("id", Array.from(allInventoryItemIds));
 
-    const invMap = new Map((invItems ?? []).map((i: any) => [i.id, i]));
+    const invMap = new Map<string, { id: string; current_stock: number; unit_size_ml: number | null; unit: string }>(
+      (invItems ?? []).map((i: any) => [i.id, i])
+    );
 
     // Build deduction map: item_id → total bottles to deduct
     const deductions = new Map<string, number>();

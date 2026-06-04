@@ -13,6 +13,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     "name", "price", "category", "currency", "is_active", "subcategory",
     "has_mixer", "mixers", "is_pinned",
     "chief_product_id", "product_type", "product_category", "ingredients",
+    "inventory_item_id", "inventory_qty_per_sale",
   ];
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {

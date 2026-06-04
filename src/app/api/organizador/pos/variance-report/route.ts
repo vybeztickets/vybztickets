@@ -228,7 +228,7 @@ export async function GET(request: Request) {
     }
 
     // Actual use oz: sum of movements for all alcohol ingredients of this product
-    let actualUseOz: number | null = 0;
+    let actualUseOz: number | null = null;
     let actualCostUsed = 0;
     let hasActualData = false;
 
@@ -248,13 +248,6 @@ export async function GET(request: Request) {
         actualCostUsed += usedOz * costPerOz;
         hasActualData = true;
       }
-    } else {
-      actualUseOz = null;
-    }
-
-    // If no recipe, still show the row but with nulls
-    if (!product || !product.ingredients || product.ingredients.length === 0) {
-      actualUseOz = null;
     }
 
     const overShortOz =

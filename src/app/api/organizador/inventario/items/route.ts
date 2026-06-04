@@ -8,16 +8,36 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const admin = createAdminClient();
-  const { data, error } = await (admin as any)
+  const { data: items, error } = await (admin as any)
     .from("inventory_items")
-    .select("*, inventory_suppliers(name)")
+    .select("*")
     .eq("organizer_id", user.id)
     .eq("is_active", true)
     .order("category")
     .order("name");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ items: data ?? [] });
+  if (!items?.length) return NextResponse.json({ items: [] });
+
+  // Fetch suppliers separately (no inline joins)
+  const supplierIds = [...new Set((items as { supplier_id: string | null }[]).filter(i => i.supplier_id).map(i => i.supplier_id as string))];
+  const supplierMap: Record<string, { name: string }> = {};
+  if (supplierIds.length > 0) {
+    const { data: suppliers } = await (admin as any)
+      .from("inventory_suppliers")
+      .select("id, name")
+      .in("id", supplierIds);
+    for (const s of (suppliers ?? []) as { id: string; name: string }[]) {
+      supplierMap[s.id] = { name: s.name };
+    }
+  }
+
+  const enriched = (items as any[]).map((item: any) => ({
+    ...item,
+    inventory_suppliers: item.supplier_id ? (supplierMap[item.supplier_id] ?? null) : null,
+  }));
+
+  return NextResponse.json({ items: enriched });
 }
 
 export async function POST(request: Request) {

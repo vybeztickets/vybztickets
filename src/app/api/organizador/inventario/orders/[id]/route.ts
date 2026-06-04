@@ -13,13 +13,25 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const admin = createAdminClient();
   const { data: order } = await (admin as any)
     .from("inventory_purchase_orders")
-    .select("*, inventory_suppliers(id, name, contact_name, email, phone)")
+    .select("*")
     .eq("id", id)
     .eq("organizer_id", user.id)
     .single();
 
   if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ order });
+
+  // Fetch supplier separately (no inline joins)
+  let inventory_suppliers = null;
+  if (order.supplier_id) {
+    const { data: supplier } = await (admin as any)
+      .from("inventory_suppliers")
+      .select("id, name, contact_name, email, phone")
+      .eq("id", order.supplier_id)
+      .single();
+    inventory_suppliers = supplier ?? null;
+  }
+
+  return NextResponse.json({ order: { ...order, inventory_suppliers } });
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {

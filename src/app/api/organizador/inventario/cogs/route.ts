@@ -8,7 +8,8 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
-  const days = Math.min(parseInt(searchParams.get("days") ?? "30"), 365);
+  const parsedDays = parseInt(searchParams.get("days") ?? "30");
+  const days = Math.min(Number.isNaN(parsedDays) ? 30 : parsedDays, 365);
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
   const admin = createAdminClient();
