@@ -52,7 +52,6 @@ export default async function OrgLayout({ children }: { children: React.ReactNod
         userName={p?.full_name ?? user.email ?? ""}
         userEmail={p?.email ?? user.email ?? ""}
         avatarUrl={p?.avatar_url ?? null}
-        organizerType={organizerType as string | undefined}
         inventoryEnabled={showInventory}
         lowStockCount={lowStockCount}
       />

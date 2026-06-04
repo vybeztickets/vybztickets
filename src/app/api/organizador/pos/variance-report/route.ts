@@ -14,7 +14,6 @@ type PosProduct = {
   price: number;
   ingredients: Ingredient[] | null;
   product_category: string | null;
-  chief_product_id: string | null;
 };
 type InvItem = {
   id: string;
@@ -100,7 +99,7 @@ export async function GET(request: Request) {
   // 2. Fetch pos_products with recipes
   const { data: rawProducts } = await (admin as any)
     .from("pos_products")
-    .select("id, name, price, ingredients, product_category, chief_product_id")
+    .select("id, name, price, ingredients, product_category")
     .eq("organizer_id", user.id);
 
   const posProducts = (rawProducts ?? []) as PosProduct[];
@@ -117,12 +116,6 @@ export async function GET(request: Request) {
     for (const ing of (p.ingredients ?? [])) {
       if (ing.item_id) inventoryItemIds.add(ing.item_id);
     }
-  }
-
-  // Also collect chief_product_id linked inventory items
-  const chiefProductIds = new Set<string>();
-  for (const p of posProducts) {
-    if (p.chief_product_id) chiefProductIds.add(p.chief_product_id);
   }
 
   const invItemMap: Record<string, InvItem> = {};
@@ -152,8 +145,8 @@ export async function GET(request: Request) {
   const actualUsageByItemId: Record<string, number> = {};
   for (const mv of movements) {
     const change = Number(mv.quantity_change);
-    // Negative movements = consumption. Count movements may be negative or positive.
-    const consumption = mv.type === "count" ? Math.min(0, change) : Math.min(0, change);
+    // Negative movements = consumption.
+    const consumption = Math.min(0, change);
     if (consumption < 0) {
       actualUsageByItemId[mv.item_id] = (actualUsageByItemId[mv.item_id] ?? 0) + Math.abs(consumption);
     }
@@ -183,8 +176,6 @@ export async function GET(request: Request) {
 
     let expectedUseOz: number | null = null;
     let idealPcPct: number | null = null;
-    let recipeCostPerSale: number | null = null;
-
     if (product && product.ingredients && product.ingredients.length > 0) {
       let totalExpectedOz = 0;
       let totalRecipeCost = 0;
@@ -222,7 +213,6 @@ export async function GET(request: Request) {
 
       if (hasAlcohol) expectedUseOz = totalExpectedOz * noSold;
       if (hasCostData) {
-        recipeCostPerSale = totalRecipeCost;
         idealPcPct = posSales > 0 ? (totalRecipeCost / (posSales / noSold)) * 100 : null;
       }
     }

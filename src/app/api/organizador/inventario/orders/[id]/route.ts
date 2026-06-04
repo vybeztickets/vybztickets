@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { isValidUUID } from "@/lib/validate";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 type OrderLine = { item_id: string; qty: number; unit_cost?: number; received_qty?: number; line_notes?: string };
 
@@ -10,6 +12,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  if (!isValidUUID(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const admin = createAdminClient();
   const { data: order } = await (admin as any)
     .from("inventory_purchase_orders")
@@ -39,7 +42,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  if (!checkRateLimit("inv-order-patch", getIP(request), 30, 60_000))
+    return rateLimitedResponse();
+
   const { id } = await params;
+  if (!isValidUUID(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const body = await request.json();
   const admin = createAdminClient();
 
@@ -71,16 +78,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     for (const line of lines) {
       const qtyReceived = line.received_qty ?? line.qty;
       if (qtyReceived <= 0) continue;
+      // Validate the item_id from client-supplied lines
+      if (!isValidUUID(line.item_id)) continue;
 
       const { data: inv } = await (admin as any)
         .from("inventory_items")
         .select("current_stock")
         .eq("id", line.item_id)
+        .eq("organizer_id", user.id)
         .single();
       if (!inv) continue;
 
       const newStock = Number(inv.current_stock) + Number(qtyReceived);
-      await (admin as any).from("inventory_items").update({ current_stock: newStock }).eq("id", line.item_id);
+      await (admin as any).from("inventory_items").update({ current_stock: newStock }).eq("id", line.item_id).eq("organizer_id", user.id);
       await (admin as any).from("inventory_movements").insert({
         organizer_id: user.id,
         item_id: line.item_id,

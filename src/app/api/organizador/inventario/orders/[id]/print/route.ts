@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { isValidUUID } from "@/lib/validate";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
@@ -8,6 +9,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
   const { id } = await params;
+  if (!isValidUUID(id)) return new NextResponse("Invalid ID", { status: 400 });
   const admin = createAdminClient();
 
   const { data: order } = await (admin as any)
@@ -31,6 +33,10 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     : { data: [] };
 
   const itemMap = Object.fromEntries((inventoryItems ?? []).map((i: any) => [i.id, i]));
+
+  function esc(s: string): string {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
 
   const poNumber = `PO-${id.slice(0, 8).toUpperCase()}`;
   const poDate = new Date(order.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });

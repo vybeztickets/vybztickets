@@ -104,14 +104,12 @@ export default function OrgSidebar({
   userName,
   userEmail,
   avatarUrl,
-  organizerType,
   inventoryEnabled = false,
   lowStockCount = 0,
 }: {
   userName: string;
   userEmail: string;
   avatarUrl: string | null;
-  organizerType?: string;
   inventoryEnabled?: boolean;
   lowStockCount?: number;
 }) {

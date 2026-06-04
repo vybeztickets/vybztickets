@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { isValidUUID } from "@/lib/validate";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
@@ -8,6 +9,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  if (!isValidUUID(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   const admin = createAdminClient();
 
   // Verify the item belongs to this organizer

@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { isValidUUID } from "@/lib/validate";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -9,6 +11,8 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const item_id = searchParams.get("item_id");
+  if (item_id && !isValidUUID(item_id))
+    return NextResponse.json({ error: "Invalid item_id" }, { status: 400 });
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "50"), 200);
 
   const admin = createAdminClient();
@@ -30,9 +34,14 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  if (!checkRateLimit("inv-movement-create", getIP(request), 60, 60_000))
+    return rateLimitedResponse();
+
   const body = await request.json();
   const { item_id, type, quantity_change, notes, unit_cost } = body;
   if (!item_id || !type || quantity_change === undefined) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  if (!isValidUUID(item_id)) return NextResponse.json({ error: "Invalid item_id" }, { status: 400 });
+  if (!Number.isFinite(Number(quantity_change))) return NextResponse.json({ error: "Invalid quantity_change" }, { status: 400 });
 
   const VALID_TYPES = ["purchase", "waste", "adjustment", "empty_bottle"];
   if (!VALID_TYPES.includes(type)) return NextResponse.json({ error: "Invalid type" }, { status: 400 });

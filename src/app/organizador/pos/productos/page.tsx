@@ -385,7 +385,7 @@ export default function PosProductsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] text-4xl tracking-wide">Recipes</h1>
-          <p className="text-[#0a0a0a]/30 text-sm mt-1">Bar recipe & cost builder</p>
+          <p className="text-sm mt-1" style={{ color: "#888" }}>Bar recipe & cost builder</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -424,10 +424,10 @@ export default function PosProductsPage() {
 
       {/* Table */}
       {loading ? (
-        <p className="text-[#0a0a0a]/20 text-sm py-16 text-center">Loading…</p>
+        <p className="text-sm py-16 text-center" style={{ color: "#888" }}>Loading…</p>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 rounded-2xl" style={{ border: "1px dashed rgba(0,0,0,0.1)" }}>
-          <p className="text-[#0a0a0a]/25 text-sm mb-3">
+          <p className="text-sm mb-3" style={{ color: "#888" }}>
             {search ? "No recipes match your search" : "No recipes yet"}
           </p>
           {!search && (
@@ -444,7 +444,7 @@ export default function PosProductsPage() {
             style={{
               gridTemplateColumns: "1.6fr 1fr 1fr 88px 88px 72px 80px 60px 48px",
               background: "rgba(0,0,0,0.02)",
-              color: "rgba(0,0,0,0.3)",
+              color: "#888",
               borderBottom: "1px solid rgba(0,0,0,0.07)",
             }}
           >
@@ -520,8 +520,8 @@ export default function PosProductsPage() {
                     <span
                       className="text-xs font-semibold px-2 py-1 rounded-full"
                       style={{
-                        background: costPct > 35 ? "rgba(239,68,68,0.1)" : costPct > 25 ? "rgba(245,158,11,0.1)" : "rgba(34,197,94,0.1)",
-                        color: costPct > 35 ? "#dc2626" : costPct > 25 ? "#d97706" : "#16a34a",
+                        background: costPct > 35 ? "rgba(239,68,68,0.1)" : costPct > 25 ? "rgba(0,0,0,0.06)" : "rgba(34,197,94,0.1)",
+                        color: costPct > 35 ? "#dc2626" : costPct > 25 ? "#555" : "#16a34a",
                       }}
                     >
                       {costPct.toFixed(1)}%
@@ -548,7 +548,7 @@ export default function PosProductsPage() {
                   <button
                     onClick={() => openEdit(r)}
                     className="p-1.5 rounded-lg hover:bg-black/5 transition-colors"
-                    style={{ color: "rgba(0,0,0,0.3)" }}
+                    style={{ color: "rgba(0,0,0,0.55)" }}
                   >
                     <PencilIcon />
                   </button>
@@ -578,7 +578,7 @@ export default function PosProductsPage() {
               <button
                 onClick={closeModal}
                 className="p-2 rounded-xl hover:bg-black/5 transition-colors"
-                style={{ color: "rgba(0,0,0,0.3)" }}
+                style={{ color: "rgba(0,0,0,0.55)" }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

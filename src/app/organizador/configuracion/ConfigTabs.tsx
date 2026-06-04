@@ -806,7 +806,6 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
   const [tab, setTab] = useState("Status");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [accountActive, setAccountActive] = useState(true);
 
   // Perfil state
   const [fullName, setFullName] = useState(profile?.full_name ?? "");

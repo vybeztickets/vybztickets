@@ -102,7 +102,7 @@ function StockTab() {
     load();
   }
 
-  async function handleDelete(id: string) {
+  function handleDelete(id: string) {
     setPendingDelete(id);
   }
 
@@ -302,7 +302,7 @@ function StockTab() {
               <button onClick={handleAdjust} disabled={!adjustQty || saving} className="flex-1 py-2.5 rounded-full text-sm font-semibold disabled:opacity-40" style={{ background: "#0a0a0a", color: "#fff" }}>
                 {saving ? "Saving…" : "Apply adjustment"}
               </button>
-              <button onClick={() => setAdjustItem(null)} className="px-4 py-2.5 rounded-full text-sm font-medium" style={{ background: "#e8e8e8", color: "#333" }}>Cancel</button>
+              <button onClick={() => setAdjustItem(null)} className="px-4 py-2.5 rounded-full text-sm font-medium" style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -323,15 +323,15 @@ function StockTab() {
                 {catItems.map(item => {
                   const isLow = item.par_level > 0 && item.current_stock <= item.par_level;
                   const isOver = item.max_stock != null && item.current_stock > item.max_stock;
-                  const borderColor = isLow ? "rgba(239,68,68,0.2)" : isOver ? "rgba(245,158,11,0.2)" : "rgba(0,0,0,0.07)";
-                  const bgColor = isLow ? "rgba(239,68,68,0.02)" : isOver ? "rgba(245,158,11,0.02)" : "#fff";
+                  const borderColor = isLow ? "rgba(239,68,68,0.2)" : isOver ? "rgba(0,0,0,0.15)" : "rgba(0,0,0,0.07)";
+                  const bgColor = isLow ? "rgba(239,68,68,0.02)" : isOver ? "rgba(0,0,0,0.02)" : "#fff";
                   return (
                     <div key={item.id} className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ border: `1px solid ${borderColor}`, background: bgColor }}>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-[#0a0a0a]">{item.name}</p>
                           {isLow && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>LOW</span>}
-                          {isOver && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "rgba(245,158,11,0.1)", color: "#f59e0b" }}>OVER</span>}
+                          {isOver && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.06)", color: "#555" }}>OVER</span>}
                         </div>
                         <p className="text-xs mt-0.5" style={{ color: "#888" }}>
                           Min: {fmt(item.par_level)}{item.max_stock != null ? ` · Max: ${fmt(item.max_stock)}` : ""} {item.unit}s
@@ -340,11 +340,11 @@ function StockTab() {
                         </p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-lg font-bold" style={{ color: isLow ? "#ef4444" : isOver ? "#f59e0b" : "#0a0a0a" }}>{fmt(item.current_stock)}</p>
+                        <p className="text-lg font-bold" style={{ color: isLow ? "#ef4444" : isOver ? "#555" : "#0a0a0a" }}>{fmt(item.current_stock)}</p>
                         <p className="text-[10px]" style={{ color: "#aaa" }}>{item.unit}s</p>
                       </div>
                       <div className="flex gap-1 shrink-0">
-                        <button onClick={() => setAdjustItem(item)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#e8e8e8", color: "#333" }} title="Adjust stock">
+                        <button onClick={() => setAdjustItem(item)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }} title="Adjust stock">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                         </button>
                         <button onClick={() => {
@@ -353,7 +353,7 @@ function StockTab() {
                           setParRecommendation(null);
                           fetch(`/api/organizador/inventario/items/${item.id}/weekly-usage`).then(r => r.json()).then(d => { if (d.weeklyUsage > 0) setParRecommendation(d); });
                           setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-                        }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#e8e8e8", color: "#333" }} title="Edit">
+                        }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }} title="Edit">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                         </button>
                         <button onClick={() => handleDelete(item.id)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#e8e8e8", color: "#888" }} title="Remove">
@@ -386,7 +386,7 @@ function MovementsTab() {
   const TYPE_STYLE: Record<string, { bg: string; color: string; label: string }> = {
     purchase:     { bg: "rgba(16,185,129,0.1)",  color: "#10b981", label: "Purchase" },
     sale:         { bg: "rgba(99,102,241,0.1)",  color: "#6366f1", label: "Sale" },
-    empty_bottle: { bg: "rgba(245,158,11,0.1)",  color: "#f59e0b", label: "Empty bottle" },
+    empty_bottle: { bg: "rgba(0,0,0,0.06)",       color: "#555",    label: "Empty bottle" },
     waste:        { bg: "rgba(239,68,68,0.1)",   color: "#ef4444", label: "Waste" },
     adjustment:   { bg: "rgba(0,0,0,0.06)",      color: "#555",    label: "Adjustment" },
     count:        { bg: "rgba(0,0,0,0.06)",      color: "#555",    label: "Count" },
@@ -633,7 +633,7 @@ function ReceiveOrderModal({ order, items, saving, onConfirm, onCancel }: {
           >
             {saving ? "Receiving…" : "Confirm receipt & update stock"}
           </button>
-          <button onClick={onCancel} className="px-4 py-2.5 rounded-full text-sm font-medium" style={{ background: "#e8e8e8", color: "#333" }}>Cancel</button>
+          <button onClick={onCancel} className="px-4 py-2.5 rounded-full text-sm font-medium" style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }}>Cancel</button>
         </div>
       </div>
     </div>
@@ -1066,14 +1066,14 @@ function ConfirmModal({ title, message, onConfirm, onCancel, confirmLabel = "Con
           <button
             onClick={onConfirm}
             className="flex-1 py-2.5 rounded-full text-sm font-semibold"
-            style={{ background: danger ? "#ef4444" : "#0a0a0a", color: "#fff" }}
+            style={{ background: danger ? "#dc2626" : "#0a0a0a", color: "#fff" }}
           >
             {confirmLabel}
           </button>
           <button
             onClick={onCancel}
             className="px-5 py-2.5 rounded-full text-sm font-medium"
-            style={{ background: "#e8e8e8", color: "#333" }}
+            style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }}
           >
             Cancel
           </button>
@@ -1184,9 +1184,9 @@ function FinancialsTab() {
               {/* KPIs */}
               <div className="grid grid-cols-3 gap-4">
                 {[
-                  { label: "Inventory value", value: `$${data.inventoryValue.toFixed(2)}`, sub: "Stock actual × costo" },
-                  { label: `Entradas (${days}d)`, value: fmtNum(data.totalIn), sub: "Unidades recibidas" },
-                  { label: `Salidas (${days}d)`, value: fmtNum(data.totalOut), sub: "Unidades consumidas / ajustadas" },
+                  { label: "Inventory value", value: `$${data.inventoryValue.toFixed(2)}`, sub: "Current stock × cost" },
+                  { label: `In (${days}d)`, value: fmtNum(data.totalIn), sub: "Units received" },
+                  { label: `Out (${days}d)`, value: fmtNum(data.totalOut), sub: "Units consumed / adjusted" },
                 ].map(k => (
                   <div key={k.label} className="p-5 rounded-2xl" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
                     <p className="text-[10px] uppercase tracking-wider font-semibold mb-2" style={{ color: "#999" }}>{k.label}</p>
@@ -1200,9 +1200,9 @@ function FinancialsTab() {
               {data.itemFlow.length > 0 ? (
                 <div className="p-5 rounded-2xl" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
                   <div className="grid grid-cols-4 gap-2 mb-3 px-1">
-                    <p className="text-[10px] uppercase tracking-wider font-semibold col-span-2" style={{ color: "#999" }}>Producto</p>
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-right" style={{ color: "#999" }}>Entradas</p>
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-right" style={{ color: "#999" }}>Salidas</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold col-span-2" style={{ color: "#999" }}>Product</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-right" style={{ color: "#999" }}>In</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-right" style={{ color: "#999" }}>Out</p>
                   </div>
                   <div className="flex flex-col gap-1">
                     {data.itemFlow.map(item => {
@@ -1227,8 +1227,8 @@ function FinancialsTab() {
                 </div>
               ) : (
                 <div className="py-12 text-center rounded-2xl" style={{ border: "1px dashed rgba(0,0,0,0.15)" }}>
-                  <p className="font-medium text-[#0a0a0a] mb-1">Sin movimientos en este período</p>
-                  <p className="text-sm" style={{ color: "#888" }}>Los movimientos de compras y ajustes aparecerán aquí</p>
+                  <p className="font-medium text-[#0a0a0a] mb-1">No movements in this period</p>
+                  <p className="text-sm" style={{ color: "#888" }}>Purchase and adjustment movements will appear here</p>
                 </div>
               )}
             </>

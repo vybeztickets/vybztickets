@@ -26,8 +26,6 @@ export async function GET(request: Request) {
     .eq("organizer_id", user.id)
     .gte("created_at", since);
 
-  const itemMap = Object.fromEntries((items ?? []).map((i: any) => [i.id, i]));
-
   // Inventory value
   let inventoryValue = 0;
   for (const item of items ?? []) {

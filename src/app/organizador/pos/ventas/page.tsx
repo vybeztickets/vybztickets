@@ -631,7 +631,7 @@ export default function PosSalesPage() {
                           </tr>
 
                           {/* Product rows */}
-                          {group.rows.map((row, ri) => (
+                          {group.rows.map((row) => (
                             <tr
                               key={`${group.category}-${row.name}`}
                               style={{
