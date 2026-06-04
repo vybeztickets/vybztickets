@@ -219,7 +219,7 @@ function StatusTab({ role, organizerType: initialType, inventoryEnabled: initial
               border: typeSaved ? "1px solid rgba(16,185,129,0.3)" : "none",
             }}
           >
-            {typeSaving ? "Guardando…" : typeSaved ? "Guardado" : "Guardar tipo"}
+            {typeSaving ? "Saving…" : typeSaved ? "Saved!" : "Save type"}
           </button>
           {initialType && selectedType !== initialType && (
             <p className="text-xs" style={{ color: "rgba(0,0,0,0.55)" }}>
@@ -289,11 +289,11 @@ function StatusTab({ role, organizerType: initialType, inventoryEnabled: initial
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "#ef4444" }} />
               <div>
                 <p className="text-[#0a0a0a] font-medium text-sm">Suspended account</p>
-                <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Your account is inactive. Events don't accept new purchases.</p>
+                <p className="text-xs mt-0.5" style={{ color: "#888" }}>Your account is inactive. Events don't accept new purchases.</p>
               </div>
             </div>
             {requested ? (
-              <p className="text-xs font-semibold" style={{ color: "#b45309" }}>Request sent. The Vybz team will review it shortly.</p>
+              <p className="text-xs font-semibold" style={{ color: "#15803d" }}>Request sent. The Vybz team will review it shortly.</p>
             ) : (
               <button
                 onClick={handleRequest}
@@ -309,10 +309,10 @@ function StatusTab({ role, organizerType: initialType, inventoryEnabled: initial
         )}
         {isPending && (
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full animate-pulse shrink-0" style={{ background: "#f59e0b" }} />
+            <span className="w-2.5 h-2.5 rounded-full animate-pulse shrink-0" style={{ background: "#888" }} />
             <div>
               <p className="text-[#0a0a0a] font-medium text-sm">Activation request pending</p>
-              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">The Vybz team will review your request soon.</p>
+              <p className="text-xs mt-0.5" style={{ color: "#888" }}>The Vybz team will review your request soon.</p>
             </div>
           </div>
         )}
@@ -350,7 +350,7 @@ function connectionStatus(last_active_at: string | null): "connected" | "idle" |
 
 const STATUS_DOT: Record<string, string> = {
   connected: "#10b981",
-  idle: "#f59e0b",
+  idle: "#888",
   offline: "rgba(0,0,0,0.18)",
 };
 const STATUS_LABEL: Record<string, string> = {
@@ -440,11 +440,11 @@ function AccessCodeManager({ eventId, type }: { eventId: string; type: "scanner"
         <div className="flex-1 min-w-0">
           <p className="text-[#0a0a0a] font-semibold text-sm">{TYPE_NAMES[type]} access</p>
           <div className="flex items-center gap-2 mt-1">
-            <p className="text-[#0a0a0a]/35 text-xs font-mono truncate">{url}</p>
+            <p className="text-xs font-mono truncate" style={{ color: "#888" }}>{url}</p>
             <button
               onClick={() => { navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
               className="shrink-0 px-2 py-0.5 rounded text-[10px] font-medium transition-colors"
-              style={{ background: copied ? "rgba(16,185,129,0.12)" : "rgba(0,0,0,0.06)", color: copied ? "#10b981" : "rgba(0,0,0,0.4)" }}
+              style={{ background: copied ? "rgba(16,185,129,0.12)" : "rgba(0,0,0,0.06)", color: copied ? "#10b981" : "#555" }}
             >
               {copied ? "Copied!" : "Copy"}
             </button>
@@ -466,9 +466,9 @@ function AccessCodeManager({ eventId, type }: { eventId: string; type: "scanner"
       {/* Slots */}
       <div className="p-4 space-y-2.5">
         {loading ? (
-          <p className="text-[#0a0a0a]/25 text-sm text-center py-4">Loading...</p>
+          <p className="text-sm text-center py-4" style={{ color: "#888" }}>Loading...</p>
         ) : activeCodes.length === 0 ? (
-          <p className="text-[#0a0a0a]/25 text-sm text-center py-6">No active {TYPE_NAMES[type].toLowerCase()} slots</p>
+          <p className="text-sm text-center py-6" style={{ color: "#888" }}>No active {TYPE_NAMES[type].toLowerCase()} slots</p>
         ) : (
           activeCodes.map(c => {
             const status = connectionStatus(c.last_active_at);
@@ -486,7 +486,7 @@ function AccessCodeManager({ eventId, type }: { eventId: string; type: "scanner"
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-[#0a0a0a] text-sm font-semibold">{c.label ?? TYPE_NAMES[type]}</p>
-                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.4)" }}>
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: "rgba(0,0,0,0.06)", color: "#555" }}>
                       {STATUS_LABEL[status]}
                     </span>
                   </div>
@@ -500,7 +500,7 @@ function AccessCodeManager({ eventId, type }: { eventId: string; type: "scanner"
                     <button
                       onClick={() => { navigator.clipboard.writeText(c.code); setCopiedCode(c.id); setTimeout(() => setCopiedCode(null), 2000); }}
                       className="shrink-0 px-2 py-0.5 rounded text-[10px] font-medium transition-colors"
-                      style={{ background: copiedCode === c.id ? "rgba(16,185,129,0.12)" : "rgba(0,0,0,0.06)", color: copiedCode === c.id ? "#10b981" : "rgba(0,0,0,0.4)" }}
+                      style={{ background: copiedCode === c.id ? "rgba(16,185,129,0.12)" : "rgba(0,0,0,0.06)", color: copiedCode === c.id ? "#10b981" : "#555" }}
                     >
                       {copiedCode === c.id ? "Copied!" : "Copy"}
                     </button>
@@ -513,7 +513,7 @@ function AccessCodeManager({ eventId, type }: { eventId: string; type: "scanner"
                     disabled={isLoggingOut}
                     title="Force logout — generates new code"
                     className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-30"
-                    style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.5)" }}
+                    style={{ background: "rgba(0,0,0,0.06)", color: "#555" }}
                   >
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={isLoggingOut ? "animate-spin" : ""}>
                       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -564,14 +564,14 @@ function SecurityTab() {
     <div className="max-w-2xl flex flex-col gap-6">
       <div>
         <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Access management</h2>
-        <p className="text-[#0a0a0a]/35 text-sm">Manage Scanner, POS and Cashier access codes per event.</p>
+        <p className="text-sm" style={{ color: "#888" }}>Manage Scanner, POS and Cashier access codes per event.</p>
       </div>
 
       {/* Event selector */}
       {loadingEvents ? (
-        <p className="text-[#0a0a0a]/25 text-sm">Loading events...</p>
+        <p className="text-sm" style={{ color: "#888" }}>Loading events...</p>
       ) : events.length === 0 ? (
-        <p className="text-[#0a0a0a]/25 text-sm">No events found. Create an event first.</p>
+        <p className="text-sm" style={{ color: "#888" }}>No events found. Create an event first.</p>
       ) : (
         <>
           <div>
@@ -663,7 +663,7 @@ function TeamTab() {
 
   const statusBadge = (status: string) => {
     const map: Record<string, { bg: string; color: string; label: string }> = {
-      invited:   { bg: "rgba(245,158,11,0.1)",  color: "#f59e0b", label: "Invited" },
+      invited:   { bg: "rgba(0,0,0,0.06)",       color: "#555",    label: "Invited" },
       active:    { bg: "rgba(16,185,129,0.1)",  color: "#10b981", label: "Active" },
       suspended: { bg: "rgba(239,68,68,0.1)",   color: "#ef4444", label: "Suspended" },
     };
@@ -974,7 +974,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
             </div>
             <div className="flex-1">
               <p className="text-[#0a0a0a] font-semibold text-sm">Publicly visible organizer page</p>
-              <p className="text-[#0a0a0a]/35 text-xs mt-0.5">Attendees can view your organizer profile and upcoming events.</p>
+              <p className="text-xs mt-0.5" style={{ color: "#888" }}>Attendees can view your organizer profile and upcoming events.</p>
             </div>
             <Toggle checked={publicProfile} onChange={setPublicProfile} />
           </div>
@@ -1043,11 +1043,11 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
                 </button>
               ))}
             </div>
-            <div className="px-5 py-3 flex gap-2 items-start" style={{ borderTop: "1px solid rgba(0,0,0,0.05)", background: "rgba(245,158,11,0.03)" }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2" className="shrink-0 mt-0.5">
+            <div className="px-5 py-3 flex gap-2 items-start" style={{ borderTop: "1px solid rgba(0,0,0,0.05)", background: "rgba(0,0,0,0.02)" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" strokeWidth="2" className="shrink-0 mt-0.5">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
-              <p className="text-[10px] leading-relaxed" style={{ color: "#92400e" }}>
+              <p className="text-[10px] leading-relaxed" style={{ color: "#555" }}>
                 Your bank account must be in the same currency you choose here. If you sell in <strong>₡ colones</strong>, you need a CRC account. If you sell in <strong>$ dollars</strong>, you need a USD account. Changing this does not convert existing prices.
               </p>
             </div>
@@ -1065,7 +1065,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
         <form onSubmit={handleSavePerfil} className="max-w-2xl flex flex-col gap-6">
           <div>
             <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Brand image</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Configure how your public organizer profile appears.</p>
+            <p className="text-sm" style={{ color: "#888" }}>Configure how your public organizer profile appears.</p>
           </div>
 
           <div>
@@ -1123,7 +1123,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
                     value={link.url}
                     onChange={(e) => updateLink(i, "url", e.target.value)}
                   />
-                  <button type="button" onClick={() => removeLink(i)} className="text-[#0a0a0a]/25 hover:text-red-400 transition-colors shrink-0">
+                  <button type="button" onClick={() => removeLink(i)} className="hover:text-red-400 transition-colors shrink-0" style={{ color: "#888" }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
@@ -1134,7 +1134,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
                 type="button"
                 onClick={addLink}
                 className="self-start text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                style={{ background: "rgba(0,0,0,0.05)", color: "rgba(0,0,0,0.5)" }}
+                style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }}
               >
                 + Add link
               </button>
@@ -1170,7 +1170,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
         <div className="max-w-2xl flex flex-col gap-6">
           <div>
             <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Business details</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Configure your business details here.</p>
+            <p className="text-sm" style={{ color: "#888" }}>Configure your business details here.</p>
           </div>
 
           <div>
@@ -1299,7 +1299,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
             <button
               onClick={() => { setFirstName(""); setLastName(""); setBusinessEmail(userEmail); setIdNumber(""); setPhoneCode("+506"); setPhoneNumber(""); setCompanyName(""); setCompanyId(""); }}
               className="w-full py-3 rounded-xl font-semibold"
-              style={{ background: "rgba(0,0,0,0.04)", color: "rgba(0,0,0,0.4)" }}
+              style={{ background: "rgba(0,0,0,0.06)", color: "#0a0a0a" }}
             >
               Cancel
             </button>
@@ -1312,14 +1312,14 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
         <div className="max-w-2xl flex flex-col gap-6">
           <div>
             <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Taxes</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Configure whether you want to charge taxes on your events and your entity's tax details.</p>
+            <p className="text-sm" style={{ color: "#888" }}>Configure whether you want to charge taxes on your events and your entity's tax details.</p>
           </div>
 
           {/* Toggle charge taxes */}
           <div className="flex items-center justify-between p-5 rounded-2xl" style={sectionStyle}>
             <div>
               <p className="text-[#0a0a0a]/80 text-sm font-medium">Charge taxes on your events?</p>
-              <p className="text-[#0a0a0a]/30 text-xs mt-0.5">Tax will be shown broken down in the purchase summary</p>
+              <p className="text-xs mt-0.5" style={{ color: "#888" }}>Tax will be shown broken down in the purchase summary</p>
             </div>
             <Toggle checked={chargesTax} onChange={setChargesTax} />
           </div>
@@ -1341,7 +1341,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
               {/* Separador */}
               <div className="pt-2 pb-1" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
                 <p className="text-[#0a0a0a]/40 text-xs uppercase tracking-wider">Entity tax details</p>
-                <p className="text-[#0a0a0a]/20 text-xs mt-1">Required for electronic invoicing and legal documents (ACAM, HACIENDA)</p>
+                <p className="text-xs mt-1" style={{ color: "#888" }}>Required for electronic invoicing and legal documents (ACAM, HACIENDA)</p>
               </div>
 
               {/* Tipo de entidad */}
@@ -1446,7 +1446,7 @@ export default function ConfigTabs({ profile, userId, userEmail, organizerType, 
         <div className="max-w-2xl flex flex-col gap-6">
           <div>
             <h2 className="text-[#0a0a0a] font-semibold text-lg mb-1">Customer email</h2>
-            <p className="text-[#0a0a0a]/35 text-sm">Manage which emails receive notifications.</p>
+            <p className="text-sm" style={{ color: "#888" }}>Manage which emails receive notifications.</p>
           </div>
 
           <div>

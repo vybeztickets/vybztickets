@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { isValidUUID } from "@/lib/validate";
 import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function GET() {
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { supplier_id, items, notes } = body;
   if (!items || !Array.isArray(items) || items.length === 0) return NextResponse.json({ error: "Items are required" }, { status: 400 });
+  if (supplier_id && !isValidUUID(supplier_id)) return NextResponse.json({ error: "Invalid supplier_id" }, { status: 400 });
 
   const total_cost = items.reduce((sum: number, i: { qty: number; unit_cost: number }) => sum + (i.qty * (i.unit_cost ?? 0)), 0);
   const admin = createAdminClient();

@@ -1056,7 +1056,7 @@ function ConfirmModal({ title, message, onConfirm, onCancel, confirmLabel = "Con
   confirmLabel?: string; danger?: boolean;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)" }}>
       <div className="w-full max-w-sm rounded-2xl p-6 bg-white flex flex-col gap-4" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}>
         <div>
           <p className="font-semibold text-[#0a0a0a] text-base">{title}</p>

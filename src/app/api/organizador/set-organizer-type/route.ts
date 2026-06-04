@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 const VALID_TYPES = ["discoteca", "organizador", "festival"] as const;
 
@@ -8,6 +9,9 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (!checkRateLimit("set-organizer-type", getIP(request), 10, 60_000))
+    return rateLimitedResponse();
 
   const body = await request.json();
   const { organizer_type, inventory_enabled } = body;

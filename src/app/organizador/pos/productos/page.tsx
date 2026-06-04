@@ -134,7 +134,7 @@ function PlusIcon() {
 
 const inputClass = "w-full px-4 py-3 rounded-xl text-sm text-[#0a0a0a] placeholder-black/20 focus:outline-none";
 const inputStyle = { background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)" };
-const labelClass = "block text-black/40 text-xs uppercase tracking-widest mb-2";
+const labelClass = "block text-[#888] text-xs uppercase tracking-widest mb-2";
 
 // ── Toggle component ──────────────────────────────────────────────────────────
 
@@ -480,7 +480,7 @@ export default function PosProductsPage() {
                 <div>
                   <p className="text-[#0a0a0a] text-sm font-medium leading-tight">{r.name}</p>
                   {r.product_type && (
-                    <p className="text-[#0a0a0a]/35 text-xs mt-0.5">{r.product_type}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#888" }}>{r.product_type}</p>
                   )}
                 </div>
 
@@ -506,7 +506,7 @@ export default function PosProductsPage() {
 
                 {/* Cost */}
                 <div className="text-right">
-                  <span className="text-sm text-[#0a0a0a]/60">${cost.toFixed(2)}</span>
+                  <span className="text-sm" style={{ color: "#555" }}>${cost.toFixed(2)}</span>
                 </div>
 
                 {/* Price */}
@@ -667,7 +667,7 @@ export default function PosProductsPage() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <label className={labelClass} style={{ marginBottom: 0 }}>Ingredients</label>
-                    <span className="text-xs text-black/30">{form.ingredients.length} item{form.ingredients.length !== 1 ? "s" : ""}</span>
+                    <span className="text-xs" style={{ color: "#888" }}>{form.ingredients.length} item{form.ingredients.length !== 1 ? "s" : ""}</span>
                   </div>
 
                   {form.ingredients.length > 0 && (
@@ -675,7 +675,7 @@ export default function PosProductsPage() {
                       {/* Ingredient header */}
                       <div
                         className="grid text-[10px] font-semibold uppercase tracking-wider px-4 py-2.5"
-                        style={{ gridTemplateColumns: "1fr 90px 90px 72px 32px", background: "rgba(0,0,0,0.02)", color: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
+                        style={{ gridTemplateColumns: "1fr 90px 90px 72px 32px", background: "rgba(0,0,0,0.02)", color: "#888", borderBottom: "1px solid rgba(0,0,0,0.07)" }}
                       >
                         <div>Item</div>
                         <div>Qty</div>
@@ -732,7 +732,7 @@ export default function PosProductsPage() {
                             </select>
 
                             {/* Cost */}
-                            <div className="text-right text-sm text-[#0a0a0a]/50 tabular-nums">
+                            <div className="text-right text-sm tabular-nums" style={{ color: "#555" }}>
                               {rowCost > 0 ? `$${rowCost.toFixed(3)}` : "—"}
                             </div>
 
@@ -755,7 +755,7 @@ export default function PosProductsPage() {
                     type="button"
                     onClick={addIngredientRow}
                     className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:bg-black/5"
-                    style={{ color: "rgba(0,0,0,0.45)" }}
+                    style={{ color: "#0a0a0a" }}
                   >
                     <PlusIcon />
                     Add ingredient
@@ -764,16 +764,16 @@ export default function PosProductsPage() {
 
                 {/* Cost summary footer */}
                 <div className="rounded-xl px-5 py-4 space-y-2.5" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-black/30 mb-3">Cost Summary</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "#888" }}>Cost Summary</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-[#0a0a0a]/50">Total Cost</span>
+                    <span className="text-sm" style={{ color: "#555" }}>Total Cost</span>
                     <span className="text-sm font-semibold text-[#0a0a0a]">${formTotalCost.toFixed(3)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-[#0a0a0a]/50">Cost %</span>
+                    <span className="text-sm" style={{ color: "#555" }}>Cost %</span>
                     <span
                       className="text-sm font-semibold"
-                      style={{ color: formCostPct > 35 ? "#dc2626" : formCostPct > 25 ? "#d97706" : formCostPct > 0 ? "#16a34a" : "rgba(0,0,0,0.3)" }}
+                      style={{ color: formCostPct > 35 ? "#dc2626" : formCostPct > 25 ? "#555" : formCostPct > 0 ? "#16a34a" : "#888" }}
                     >
                       {formSalePrice > 0 ? `${formCostPct.toFixed(1)}%` : "—"}
                     </span>

@@ -90,7 +90,7 @@ function getMonthKey(offset: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-const tickStyle = { fill: "rgba(0,0,0,0.2)", fontSize: 10 };
+const tickStyle = { fill: "#888", fontSize: 10 };
 const tooltipStyle = {
   background: "#0a0a0a", border: "none", borderRadius: 10,
   color: "#fff", fontSize: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
@@ -210,7 +210,7 @@ export default function PosSalesPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-[family-name:var(--font-bebas)] text-[#0a0a0a] text-4xl tracking-wide">Bar Sales</h1>
-          <p className="text-[#0a0a0a]/30 text-sm mt-1">Gross bar revenue breakdown</p>
+          <p className="text-sm mt-1" style={{ color: "#888" }}>Gross bar revenue breakdown</p>
         </div>
 
         {/* Overview filters (only visible on overview tab) */}
@@ -266,19 +266,19 @@ export default function PosSalesPage() {
       {activeTab === "overview" && (
         <>
           {loading ? (
-            <p className="text-[#0a0a0a]/20 text-sm py-16 text-center">Loading…</p>
+            <p className="text-sm py-16 text-center" style={{ color: "#888" }}>Loading…</p>
           ) : !data ? (
-            <p className="text-[#0a0a0a]/20 text-sm py-16 text-center">No data available</p>
+            <p className="text-sm py-16 text-center" style={{ color: "#888" }}>No data available</p>
           ) : (
             <>
               {/* KPI row */}
               <div className="flex mb-8 pb-8" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
                 <div className="flex-1 pr-8" style={{ borderRight: "1px solid rgba(0,0,0,0.07)" }}>
-                  <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-[0.2em] mb-2">Gross Bar Revenue</p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "#888" }}>Gross Bar Revenue</p>
                   <p className="font-[family-name:var(--font-bebas)] text-[60px] text-[#0a0a0a] leading-none">
                     {fmt(data.totalRevenue)}
                   </p>
-                  <p className="text-[#0a0a0a]/25 text-xs mt-1">Last {days} days</p>
+                  <p className="text-xs mt-1" style={{ color: "#888" }}>Last {days} days</p>
                 </div>
                 {[
                   { label: "Orders", value: data.totalOrders.toString() },
@@ -287,7 +287,7 @@ export default function PosSalesPage() {
                   { label: "Checked in", value: data.checkedIn.toString() },
                 ].map(s => (
                   <div key={s.label} className="px-7" style={{ borderLeft: "1px solid rgba(0,0,0,0.07)" }}>
-                    <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider mb-2 whitespace-nowrap">{s.label}</p>
+                    <p className="text-[10px] uppercase tracking-wider mb-2 whitespace-nowrap" style={{ color: "#888" }}>{s.label}</p>
                     <p className="font-[family-name:var(--font-bebas)] text-3xl text-[#0a0a0a] leading-none">{s.value}</p>
                   </div>
                 ))}
@@ -295,7 +295,7 @@ export default function PosSalesPage() {
 
               {/* Revenue area chart */}
               <div className="rounded-2xl p-6 mb-6" style={{ border: "1px solid rgba(0,0,0,0.07)", background: "#fff" }}>
-                <p className="text-[#0a0a0a]/35 text-[10px] uppercase tracking-[0.18em] mb-1">Bar revenue · last {days} days</p>
+                <p className="text-[10px] uppercase tracking-[0.18em] mb-1" style={{ color: "#888" }}>Bar revenue · last {days} days</p>
                 <p className="font-[family-name:var(--font-bebas)] text-4xl text-[#0a0a0a] leading-none mb-4">{fmt(data.totalRevenue)}</p>
                 <ResponsiveContainer width="100%" height={180}>
                   <AreaChart data={data.chart} margin={{ top: 4, right: 0, left: 10, bottom: 0 }}>
@@ -324,7 +324,7 @@ export default function PosSalesPage() {
               {data.productBreakdown.length > 0 ? (
                 <div className="rounded-2xl overflow-hidden mb-6" style={{ border: "1px solid rgba(0,0,0,0.07)", background: "#fff" }}>
                   <div className="px-6 py-5" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)", background: "rgba(0,0,0,0.02)" }}>
-                    <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider font-semibold">Product breakdown</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: "#888" }}>Product breakdown</p>
                   </div>
 
                   {/* Recharts horizontal bar chart */}
@@ -364,7 +364,7 @@ export default function PosSalesPage() {
                   <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                     <div
                       className="grid text-xs font-semibold uppercase tracking-wider px-6 py-3"
-                      style={{ gridTemplateColumns: "24px 1fr 70px 70px 100px", color: "rgba(0,0,0,0.25)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+                      style={{ gridTemplateColumns: "24px 1fr 70px 70px 100px", color: "#888", borderBottom: "1px solid rgba(0,0,0,0.06)" }}
                     >
                       <div>#</div>
                       <div>Product</div>
@@ -383,10 +383,10 @@ export default function PosSalesPage() {
                             borderBottom: i < data.productBreakdown.length - 1 ? "1px solid rgba(0,0,0,0.04)" : "none",
                           }}
                         >
-                          <span className="text-[10px] font-bold" style={{ color: i === 0 ? "#0a0a0a" : "rgba(0,0,0,0.25)" }}>{i + 1}</span>
+                          <span className="text-[10px] font-bold" style={{ color: i === 0 ? "#0a0a0a" : "#888" }}>{i + 1}</span>
                           <p className="text-[#0a0a0a] text-sm font-medium truncate pr-4">{p.name}</p>
                           <p className="text-right text-[#0a0a0a] text-sm tabular-nums">{p.units}</p>
-                          <p className="text-right text-black/30 text-sm tabular-nums">{pct.toFixed(0)}%</p>
+                          <p className="text-right text-sm tabular-nums" style={{ color: "#555" }}>{pct.toFixed(0)}%</p>
                           <p className="text-right text-[#0a0a0a] text-sm font-bold tabular-nums">{fmt(p.revenue)}</p>
                         </div>
                       );
@@ -395,7 +395,7 @@ export default function PosSalesPage() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 rounded-2xl mb-6" style={{ border: "1px dashed rgba(0,0,0,0.1)" }}>
-                  <p className="text-[#0a0a0a]/20 text-sm">No POS sales in this period</p>
+                  <p className="text-sm" style={{ color: "#888" }}>No POS sales in this period</p>
                 </div>
               )}
 
@@ -404,7 +404,7 @@ export default function PosSalesPage() {
                 <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.07)", background: "#fff" }}>
                   {/* Section header with toggle */}
                   <div className="px-6 py-5 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)", background: "rgba(0,0,0,0.02)" }}>
-                    <p className="text-[#0a0a0a]/30 text-[10px] uppercase tracking-wider font-semibold">Top items</p>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: "#888" }}>Top items</p>
                     <div className="flex gap-1 p-0.5 rounded-lg" style={{ background: "rgba(0,0,0,0.06)" }}>
                       <button
                         onClick={() => setTopView("qty")}
@@ -428,7 +428,7 @@ export default function PosSalesPage() {
                     <div>
                       <div
                         className="grid text-xs font-semibold uppercase tracking-wider px-6 py-3"
-                        style={{ gridTemplateColumns: "32px 1fr 80px 110px", color: "rgba(0,0,0,0.25)", borderBottom: "1px solid rgba(0,0,0,0.06)", background: "rgba(0,0,0,0.03)" }}
+                        style={{ gridTemplateColumns: "32px 1fr 80px 110px", color: "#888", borderBottom: "1px solid rgba(0,0,0,0.06)", background: "rgba(0,0,0,0.03)" }}
                       >
                         <div>#</div>
                         <div>Item</div>
@@ -446,7 +446,7 @@ export default function PosSalesPage() {
                         >
                           <span
                             className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold"
-                            style={i === 0 ? { background: "#0a0a0a", color: "#fff" } : { background: "rgba(0,0,0,0.08)", color: "rgba(0,0,0,0.4)" }}
+                            style={i === 0 ? { background: "#0a0a0a", color: "#fff" } : { background: "rgba(0,0,0,0.08)", color: "#888" }}
                           >
                             {i + 1}
                           </span>
@@ -469,7 +469,7 @@ export default function PosSalesPage() {
                                 key={h}
                                 className="text-xs font-semibold uppercase tracking-wider py-3"
                                 style={{
-                                  color: "rgba(0,0,0,0.25)",
+                                  color: "#888",
                                   textAlign: idx === 0 || idx === 1 ? "left" : "right",
                                   paddingLeft: idx === 0 ? 24 : 12,
                                   paddingRight: idx === 6 ? 24 : 12,
@@ -490,7 +490,7 @@ export default function PosSalesPage() {
                               <td className="py-3.5" style={{ paddingLeft: 24, paddingRight: 12, width: 44 }}>
                                 <span
                                   className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold"
-                                  style={i === 0 ? { background: "#0a0a0a", color: "#fff" } : { background: "rgba(0,0,0,0.08)", color: "rgba(0,0,0,0.4)" }}
+                                  style={i === 0 ? { background: "#0a0a0a", color: "#fff" } : { background: "rgba(0,0,0,0.08)", color: "#888" }}
                                 >
                                   {i + 1}
                                 </span>
@@ -504,13 +504,13 @@ export default function PosSalesPage() {
                               <td className="py-3.5 text-sm text-right tabular-nums text-[#0a0a0a]" style={{ paddingLeft: 12, paddingRight: 12 }}>
                                 {fmtMoney(item.revenue)}
                               </td>
-                              <td className="py-3.5 text-sm text-right tabular-nums" style={{ paddingLeft: 12, paddingRight: 12, color: "rgba(0,0,0,0.45)" }}>
+                              <td className="py-3.5 text-sm text-right tabular-nums" style={{ paddingLeft: 12, paddingRight: 12, color: "#555" }}>
                                 {item.cost !== null ? fmtMoney(item.cost) : "—"}
                               </td>
                               <td className="py-3.5 text-sm text-right tabular-nums font-semibold" style={{ paddingLeft: 12, paddingRight: 12, color: item.profit !== null && item.profit >= 0 ? "#15803d" : "#dc2626" }}>
                                 {item.profit !== null ? fmtMoney(item.profit) : "—"}
                               </td>
-                              <td className="py-3.5 text-sm text-right tabular-nums" style={{ paddingLeft: 12, paddingRight: 24, color: "rgba(0,0,0,0.55)" }}>
+                              <td className="py-3.5 text-sm text-right tabular-nums" style={{ paddingLeft: 12, paddingRight: 24, color: "#555" }}>
                                 {item.marginPct !== null ? item.marginPct.toFixed(1) + "%" : "—"}
                               </td>
                             </tr>
@@ -518,7 +518,7 @@ export default function PosSalesPage() {
                         </tbody>
                       </table>
                       {data.topByMargin.every(i => i.cost === null) && (
-                        <p className="px-6 py-4 text-xs text-center" style={{ color: "rgba(0,0,0,0.25)" }}>
+                        <p className="px-6 py-4 text-xs text-center" style={{ color: "#888" }}>
                           Add recipes to your products to see margin data
                         </p>
                       )}
@@ -568,10 +568,10 @@ export default function PosSalesPage() {
           </div>
 
           {varianceLoading ? (
-            <p className="text-[#0a0a0a]/20 text-sm py-16 text-center">Loading variance data…</p>
+            <p className="text-sm py-16 text-center" style={{ color: "#888" }}>Loading variance data…</p>
           ) : !varianceData || varianceData.grouped.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 rounded-2xl" style={{ border: "1px dashed rgba(0,0,0,0.1)" }}>
-              <p className="text-[#0a0a0a]/20 text-sm">No sales data for {getMonthLabel(varianceMonthOffset)}</p>
+              <p className="text-sm" style={{ color: "#888" }}>No sales data for {getMonthLabel(varianceMonthOffset)}</p>
             </div>
           ) : (
             <>
@@ -646,19 +646,19 @@ export default function PosSalesPage() {
                               </td>
                               <td className="py-3 text-sm text-right tabular-nums text-[#0a0a0a]" style={{ paddingLeft: 10, paddingRight: 10 }}>{row.noSold}</td>
                               <td className="py-3 text-sm text-right tabular-nums text-[#0a0a0a]" style={{ paddingLeft: 10, paddingRight: 10 }}>{fmtMoney(row.posSales)}</td>
-                              <td className="py-3 text-sm text-right tabular-nums" style={{ paddingLeft: 10, paddingRight: 10, color: "rgba(0,0,0,0.55)" }}>{fmtOz(row.expectedUseOz)}</td>
-                              <td className="py-3 text-sm text-right tabular-nums" style={{ paddingLeft: 10, paddingRight: 10, color: "rgba(0,0,0,0.55)" }}>{fmtOz(row.actualUseOz)}</td>
+                              <td className="py-3 text-sm text-right tabular-nums" style={{ paddingLeft: 10, paddingRight: 10, color: "#555" }}>{fmtOz(row.expectedUseOz)}</td>
+                              <td className="py-3 text-sm text-right tabular-nums" style={{ paddingLeft: 10, paddingRight: 10, color: "#555" }}>{fmtOz(row.actualUseOz)}</td>
                               <td
                                 className="py-3 text-sm text-right tabular-nums font-medium"
                                 style={{
                                   paddingLeft: 10, paddingRight: 10,
-                                  color: row.overShortOz === null ? "rgba(0,0,0,0.3)" : row.overShortOz < 0 ? "#dc2626" : "#15803d",
+                                  color: row.overShortOz === null ? "#888" : row.overShortOz < 0 ? "#dc2626" : "#15803d",
                                 }}
                               >
                                 {fmtOz(row.overShortOz)}
                               </td>
-                              <td className="py-3 text-sm text-right tabular-nums" style={{ paddingLeft: 10, paddingRight: 10, color: "rgba(0,0,0,0.5)" }}>{fmtPct(row.idealPcPct)}</td>
-                              <td className="py-3 text-sm text-right tabular-nums" style={{ paddingLeft: 10, paddingRight: 10, color: "rgba(0,0,0,0.5)" }}>{fmtPct(row.actualPcPct)}</td>
+                              <td className="py-3 text-sm text-right tabular-nums" style={{ paddingLeft: 10, paddingRight: 10, color: "#555" }}>{fmtPct(row.idealPcPct)}</td>
+                              <td className="py-3 text-sm text-right tabular-nums" style={{ paddingLeft: 10, paddingRight: 10, color: "#555" }}>{fmtPct(row.actualPcPct)}</td>
                               <td
                                 className="py-3 text-sm text-right tabular-nums font-semibold"
                                 style={{ paddingLeft: 10, paddingRight: 20, color: varianceColor(row.variancePct) }}

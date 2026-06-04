@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 const OZ_ML = 29.5735;
 const DASH_ML = 0.625;
@@ -17,6 +18,9 @@ function ingredientToBottles(qty: number, unit: string, unitSizeMl: number | nul
 }
 
 export async function POST(request: Request) {
+  if (!checkRateLimit("pos-order", getIP(request), 60, 60_000))
+    return rateLimitedResponse();
+
   const body = await request.json();
   const { code, eventId, items, total, paymentMethod } = body;
 
@@ -64,11 +68,12 @@ export async function POST(request: Request) {
     const soldItems = items as { id: string; quantity: number }[];
     const productIds = soldItems.map(i => i.id);
 
-    // Fetch pos_products with ingredients + simple link
+    // Fetch pos_products with ingredients + simple link — scoped to event's organizer to prevent cross-organizer product injection
     const { data: posProducts } = await (admin as any)
       .from("pos_products")
       .select("id, inventory_item_id, inventory_qty_per_sale, ingredients")
-      .in("id", productIds);
+      .in("id", productIds)
+      .eq("organizer_id", event.organizer_id);
 
     if (!posProducts?.length) {
       return NextResponse.json({ order }, { status: 201 });

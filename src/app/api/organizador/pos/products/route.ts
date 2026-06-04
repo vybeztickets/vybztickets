@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function GET() {
   const supabase = await createClient();
@@ -23,6 +24,9 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (!checkRateLimit("pos-product-create", getIP(request), 30, 60_000))
+    return rateLimitedResponse();
 
   const body = await request.json();
   const {

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { checkRateLimit, getIP, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function GET() {
   const supabase = await createClient();
@@ -44,6 +45,9 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (!checkRateLimit("inv-item-create", getIP(request), 30, 60_000))
+    return rateLimitedResponse();
 
   const body = await request.json();
   const { name, category, unit, unit_size_ml, par_level, cost_per_unit, supplier_id, barcode, full_bottle_weight_g, empty_bottle_weight_g } = body;
